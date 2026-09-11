@@ -2,32 +2,810 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Güncel Hesaplama v2</title>
-    <!-- Kendi CSS ve stil kodlarınız -->
-</head>
-<body>
-
-    <!-- Kendi Tasarımınız ve Tablolarınız -->
-    <div id="ana-uygulama">
-        <h2>Üretim Fiyatlandırma Aracı</h2>
-        <button onclick="hesaplamaYap()">Maliyeti Hesapla</button>
-    </div>
-
-    <!-- Şifre Ekranı -->
-    <div id="sifre-ekran" style="display:none;">
-        <h2>200 Kullanım Limiti Doldu</h2>
-        <input type="password" id="sifre-giris" placeholder="Şifre...">
-        <button onclick="sifreKontrol()">Kilidi Aç</button>
-    </div>
-
-    <!-- GİZLENMİŞ KOD BURAYA GELECEK -->
-    <script>
-        // obfuscator.io sitesinden kopyaladığınız karmaşık kodu 
-        // buraya yapıştırın. Örnek görünüm aşağıdaki gibi karmaşık olacaktır:
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZF OptiDock | Lojistik & Operasyon Merkezi</title>
+    
+    <!-- Ortak Kütüphaneler -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
         
-        var _0x53b2=['getItem','fiyat_sayac','display','none','getElementById','ana-uygulama'...];
-        // (Kodun devamı...)
-    </script>
+        .drag-active {
+            border-color: #2563eb !important;
+            background-color: #eff6ff !important;
+            transform: scale(1.01);
+        }
+        .custom-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; border: 2px solid #f1f5f9; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dragover-zone { border-color: #2563eb !important; background-color: #eff6ff !important; transform: scale(1.01); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen relative font-sans">
 
+    <!-- ========================================== -->
+    <!-- LİSANS / ŞİFRE KİLİT EKRANI                -->
+    <!-- ========================================== -->
+    <div id="sifre-ekran" class="hidden min-h-screen flex-col items-center justify-center p-6 bg-slate-900 text-white z-[100] fixed inset-0">
+        <div class="bg-slate-800 p-10 rounded-3xl shadow-2xl max-w-md w-full text-center border border-slate-700">
+            <div class="w-20 h-20 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="lock" class="w-10 h-10"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">200 Kullanım Limiti Doldu</h2>
+            <p class="text-slate-400 mb-8 text-sm">Sistemi kullanmaya devam etmek için lisans şifresini girmeniz gerekmektedir.</p>
+            
+            <input type="password" id="sifre-giris" placeholder="Şifrenizi girin..." class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white mb-4 focus:outline-none focus:border-blue-500 text-center tracking-widest font-bold">
+            
+            <button onclick="sifreKontrol()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition flex items-center justify-center gap-2">
+                <i data-lucide="key" class="w-5 h-5"></i> Kilidi Aç
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- ANA MENÜ / KARŞILAMA EKRANI                -->
+    <!-- ========================================== -->
+    <div id="homeScreen" class="min-h-screen flex flex-col items-center justify-center p-6">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-black text-blue-700 tracking-tight mb-3">ZF OptiDock</h1>
+            <p class="text-slate-500">Lojistik & Operasyon Merkezi - Lütfen işlem seçin</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl w-full">
+            <button onclick="switchApp('app1Screen')" class="group text-left bg-white p-8 rounded-3xl shadow-sm border-2 border-transparent hover:border-blue-500 hover:shadow-xl transition-all flex flex-col h-full">
+                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <i data-lucide="truck" class="w-8 h-8"></i>
+                </div>
+                <h2 class="text-xl font-bold text-slate-800 mb-2 leading-snug uppercase">ARAÇ GİRİŞ DELİVERY & AN EŞLEŞTİRME</h2>
+                <p class="text-slate-500 text-sm flex-grow">SAP sevkiyat listesi ile Antrepo beyanname listesini karşılaştırıp plaka bazlı nihai tahliye tablosu oluşturur (2 Dosyalı Sistem).</p>
+            </button>
+
+            <button onclick="switchApp('app2Screen')" class="group text-left bg-white p-8 rounded-3xl shadow-sm border-2 border-transparent hover:border-emerald-500 hover:shadow-xl transition-all flex flex-col h-full">
+                <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <i data-lucide="layers" class="w-8 h-8"></i>
+                </div>
+                <h2 class="text-xl font-bold text-slate-800 mb-2 leading-snug uppercase">SEVKİYAT LİSTESİ OLUŞTURMA<br><span class="text-sm normal-case font-semibold text-emerald-700">(CrossDock Kesilecekler Listesi)</span></h2>
+                <p class="text-slate-500 text-sm flex-grow">CD Kesilecekler, Çıkış Excel ve ZF Stok listelerini otomatik harmanlayarak şehre ve alıcıya göre gruplu lokasyon listesi çıkartır (3 Dosyalı Sistem).</p>
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- MODÜL 1: ARAÇ GİRİŞ DELİVERY & AN EŞLEŞTİRME -->
+    <!-- ========================================== -->
+    <div id="app1Screen" class="hidden min-h-screen bg-slate-100">
+        <div class="max-w-7xl mx-auto p-4 md:p-8 space-y-6">
+            
+            <header class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex items-center gap-4">
+                    <button onclick="switchApp('homeScreen')" class="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition text-slate-600" title="Ana Menüye Dön">
+                        <i data-lucide="home" class="w-5 h-5"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">ARAÇ GİRİŞ DELİVERY & AN EŞLEŞTİRME</h1>
+                        <p class="text-sm text-slate-500 mt-1">Dosyaları masaüstünden sürükleyip bırakabilir veya tıklayarak seçebilirsiniz.</p>
+                    </div>
+                </div>
+                <div id="statusBadge" class="hidden px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Listeler Eşleştirildi & AN'ye Göre Sıralandı
+                </div>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 1. Liste Yükle -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">Adım 1</span>
+                        <span id="file1Info" class="text-xs text-slate-400">Dosya seçilmedi</span>
+                    </div>
+                    <h2 class="text-base font-bold text-slate-800">1. LİSTE (Sevkiyat / SAP Listesi)</h2>
+                    
+                    <div id="dropZone1" 
+                         ondragover="handleDragOver1(event, this)" 
+                         ondragleave="handleDragLeave1(event, this)" 
+                         ondrop="handleDrop1(event, this)"
+                         onclick="document.getElementById('file1Input').click()"
+                         class="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-blue-50/30 rounded-xl p-6 cursor-pointer transition group">
+                        <i data-lucide="file-spreadsheet" class="w-8 h-8 text-slate-400 group-hover:text-blue-500 mb-2 transition"></i>
+                        <span class="text-xs font-semibold text-slate-600 group-hover:text-blue-600 text-center" id="file1Name">Masaüstünden 1. Dosyayı Buraya Sürükleyin</span>
+                        <input type="file" id="file1Input" accept=".xlsx, .xls" class="hidden" onchange="handleFileInput1(event)">
+                    </div>
+                </div>
+
+                <!-- 2. Liste Yükle -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md">Adım 2</span>
+                        <span id="file2Info" class="text-xs text-slate-400">Dosya seçilmedi</span>
+                    </div>
+                    <h2 class="text-base font-bold text-slate-800">2. LİSTE (Antrepo / Beyanname Listesi)</h2>
+                    
+                    <div id="dropZone2" 
+                         ondragover="handleDragOver1(event, this)" 
+                         ondragleave="handleDragLeave1(event, this)" 
+                         ondrop="handleDrop2(event, this)"
+                         onclick="document.getElementById('file2Input').click()"
+                         class="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 hover:border-emerald-500 hover:bg-emerald-50/30 rounded-xl p-6 cursor-pointer transition group">
+                        <i data-lucide="file-spreadsheet" class="w-8 h-8 text-slate-400 group-hover:text-emerald-500 mb-2 transition"></i>
+                        <span class="text-xs font-semibold text-slate-600 group-hover:text-emerald-600 text-center" id="file2Name">Masaüstünden 2. Dosyayı Buraya Sürükleyin</span>
+                        <input type="file" id="file2Input" accept=".xlsx, .xls" class="hidden" onchange="handleFileInput2(event)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plaka / Transport -->
+            <div id="actionArea" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Araç Plakası</label>
+                        <input type="text" id="inputPlaka" placeholder="Örn: 34 PCZ 101" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-blue-500" oninput="updatePreviewPlaka()">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Transport No</label>
+                        <input type="text" id="inputTransport" placeholder="Örn: 101399515" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex items-center gap-4 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-400">Toplam Kalem</span>
+                            <p id="statTotal" class="text-base font-bold text-slate-800">0</p>
+                        </div>
+                        <div class="h-6 w-px bg-slate-300"></div>
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-emerald-600">Eşleşen AN</span>
+                            <p id="statMatched" class="text-base font-bold text-emerald-600">0</p>
+                        </div>
+                    </div>
+                    <div>
+                        <button onclick="downloadFinalExcel()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center gap-2">
+                            <i data-lucide="download" class="w-4 h-4"></i> Excel İndir
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Önizleme -->
+            <div id="previewArea" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-base font-bold text-slate-800">Önizleme (<span id="previewPlakaLabel" class="text-blue-600">-</span>)</h2>
+                    <span id="previewCountBadge" class="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200"></span>
+                </div>
+                <div class="custom-scroll overflow-auto max-h-[500px] rounded-xl border border-slate-300 shadow-sm bg-white">
+                    <table class="text-center text-sm border-collapse font-bold font-['Tahoma',sans-serif] min-w-[1350px] w-full">
+                        <thead class="sticky top-0 z-20 shadow-sm bg-slate-200 border-b border-slate-300 h-[50px] text-xs">
+                            <tr>
+                                <th class="p-3 border-r border-slate-300 min-w-[140px]">Delivery</th>
+                                <th class="p-3 border-r border-slate-300 min-w-[130px]">Shipment</th>
+                                <th class="p-3 border-r border-slate-300 min-w-[140px]">Bill.Doc.</th>
+                                <th class="p-3 border-r border-slate-300 min-w-[140px]">Ship-To</th>
+                                <th class="p-3 border-r border-slate-300 min-w-[140px]"># packages</th>
+                                <th class="p-3 border-r border-slate-300 min-w-[150px]">Gross Weight</th>
+                                <th class="p-3 border-r border-slate-300 text-blue-800 bg-blue-100/70 w-[308px] min-w-[308px]">an</th>
+                                <th class="p-3 text-slate-800 w-[180px] min-w-[180px]">Lokasyon</th>
+                            </tr>
+                        </thead>
+                        <tbody id="previewBody" class="divide-y divide-slate-200 text-xs text-slate-800"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- MODÜL 2: SEVKİYAT LİSTESİ OLUŞTURMA (CrossDock) -->
+    <!-- ========================================== -->
+    <div id="globalDropOverlay" class="fixed inset-0 bg-blue-900/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white hidden border-8 border-dashed border-blue-300 transition-all pointer-events-none">
+        <div class="p-6 bg-blue-600 rounded-3xl shadow-2xl flex flex-col items-center max-w-md text-center animate-bounce">
+            <i data-lucide="upload-cloud" class="w-20 h-20 text-white mb-3"></i>
+            <h2 class="text-2xl font-black">Dosyaları Buraya Bırakın</h2>
+        </div>
+    </div>
+
+    <div id="app2Screen" class="hidden min-h-screen bg-slate-50">
+        <header class="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-900 text-white shadow-lg">
+            <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <button onclick="switchApp('homeScreen')" class="p-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl transition text-white" title="Ana Menüye Dön">
+                        <i data-lucide="home" class="w-5 h-5"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-2xl font-bold tracking-tight uppercase">SEVKİYAT LİSTESİ OLUŞTURMA</h1>
+                        <p class="text-blue-100 text-xs">CrossDock Kesilecekler Listesi • Şehir & Alıcı Sıralı Liste</p>
+                    </div>
+                </div>
+                <button id="resetAllBtn" class="px-4 py-2 text-xs font-semibold text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-lg transition border border-white/20 flex items-center gap-1.5">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Verileri Temizle
+                </button>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-6 py-6">
+            <div id="masterDropArea" class="bg-gradient-to-b from-blue-50/70 to-indigo-50/40 border-2 border-dashed border-blue-300 hover:border-blue-500 rounded-2xl p-6 text-center mb-6 cursor-pointer transition shadow-sm group">
+                <input type="file" id="masterFileInput" multiple accept=".xlsx, .xls, .csv" class="hidden">
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 bg-blue-600 group-hover:bg-blue-700 text-white rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                        <i data-lucide="folder-up" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-800">3 Excel Dosyasını Buraya Birlikte Sürükleyip Bırakın</h3>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+                <!-- Kart 1 -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-col justify-between">
+                    <div class="flex justify-between mb-2">
+                        <span class="px-2.5 py-0.5 text-[11px] font-semibold text-blue-700 bg-blue-50 rounded-full border border-blue-100">1. Dosya (Ana Liste)</span>
+                        <span id="status-1" class="text-xs text-slate-400">Bekleniyor</span>
+                    </div>
+                    <h3 class="font-bold text-sm mb-3">CD Kesilecekler</h3>
+                    <div id="drop-1" class="border border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer hover:border-blue-500 transition">
+                        <input type="file" id="file-1" accept=".xlsx, .xls, .csv" class="hidden">
+                        <i data-lucide="file-spreadsheet" class="w-6 h-6 mx-auto mb-1 text-blue-600"></i>
+                        <p id="name-1" class="text-[11px] text-slate-600">Buraya Bırakın veya Tıklayın</p>
+                    </div>
+                </div>
+
+                <!-- Kart 2 -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-col justify-between">
+                    <div class="flex justify-between mb-2">
+                        <span class="px-2.5 py-0.5 text-[11px] font-semibold text-amber-700 bg-amber-50 rounded-full border border-amber-100">2. Dosya (Çıkış)</span>
+                        <span id="status-2" class="text-xs text-slate-400">Bekleniyor</span>
+                    </div>
+                    <h3 class="font-bold text-sm mb-3">Çıkış Excel (S2)</h3>
+                    <div id="drop-2" class="border border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer hover:border-amber-500 transition">
+                        <input type="file" id="file-2" accept=".xlsx, .xls, .csv" class="hidden">
+                        <i data-lucide="truck" class="w-6 h-6 mx-auto mb-1 text-amber-600"></i>
+                        <p id="name-2" class="text-[11px] text-slate-600">Buraya Bırakın veya Tıklayın</p>
+                    </div>
+                </div>
+
+                <!-- Kart 3 -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-col justify-between">
+                    <div class="flex justify-between mb-2">
+                        <span class="px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 rounded-full border border-emerald-100">3. Dosya (Stok)</span>
+                        <span id="status-3" class="text-xs text-slate-400">Bekleniyor</span>
+                    </div>
+                    <h3 class="font-bold text-sm mb-3">ZF Stok (S1)</h3>
+                    <div id="drop-3" class="border border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer hover:border-emerald-500 transition">
+                        <input type="file" id="file-3" accept=".xlsx, .xls, .csv" class="hidden">
+                        <i data-lucide="database" class="w-6 h-6 mx-auto mb-1 text-emerald-600"></i>
+                        <p id="name-3" class="text-[11px] text-slate-600">Buraya Bırakın veya Tıklayın</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 mb-6">
+                <div class="flex flex-col lg:flex-row items-center justify-between gap-5">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full lg:w-auto">
+                        <div class="bg-slate-50 border border-slate-100 rounded-xl p-2.5 text-center min-w-[120px]">
+                            <span class="text-[11px] font-semibold text-slate-400">Toplam Kayıt</span><br>
+                            <span id="kpiTotalRows" class="text-lg font-bold text-slate-800">0</span>
+                        </div>
+                        <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-2.5 text-center min-w-[120px]">
+                            <span class="text-[11px] font-semibold text-emerald-600">Eşleşen</span><br>
+                            <span id="kpiMatchedRows" class="text-lg font-bold text-emerald-700">0</span>
+                        </div>
+                        <div class="bg-blue-50 border border-blue-100 rounded-xl p-2.5 text-center min-w-[120px]">
+                            <span class="text-[11px] font-semibold text-blue-600">Toplam Paket</span><br>
+                            <span id="kpiTotalPackages" class="text-lg font-bold text-blue-700">0</span>
+                        </div>
+                        <div class="bg-purple-50 border border-purple-100 rounded-xl p-2.5 text-center min-w-[120px]">
+                            <span class="text-[11px] font-semibold text-purple-600">Brüt Kilo</span><br>
+                            <span id="kpiTotalWeight" class="text-lg font-bold text-purple-700">0.00</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <button id="processBtn" disabled class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold rounded-xl text-xs flex items-center gap-2">
+                            <i data-lucide="play" class="w-4 h-4"></i> Eşleştir
+                        </button>
+                        <button id="downloadExcelBtn" disabled class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold rounded-xl text-xs flex items-center gap-2">
+                            <i data-lucide="download" class="w-4 h-4"></i> Excel İndir
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tablo -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-4 border-b border-slate-100 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-sm">Nihai Liste Önizleme</h3>
+                        <p class="text-[10px] text-slate-500">Kırmızı renkli hücrelere tıklayıp AN değerini manuel olarak değiştirebilirsiniz.</p>
+                    </div>
+                    <input type="text" id="searchInput" placeholder="Ara..." class="pl-3 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:border-blue-500 outline-none">
+                </div>
+                <div class="overflow-x-auto max-h-[500px]">
+                    <table class="w-full text-center border-collapse text-xs">
+                        <thead class="bg-slate-100 font-bold sticky top-0 border-b border-slate-300 h-[50px] z-10">
+                            <tr>
+                                <th class="px-2.5 border-r border-slate-200 w-32">AN (Düzenlenebilir)</th>
+                                <th class="px-2.5 border-r border-slate-200">LOK</th>
+                                <th class="px-2.5 border-r border-slate-200">Delivery</th>
+                                <th class="px-2.5 border-r border-slate-200"># packages</th>
+                                <th class="px-2.5 border-r border-slate-200">Ship-To</th>
+                                <th class="px-2.5 border-r border-slate-200 text-left pl-4">Ship to Name</th>
+                                <th class="px-2.5 border-r border-slate-200">City</th>
+                                <th class="px-2.5">Gross Weight</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-slate-200 text-slate-700"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- GELİŞTİRİCİ BİLGİSİ (FOOTER) -->
+    <div class="fixed bottom-4 right-4 z-50 pointer-events-none">
+        <div class="bg-white/70 backdrop-blur-md text-slate-500 text-[11px] font-medium px-3 py-1.5 rounded-xl shadow-sm border border-slate-200/80 flex items-center gap-1.5 transition-all">
+            <i data-lucide="code" class="w-3.5 h-3.5 text-blue-600"></i>
+            <span><strong class="text-slate-700">Rıdvan Ayaz</strong> tarafından geliştirilmiştir</span>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- JAVASCRIPT & UYGULAMA MANTIĞI              -->
+    <!-- ========================================== -->
+    <script>
+        lucide.createIcons();
+
+        // --- LİSANS VE SAYAÇ KONTROLLERİ ---
+        let kullanimSayisi = parseInt(localStorage.getItem('optidock_sayac')) || 0;
+        const KULLANIM_LIMITI = 200;
+
+        function ekranGuncelle() {
+            if (kullanimSayisi >= KULLANIM_LIMITI) {
+                document.getElementById('homeScreen').classList.add('hidden');
+                document.getElementById('app1Screen').classList.add('hidden');
+                document.getElementById('app2Screen').classList.add('hidden');
+                document.getElementById('sifre-ekran').classList.remove('hidden');
+                document.getElementById('sifre-ekran').classList.add('flex');
+            }
+        }
+
+        function sifreKontrol() {
+            let girilenSifre = document.getElementById('sifre-giris').value;
+            if (girilenSifre === "suRFace2026") { 
+                kullanimSayisi = 0;
+                localStorage.setItem('optidock_sayac', kullanimSayisi);
+                document.getElementById('sifre-giris').value = "";
+                document.getElementById('sifre-ekran').classList.add('hidden');
+                document.getElementById('sifre-ekran').classList.remove('flex');
+                document.getElementById('homeScreen').classList.remove('hidden');
+                alert("Şifre onaylandı! Yeni 200 kullanım hakkı tanımlandı.");
+            } else {
+                alert("Hatalı şifre!");
+            }
+        }
+
+        function sayaciArtir() {
+            if (kullanimSayisi < KULLANIM_LIMITI) {
+                kullanimSayisi++;
+                localStorage.setItem('optidock_sayac', kullanimSayisi);
+                ekranGuncelle();
+            }
+        }
+
+        // Sayfa yüklendiğinde ilk limit kontrolünü yap
+        document.addEventListener("DOMContentLoaded", () => {
+            ekranGuncelle();
+        });
+        // -----------------------------------
+
+
+        // MENÜ YÖNLENDİRİCİ
+        function switchApp(targetId) {
+            if (kullanimSayisi >= KULLANIM_LIMITI) {
+                ekranGuncelle();
+                return;
+            }
+            document.getElementById('homeScreen').classList.add('hidden');
+            document.getElementById('app1Screen').classList.add('hidden');
+            document.getElementById('app2Screen').classList.add('hidden');
+            document.getElementById(targetId).classList.remove('hidden');
+        }
+
+        /* ==========================================
+           MODÜL 1: ARAÇ GİRİŞ DELİVERY & AN EŞLEŞTİRME
+           ========================================== */
+        let rawList1 = null; let rawList2 = null; let matchedData = [];
+
+        function handleDragOver1(e, el) { e.preventDefault(); el.classList.add('drag-active'); }
+        function handleDragLeave1(e, el) { e.preventDefault(); el.classList.remove('drag-active'); }
+        function handleDrop1(e, el) { e.preventDefault(); el.classList.remove('drag-active'); if(e.dataTransfer.files.length) processFile1(e.dataTransfer.files[0]); }
+        function handleDrop2(e, el) { e.preventDefault(); el.classList.remove('drag-active'); if(e.dataTransfer.files.length) processFile2(e.dataTransfer.files[0]); }
+        function handleFileInput1(e) { if(e.target.files.length) processFile1(e.target.files[0]); }
+        function handleFileInput2(e) { if(e.target.files.length) processFile2(e.target.files[0]); }
+
+        function processFile1(file) {
+            document.getElementById('file1Name').innerText = '✓ ' + file.name;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
+                rawList1 = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+                checkAndProcessApp1();
+            };
+            reader.readAsArrayBuffer(file);
+        }
+        function processFile2(file) {
+            document.getElementById('file2Name').innerText = '✓ ' + file.name;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
+                rawList2 = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+                checkAndProcessApp1();
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function checkAndProcessApp1() {
+            if (!rawList1 || !rawList2) return;
+            
+            let autoPlaka = rawList2[0]?.['PLAKA'] || rawList2[0]?.['Plaka'] || '';
+            let autoTransport = rawList2[0]?.['Transport'] || rawList2[0]?.['Shipment'] || rawList1[0]?.['Shipment'] || '';
+            
+            const pInput = document.getElementById('inputPlaka');
+            const tInput = document.getElementById('inputTransport');
+            if (!pInput.value || pInput.value === 'PLAKA') pInput.value = autoPlaka;
+            if (!tInput.value) tInput.value = autoTransport;
+            updatePreviewPlaka();
+
+            matchedData = []; let matchedCount = 0;
+            rawList1.forEach(row1 => {
+                const deliv = String(row1['Delivery'] || '').trim();
+                const ship = row1['Shipment'] || tInput.value || '';
+                const bill = String(row1['Bill.Doc.'] || row1['Fatura No'] || '').trim();
+                const shipto = row1['Ship-To'] || row1['Ship-to'] || '';
+                const pkg = row1['# packages'] || row1['Packages'] || row1['KAP'] || 0;
+                const gw = row1['Gross Weight'] || row1['KG'] || 0;
+                const lokasyon = row1['Lokasyon'] || row1['LOKASYON'] || row1['Location'] || row1['Depo'] || '';
+                let anVal = "";
+
+                for (let row2 of rawList2) {
+                    const fatura2 = String(row2['Fatura No'] || row2['Fatura No.1'] || '').trim();
+                    const deliv2 = String(row2['DELİVERY'] || row2['Delivery'] || '').trim();
+                    const an2 = String(row2['AN NO'] || row2['AN No'] || row2['an'] || '').trim();
+                    
+                    if (bill && (fatura2.includes(bill))) { anVal = an2; break; }
+                    if (deliv && (deliv2.includes(deliv))) { anVal = an2; break; }
+                }
+
+                if (anVal) matchedCount++;
+                matchedData.push({ delivery: deliv, shipment: ship, billDoc: bill, shipTo: shipto, packages: pkg, grossWeight: gw, an: anVal, lokasyon: lokasyon });
+            });
+
+            matchedData.sort((a, b) => {
+                if (!a.an && b.an) return 1;
+                if (a.an && !b.an) return -1;
+                if (a.an === b.an) return String(a.delivery).localeCompare(String(b.delivery));
+                return String(a.an).localeCompare(String(b.an));
+            });
+
+            document.getElementById('statTotal').innerText = matchedData.length;
+            document.getElementById('statMatched').innerText = matchedCount + ' / ' + matchedData.length;
+            document.getElementById('previewCountBadge').innerText = `${matchedData.length} Kalem`;
+            document.getElementById('statusBadge').classList.remove('hidden');
+            document.getElementById('actionArea').classList.remove('hidden');
+            document.getElementById('previewArea').classList.remove('hidden');
+
+            const tbody = document.getElementById('previewBody');
+            tbody.innerHTML = matchedData.map(item => `
+                <tr class="hover:bg-blue-50/50 h-[50px]">
+                    <td class="p-3 border-r border-slate-200">${item.delivery}</td>
+                    <td class="p-3 border-r border-slate-200">${item.shipment}</td>
+                    <td class="p-3 border-r border-slate-200">${item.billDoc}</td>
+                    <td class="p-3 border-r border-slate-200">${item.shipTo}</td>
+                    <td class="p-3 border-r border-slate-200">${item.packages}</td>
+                    <td class="p-3 border-r border-slate-200">${Number(item.grossWeight).toFixed(3)}</td>
+                    <td class="p-3 border-r border-slate-200 ${item.an ? 'text-blue-700 bg-blue-50/30' : 'text-amber-600'}">${item.an || 'Eşleşmedi'}</td>
+                    <td class="p-3 text-slate-700 bg-slate-50/50 w-[180px] min-w-[180px]">${item.lokasyon || ''}</td>
+                </tr>
+            `).join('');
+
+            // İŞLEM YAPILDI, SAYACI ARTIR
+            sayaciArtir();
+        }
+
+        function updatePreviewPlaka() {
+            document.getElementById('previewPlakaLabel').innerText = document.getElementById('inputPlaka').value.trim() || '-';
+        }
+
+        async function downloadFinalExcel() {
+            if (!matchedData.length) return;
+            const wb = new ExcelJS.Workbook();
+            const ws = wb.addWorksheet('Sayfa1');
+            const fontStyle = { name: 'Tahoma', size: 14, bold: true };
+            const alignStyle = { vertical: 'middle', horizontal: 'center' };
+            const borderStyle = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+
+            const finalPlaka = document.getElementById('inputPlaka').value.trim() || 'PLAKA';
+            const finalTransport = document.getElementById('inputTransport').value.trim() || 'TRANSPORT';
+
+            const r1 = ws.addRow([finalPlaka]); r1.height = 37.5; ws.mergeCells('A1:H1');
+            const r2 = ws.addRow(['Delivery', 'Shipment', 'Bill.Doc.', 'Ship-To', '# packages', 'Gross Weight', 'an', 'Lokasyon']); r2.height = 37.5;
+
+            matchedData.forEach(i => {
+                const r = ws.addRow([
+                    isNaN(Number(i.delivery)) ? i.delivery : Number(i.delivery),
+                    isNaN(Number(i.shipment)) ? i.shipment : Number(i.shipment),
+                    isNaN(Number(i.billDoc)) ? i.billDoc : Number(i.billDoc),
+                    i.shipTo, Number(i.packages)||0, Number(i.grossWeight)||0, i.an||'', i.lokasyon||''
+                ]); r.height = 37.5;
+            });
+
+            for (let c = 1; c <= 8; c++) {
+                if (c === 7) ws.getColumn(c).width = 43.3; 
+                else if (c === 8) ws.getColumn(c).width = 25.7; 
+                else ws.getColumn(c).width = 20;
+            }
+            
+            ws.eachRow({ includeEmpty: false }, row => {
+                row.eachCell(cell => { cell.font = fontStyle; cell.alignment = alignStyle; cell.border = borderStyle; });
+            });
+
+            const buf = await wb.xlsx.writeBuffer();
+            const fileName = `${finalTransport}-${finalPlaka} HAZIR.xlsx`;
+            saveAs(new Blob([buf]), fileName);
+        }
+
+        /* ==========================================
+           MODÜL 2: SEVKİYAT LİSTESİ OLUŞTURMA
+           ========================================== */
+        let rawData1 = null; let rawData2 = null; let rawData3 = null; 
+        let finalResult = []; 
+        let globalStokMap = new Map(); 
+        
+        let dragCounter = 0; const overlay = document.getElementById('globalDropOverlay');
+
+        window.addEventListener('dragenter', (e) => {
+            if (document.getElementById('app2Screen').classList.contains('hidden')) return;
+            e.preventDefault(); dragCounter++; overlay.classList.remove('hidden');
+        });
+        window.addEventListener('dragleave', (e) => {
+            if (document.getElementById('app2Screen').classList.contains('hidden')) return;
+            e.preventDefault(); dragCounter--;
+            if (dragCounter <= 0) { dragCounter = 0; overlay.classList.add('hidden'); }
+        });
+        window.addEventListener('dragover', (e) => e.preventDefault());
+        window.addEventListener('drop', (e) => {
+            if (document.getElementById('app2Screen').classList.contains('hidden')) return;
+            e.preventDefault(); dragCounter = 0; overlay.classList.add('hidden');
+            if (e.dataTransfer.files.length > 0) handleMultipleFiles(Array.from(e.dataTransfer.files));
+        });
+
+        document.getElementById('masterDropArea').addEventListener('click', () => document.getElementById('masterFileInput').click());
+        document.getElementById('masterFileInput').addEventListener('change', (e) => { if(e.target.files.length) handleMultipleFiles(Array.from(e.target.files)); });
+        
+        [1,2,3].forEach(idx => {
+            document.getElementById(`drop-${idx}`).addEventListener('click', () => document.getElementById(`file-${idx}`).click());
+            document.getElementById(`file-${idx}`).addEventListener('change', async (e) => { 
+                if (e.target.files.length) {
+                    await processFileBySlot(idx, e.target.files[0]);
+                    checkReadyApp2(); 
+                }
+            });
+        });
+
+        async function handleMultipleFiles(files) {
+            for (let f of files) {
+                const s = await identifyFileSlot(f);
+                if (s) await processFileBySlot(s, f);
+            }
+            checkReadyApp2();
+        }
+
+        function identifyFileSlot(file) {
+            return new Promise((resolve) => {
+                const n = file.name.toLowerCase();
+                if (n.includes('kesilecek') || n.includes('cd')) return resolve(1);
+                if (n.includes('çıkış') || n.includes('cikis') || n.includes('s2')) return resolve(2);
+                if (n.includes('zf') || n.includes('stok') || n.includes('s1')) return resolve(3);
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                        const h = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 })[0].map(x => String(x).toLowerCase().trim());
+                        if (h.includes('delivery') && (h.includes('ship-to') || h.includes('ship to name'))) resolve(1);
+                        else if (h.includes('an no') || h.includes('plaka')) resolve(2);
+                        else if (h.includes('ant.beyan no') || h.includes('lokasyon')) resolve(3);
+                        else resolve(null);
+                    } catch(err) { resolve(null); }
+                }; reader.readAsArrayBuffer(file);
+            });
+        }
+
+        function processFileBySlot(idx, file) {
+            return new Promise((resolve) => {
+                document.getElementById(`name-${idx}`).innerText = file.name;
+                document.getElementById(`status-${idx}`).innerText = "Okunuyor...";
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                    const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: "" });
+                    if (idx===1) rawData1 = json; if (idx===2) rawData2 = json; if (idx===3) rawData3 = json;
+                    document.getElementById(`status-${idx}`).innerHTML = `<span class="text-emerald-600 font-semibold">${json.length} Satır</span>`;
+                    resolve();
+                }; reader.readAsArrayBuffer(file);
+            });
+        }
+
+        function checkReadyApp2() { 
+            if (rawData1 && rawData2 && rawData3) document.getElementById('processBtn').disabled = false; 
+        }
+
+        function getColValue(row, possibleNames) {
+            const keys = Object.keys(row);
+            for (let name of possibleNames) {
+                const clean = name.toLowerCase().replace(/[\s\._\-]/g, '');
+                const mk = keys.find(k => k.toLowerCase().replace(/[\s\._\-]/g, '') === clean);
+                if (mk && row[mk] !== undefined && row[mk] !== null) return row[mk];
+            }
+            return "";
+        }
+
+        document.getElementById('processBtn').addEventListener('click', () => {
+            const cikisEntries = [];
+            rawData2.forEach(row => {
+                const d = String(getColValue(row, ['DELİVERY', 'Delivery', 'Teslimat'])).trim();
+                const a = String(getColValue(row, ['AN NO', 'AN', 'Ant.Beyan No'])).trim();
+                const f = String(getColValue(row, ['Fatura No', 'Fatura', 'Bill.Doc.'])).trim();
+                if (d || f) cikisEntries.push({ d, a, f });
+            });
+
+            globalStokMap.clear();
+            rawData3.forEach(row => {
+                const a = String(getColValue(row, ['Ant.Beyan No', 'AN NO'])).trim();
+                const l = String(getColValue(row, ['Lokasyon', 'LOK'])).trim();
+                if (a && !globalStokMap.has(a)) globalStokMap.set(a, l);
+            });
+
+            let [mCount, tPkg, tWt] = [0, 0, 0];
+            finalResult = [];
+
+            rawData1.forEach(row => {
+                const delivery = String(getColValue(row, ['Delivery', 'Teslimat No'])).trim();
+                const billDoc = String(getColValue(row, ['Bill.Doc.', 'Fatura No'])).trim();
+                const pkg = parseInt(getColValue(row, ['# packages', 'packages', 'Koli'])) || 0;
+                const gw = parseFloat(getColValue(row, ['Gross Weight', 'KG'])) || 0;
+                
+                let fAN = "";
+                if (delivery) {
+                    const m = cikisEntries.find(c => c.d === delivery || c.d.includes(delivery));
+                    if (m) fAN = m.a;
+                }
+                if (!fAN && billDoc) {
+                    const m = cikisEntries.find(c => c.f === billDoc);
+                    if (m) fAN = m.a;
+                }
+
+                let fLOK = "";
+                if (fAN) {
+                    if (globalStokMap.has(fAN)) fLOK = globalStokMap.get(fAN);
+                    else for (let [k,v] of globalStokMap.entries()) if (k.includes(fAN) || fAN.includes(k)) { fLOK = v; break; }
+                }
+
+                if (fAN) mCount++;
+                tPkg += pkg; tWt += gw;
+
+                finalResult.push({
+                    id: 'r_' + Math.random().toString(36).substring(2, 9),
+                    AN: fAN, LOK: fLOK, Delivery: delivery, '# packages': pkg,
+                    'Ship-To': getColValue(row, ['Ship-To', 'Alıcı Kod']),
+                    'Ship to Name': getColValue(row, ['Ship to Name', 'Alıcı Adı']),
+                    City: getColValue(row, ['City', 'Şehir']),
+                    'Gross Weight': Number(gw.toFixed(3))
+                });
+            });
+
+            finalResult.sort((a,b) => String(a.City).localeCompare(String(b.City)) || String(a['Ship to Name']).localeCompare(String(b['Ship to Name'])) || String(a.Delivery).localeCompare(String(b.Delivery)));
+            updateKPIs();
+            document.getElementById('downloadExcelBtn').disabled = false;
+            renderTable(finalResult);
+
+            // İŞLEM YAPILDI, SAYACI ARTIR
+            sayaciArtir();
+        });
+        
+        function updateKPIs() {
+            let matched = finalResult.filter(r => r.AN).length;
+            document.getElementById('kpiTotalRows').innerText = finalResult.length;
+            document.getElementById('kpiMatchedRows').innerText = `${matched} / ${finalResult.length}`;
+            document.getElementById('kpiTotalPackages').innerText = finalResult.reduce((sum, r) => sum + r['# packages'], 0);
+            document.getElementById('kpiTotalWeight').innerText = finalResult.reduce((sum, r) => sum + r['Gross Weight'], 0).toLocaleString('tr-TR');
+        }
+
+        function updateManualAN(id, newAN) {
+            const item = finalResult.find(x => x.id === id);
+            if (!item) return;
+            
+            newAN = newAN.trim();
+            item.AN = newAN;
+            
+            if (!newAN) {
+                item.LOK = "";
+            } else {
+                let fLOK = "";
+                if (globalStokMap.has(newAN)) {
+                    fLOK = globalStokMap.get(newAN);
+                } else {
+                    for (let [k,v] of globalStokMap.entries()) {
+                        if (k.includes(newAN) || newAN.includes(k)) { fLOK = v; break; }
+                    }
+                }
+                item.LOK = fLOK;
+            }
+            
+            updateKPIs();
+            const t = document.getElementById('searchInput').value.toLowerCase();
+            if(t) {
+                renderTable(finalResult.filter(r => String(r.City).toLowerCase().includes(t) || String(r['Ship to Name']).toLowerCase().includes(t) || String(r.Delivery).toLowerCase().includes(t) || String(r.AN).toLowerCase().includes(t)));
+            } else {
+                renderTable(finalResult);
+            }
+        }
+
+        function renderTable(data) {
+            document.getElementById('tableBody').innerHTML = data.map((r,i) => `
+                <tr class="h-[50px] border-b border-slate-200 ${i%2===0?'bg-white':'bg-slate-50'} transition-colors hover:bg-blue-50">
+                    <td class="p-1">
+                        <input type="text" value="${r.AN || ''}" placeholder="AN YAZ"
+                            onchange="updateManualAN('${r.id}', this.value)"
+                            class="w-full text-center bg-transparent border border-transparent hover:border-slate-300 focus:bg-white focus:border-blue-500 rounded py-1 outline-none transition-colors ${r.AN ? 'text-slate-800' : 'text-red-500 font-bold placeholder-red-400'}">
+                    </td>
+                    <td class="text-blue-700 font-semibold" id="lok-${r.id}">${r.LOK||'-'}</td>
+                    <td>${r.Delivery}</td><td>${r['# packages']}</td><td>${r['Ship-To']}</td>
+                    <td class="text-left pl-4">${r['Ship to Name']}</td><td>${r.City}</td><td>${r['Gross Weight'].toFixed(3)}</td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const t = e.target.value.toLowerCase();
+            renderTable(finalResult.filter(r => String(r.City).toLowerCase().includes(t) || String(r['Ship to Name']).toLowerCase().includes(t) || String(r.Delivery).toLowerCase().includes(t) || String(r.AN).toLowerCase().includes(t)));
+        });
+
+        document.getElementById('downloadExcelBtn').addEventListener('click', async () => {
+            const wb = new ExcelJS.Workbook();
+            const ws = wb.addWorksheet('Sayfa1', {views:[{showGridLines:true}]});
+            ws.columns = [
+                {header:'AN', key:'AN', width:28}, {header:'LOK', key:'LOK', width:14}, {header:'Delivery', key:'Delivery', width:15},
+                {header:'# packages', key:'packages', width:16}, {header:'Ship-To', key:'ShipTo', width:15},
+                {header:'Ship to Name', key:'ShipToName', width:48}, {header:'City', key:'City', width:16}, {header:'Gross Weight', key:'GrossWeight', width:18}
+            ];
+            
+            const head = ws.getRow(1); head.height = 50;
+            head.eachCell(c => { c.font={name:'Calibri',size:14,bold:true}; c.alignment={vertical:'middle',horizontal:'center'}; c.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}}; });
+
+            finalResult.forEach(i => {
+                const r = ws.addRow({
+                    AN: i.AN, LOK: i.LOK, Delivery: isNaN(i.Delivery)?i.Delivery:Number(i.Delivery), packages: Number(i['# packages']),
+                    ShipTo: i['Ship-To'], ShipToName: i['Ship to Name'], City: i.City, GrossWeight: Number(i['Gross Weight'])
+                });
+                r.height = 50;
+                r.eachCell((c, col) => {
+                    c.font={name:'Calibri',size:14,bold:true}; c.alignment={vertical:'middle',horizontal:'center'}; c.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
+                    if(col===4) c.numFmt='#,##0'; else if(col===8) c.numFmt='#,##0.000';
+                });
+            });
+
+            const d = new Date();
+            const buf = await wb.xlsx.writeBuffer();
+            saveAs(new Blob([buf]), `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}. CD KESİLECEKLER.xlsx`);
+        });
+
+        document.getElementById('resetAllBtn').addEventListener('click', () => { location.reload(); });
+    </script>
 </body>
 </html>
