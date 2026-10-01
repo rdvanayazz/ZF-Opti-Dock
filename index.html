@@ -210,7 +210,7 @@
                             <div class="w-8 h-8 bg-violet-100 text-violet-600 rounded-lg flex items-center justify-center"><i data-lucide="car" class="w-5 h-5"></i></div>
                             SEVKİYAT PLAKA EŞLEŞTİRME
                         </h1>
-                        <p class="text-sm text-slate-500 mt-1">Filtreli gizli satırlar atlanır, tablo düzenlenebilir. Plaka %100 Orijinal I (9) sütununa yazılır.</p>
+                        <p class="text-sm text-slate-500 mt-1">Plaka varsa RANDEVU dahil ezilir, I Sütununa (ARAÇ Bilgisi) Plaka Enjeksiyonu aktiftir.</p>
                     </div>
                 </div>
             </header>
@@ -413,7 +413,6 @@
                 json = json.filter(row => {
                     let rIdx = row.__rowNum__; 
                     if (rIdx !== undefined && rowsMeta[rIdx]) {
-                        // KESİN FİLTRE KONTROLÜ: Gizli işaretli VEYA satır yüksekliği sıfır olanlar (Filtreler dahil)
                         if (rowsMeta[rIdx].hidden === true || rowsMeta[rIdx].hpx === 0 || rowsMeta[rIdx].hpt === 0) {
                             return false; 
                         }
@@ -431,7 +430,6 @@
             
             let delivCol = -1, plakaCol = -1, bayiCol = -1, sehirCol = -1;
             
-            // 1. Başlık arama
             for (let r = 0; r < Math.min(10, rawData.length); r++) {
                 if (rowsMeta[r] && (rowsMeta[r].hidden === true || rowsMeta[r].hpx === 0 || rowsMeta[r].hpt === 0)) continue;
                 
@@ -446,7 +444,6 @@
                 }
             }
             
-            // 2. GÜVENLİK AĞI: Başlık bulunamazsa içindeki verilerden sütunu anla
             if (delivCol === -1 || plakaCol === -1) {
                 for (let r = 0; r < Math.min(50, rawData.length); r++) {
                     if (rowsMeta[r] && (rowsMeta[r].hidden === true || rowsMeta[r].hpx === 0 || rowsMeta[r].hpt === 0)) continue;
@@ -463,7 +460,6 @@
 
             let dataList = [];
             for (let r = 0; r < rawData.length; r++) {
-                // KESİN FİLTRE KONTROLÜ
                 if (rowsMeta[r] && (rowsMeta[r].hidden === true || rowsMeta[r].hpx === 0 || rowsMeta[r].hpt === 0)) continue;
                 
                 let row = rawData[r];
@@ -472,7 +468,6 @@
                 let dVal = delivCol !== -1 ? String(row[delivCol] || '').trim() : '';
                 let dNorm = normalizeHeaderName(dVal);
                 
-                // Başlık satırını atla
                 if (!dVal || dNorm.includes('delivery') || dNorm.includes('irsaliye') || dNorm.includes('referans') || dNorm.includes('teslimat')) continue;
                 
                 dataList.push({
@@ -700,7 +695,6 @@
                 let res = parseRawArrayData(wb.Sheets[wb.SheetNames[0]]);
                 
                 // KESİN I SÜTUNU: Orijinal dosyadaki "ARAÇ Bilgisi" 9. sütundur (index 8). 
-                // Bunu her zaman "existingPlaka" veya "RANDEVU" kontrolü için garantiliyoruz.
                 let rawData = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: "" });
                 res.dataList.forEach(item => {
                     item.plaka = String(rawData[item.originalRowIndex][8] || '').trim();
@@ -762,11 +756,9 @@
                 let matchedPlaka = "";
                 let isMatched = false;
                 
-                // RANDEVU KORUMASI 
-                if (existingPlaka.toUpperCase().includes('RANDEVU')) {
-                    matchedPlaka = existingPlaka;
-                    isMatched = true;
-                } else if(deliveryOriginal) {
+                // MÜKEMMEL RANDEVU EZME MANTIĞI! 
+                // Önce her zaman plaka arayacağız. Varsa RANDEVU yazsa bile ezilecek.
+                if(deliveryOriginal) {
                     let deliveryParts = deliveryOriginal.split(/[-,\/\n|; \t]+/);
 
                     for (let part of deliveryParts) {
@@ -804,6 +796,8 @@
                 }
 
                 if(isMatched) matchedCount++;
+                
+                // Plaka bulduysak onu kullan. Bulamadıysak eski veriyi (RANDEVU) koru.
                 let finalPlaka = matchedPlaka || existingPlaka;
 
                 matchedData3.push({
