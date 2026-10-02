@@ -444,16 +444,29 @@
                     </div>
                 </div>
                 
+                <!-- YENİ: PLAKA FİLTRESİ VE MÜŞTERİ ARAMA YAN YANA -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group mb-0">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">2. Plaka Seçin (Filtre)</label>
+                        <select id="app4-plateSelect" class="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:border-orange-500 font-semibold text-slate-700 bg-orange-50">
+                            <option value="">Tüm Plakalar</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">3. Müşteri Ara</label>
+                        <input type="text" id="app4-customerSearch" placeholder="İsim veya şehir yazarak ara..." class="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:border-orange-500">
+                    </div>
+                </div>
+                
                 <div class="form-group">
-                    <label class="block text-sm font-bold text-slate-700 mb-2">2. Müşteri Seçin (Kap sayısı otomatik dolar)</label>
-                    <input type="text" id="app4-customerSearch" placeholder="İsim veya şehir yazarak ara..." class="w-full px-4 py-2 border border-slate-300 rounded-xl mb-2 outline-none focus:border-orange-500">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">4. Müşteri Seçin (Kap sayısı otomatik dolar)</label>
                     <select id="app4-customerSelect" size="6" class="w-full p-2 border border-slate-300 rounded-xl outline-none focus:border-orange-500">
                         <option value="">Lütfen önce Excel yükleyin</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
-                    <label class="block text-sm font-bold text-slate-700 mb-2">3. Kaç Kap Etiket Çıkacak?</label>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">5. Kaç Kap Etiket Çıkacak?</label>
                     <input type="number" id="app4-kapCount" min="1" value="1" class="w-full px-4 py-2 border border-slate-300 rounded-xl outline-none focus:border-orange-500 font-bold text-orange-700 text-lg">
                 </div>
                 
@@ -482,9 +495,6 @@
             return String(str).replace(/İ/g, 'i').replace(/I/g, 'i').replace(/ı/g, 'i').toLowerCase().replace(/[^a-z0-9]/g, ''); 
         }
 
-        // ==========================================
-        // ORTAK: SÜTUN BULUCU VE GİZLİ SATIR KONTROLÜ
-        // ==========================================
         function findKeyRobust(keys, keywords) {
             for (let kw of keywords) {
                 let cleanKw = normalizeHeaderName(kw);
@@ -928,9 +938,11 @@
         }
 
         /* ==========================================
-           MODÜL 4: ETİKET YAZDIRMA (KAP OTOMATİK)
+           MODÜL 4: ETİKET YAZDIRMA (PLAKA FİLTRESİ)
            ========================================== */
         let app4Customers = [];
+        let uniquePlates = new Set();
+
         function handleDrop4(e, el) { e.preventDefault(); el.classList.remove('drag-active'); if(e.dataTransfer.files.length) processFile4(e.dataTransfer.files[0]); }
         function handleFileInput4(e) { if(e.target.files.length) processFile4(e.target.files[0]); }
 
@@ -941,22 +953,53 @@
                 const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, {type: 'array'});
                 const firstSheetName = workbook.SheetNames[0]; const worksheet = workbook.Sheets[firstSheetName];
                 const json = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
-                app4Customers = []; const selectElement = document.getElementById('app4-customerSelect'); selectElement.innerHTML = '';
+                
+                app4Customers = []; 
+                uniquePlates.clear();
                 
                 json.forEach(row => {
                     const musteriAdi = String(row['Ship to Name'] || row['Müşteri'] || '').trim();
                     const sehir = String(row['şehir '] || row['şehir'] || row['City'] || '').trim();
                     let kap = parseInt(row['kap'] || row['KAP'] || row['# packages'] || row['Packages']) || 0;
                     
+                    // Plakayı Oku
+                    let plaka = String(row['ARAÇ Bilgisi'] || row['Plaka'] || row['PLAKA'] || row['Araç Plaka'] || '').trim();
+                    if(plaka) { uniquePlates.add(plaka); }
+                    
                     if(musteriAdi) {
-                        const existing = app4Customers.find(c => c.name === musteriAdi && c.city === sehir);
-                        if (!existing) { app4Customers.push({name: musteriAdi, city: sehir, kap: kap > 0 ? kap : 1}); } 
+                        // Aynı Müşteri, Şehir VE PLAKA'daki kayıtları birleştir
+                        const existing = app4Customers.find(c => c.name === musteriAdi && c.city === sehir && c.plaka === plaka);
+                        if (!existing) { 
+                            app4Customers.push({name: musteriAdi, city: sehir, kap: kap > 0 ? kap : 1, plaka: plaka}); 
+                        } 
                         else { existing.kap += kap; }
                     }
                 });
+                
+                // Plaka Dropdown'unu doldur
+                const plateSelect = document.getElementById('app4-plateSelect');
+                plateSelect.innerHTML = '<option value="">Tüm Plakalar</option>';
+                Array.from(uniquePlates).sort().forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p; opt.textContent = p;
+                    plateSelect.appendChild(opt);
+                });
+
                 app4Customers.sort((a, b) => a.name.localeCompare(b.name, 'tr-TR'));
-                renderCustomerList4(app4Customers);
+                filterApp4Customers(); // İlk yüklemede hepsini göster
             }; reader.readAsArrayBuffer(file);
+        }
+
+        function filterApp4Customers() {
+            const term = document.getElementById('app4-customerSearch').value.toLocaleLowerCase('tr-TR');
+            const selectedPlate = document.getElementById('app4-plateSelect').value;
+
+            const filtered = app4Customers.filter(c => {
+                const matchName = c.name.toLocaleLowerCase('tr-TR').includes(term) || c.city.toLocaleLowerCase('tr-TR').includes(term);
+                const matchPlate = selectedPlate === "" || c.plaka === selectedPlate;
+                return matchName && matchPlate;
+            });
+            renderCustomerList4(filtered);
         }
 
         function renderCustomerList4(list) {
@@ -964,18 +1007,18 @@
             if (list.length === 0) { selectElement.innerHTML = '<option value="">Sonuç bulunamadı</option>'; return; }
             list.forEach((cust, index) => {
                 const option = document.createElement('option'); option.value = index; 
-                option.textContent = `${cust.name} (${cust.city}) - [${cust.kap} KAP]`; 
+                // Listede plaka bilgisi de gösterilir
+                option.textContent = `${cust.name} (${cust.city}) - [${cust.kap} KAP] ${cust.plaka ? '- ' + cust.plaka : ''}`; 
                 option.setAttribute('data-name', cust.name); option.setAttribute('data-city', cust.city); option.setAttribute('data-kap', cust.kap);
                 selectElement.appendChild(option);
             });
         }
 
-        document.getElementById('app4-customerSearch').addEventListener('input', function(e) {
-            const term = e.target.value.toLocaleLowerCase('tr-TR');
-            const filtered = app4Customers.filter(c => c.name.toLocaleLowerCase('tr-TR').includes(term) || c.city.toLocaleLowerCase('tr-TR').includes(term));
-            renderCustomerList4(filtered);
-        });
+        // Arama ve Plaka filtreleme tetikleyicileri
+        document.getElementById('app4-customerSearch').addEventListener('input', filterApp4Customers);
+        document.getElementById('app4-plateSelect').addEventListener('change', filterApp4Customers);
 
+        // Listeden seçim yapınca Kap sayısı otomatik dolar
         document.getElementById('app4-customerSelect').addEventListener('change', function(e) {
             const selectedOption = this.options[this.selectedIndex];
             if (selectedOption && selectedOption.value !== "") {
@@ -988,7 +1031,7 @@
             const selectElement = document.getElementById('app4-customerSelect');
             const selectedOption = selectElement.options[selectElement.selectedIndex];
             
-            if (!selectedOption || selectedOption.value === "") { alert('Lütfen yazdırmadan önce bir müşteri seçin!'); return; }
+            if (!selectedOption || selectedOption.value === "") { alert('Lütfen yazdırmadan önce listeden bir müşteri seçin!'); return; }
             const kapCount = parseInt(document.getElementById('app4-kapCount').value);
             if (!kapCount || kapCount < 1) { alert('Lütfen en az 1 kap girin!'); return; }
 
