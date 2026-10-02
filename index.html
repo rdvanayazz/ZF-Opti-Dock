@@ -21,9 +21,44 @@
         .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; border: 2px solid #f1f5f9; }
         .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+        /* === MODÜL 4 YAZDIRMA AYARLARI (TAŞMA VE KELİME BÖLÜNME ENGELİ) === */
+        @media print {
+            body.printing-app4 { visibility: hidden; }
+            body.printing-app4 #app4Screen,
+            body.printing-app4 #app4Screen * { visibility: visible; }
+            body.printing-app4 .no-print { display: none !important; }
+            body.printing-app4 #print-area { display: block; position: absolute; left: 0; top: 0; width: 100%; }
+            body.printing-app4 @page { size: 80mm 100mm; margin: 0 !important; }
+            body.printing-app4, body.printing-app4 html { margin: 0; padding: 0; background: #fff; width: 80mm; height: 100mm; }
+            
+            body.printing-app4 .label-page {
+                width: 80mm; height: 98mm; box-sizing: border-box; padding: 2mm; margin: 0;
+                page-break-after: always; page-break-inside: avoid; overflow: hidden; 
+                display: flex; flex-direction: column; align-items: center; justify-content: center; 
+                text-align: center; gap: 1mm; background: #fff;
+            }
+            body.printing-app4 .label-page:last-child { page-break-after: auto; }
+            body.printing-app4 .customer-name {
+                font-size: 24pt; font-weight: 900; line-height: 1; width: 98%;
+                word-break: normal; overflow-wrap: break-word; margin: 0;
+            }
+            body.printing-app4 .customer-city { font-size: 28pt; font-weight: 900; line-height: 1; margin: 0; }
+            body.printing-app4 .fraction { font-size: 65pt; font-weight: 900; line-height: 0.9; margin: 0; }
+            body.printing-app4 .kap-text { font-size: 35pt; font-weight: 900; line-height: 0.9; margin: 0; }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen relative font-sans">
+
+    <!-- GENEL SÜRÜKLE BIRAK OVERLAY (TÜM MODÜLLER İÇİN) -->
+    <div id="globalDropOverlay" class="fixed inset-0 bg-blue-900/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white hidden border-8 border-dashed border-blue-300 transition-all pointer-events-none">
+        <div class="p-6 bg-blue-600 rounded-3xl shadow-2xl flex flex-col items-center max-w-md text-center animate-bounce">
+            <i data-lucide="upload-cloud" class="w-20 h-20 text-white mb-3"></i>
+            <h2 class="text-2xl font-black">Dosyaları Buraya Bırakın</h2>
+            <p class="text-blue-100 text-sm mt-2">İlgili modüle otomatik yüklenecektir.</p>
+        </div>
+    </div>
 
     <!-- ========================================== -->
     <!-- ANA MENÜ / KARŞILAMA EKRANI                -->
@@ -35,7 +70,7 @@
             <p class="text-slate-500">Lojistik & Operasyon Merkezi - Lütfen işlem seçin</p>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl w-full">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl w-full">
             <button onclick="switchApp('app1Screen')" class="group text-left bg-white p-8 rounded-3xl shadow-sm border-2 border-transparent hover:border-blue-500 hover:shadow-xl transition-all flex flex-col h-full">
                 <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><i data-lucide="truck" class="w-8 h-8"></i></div>
                 <h2 class="text-xl font-bold text-slate-800 mb-2 leading-snug uppercase">ARAÇ GİRİŞ DELİVERY & AN EŞLEŞTİRME</h2>
@@ -52,6 +87,11 @@
                 <div class="w-16 h-16 bg-violet-100 text-violet-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><i data-lucide="car" class="w-8 h-8"></i></div>
                 <h2 class="text-xl font-bold text-slate-800 mb-2 leading-snug uppercase">SEVKİYAT PLAKA EŞLEŞTİRME</h2>
                 <p class="text-slate-500 text-sm flex-grow">Sevk güncel dosyasındaki Delivery ile Sipariş-Takip listesindeki İrsaliye Referans'ı eşleştirip, araç bilgilerini doldurur.</p>
+            </button>
+            <button onclick="switchApp('app4Screen')" class="group text-left bg-white p-8 rounded-3xl shadow-sm border-2 border-transparent hover:border-orange-500 hover:shadow-xl transition-all flex flex-col h-full">
+                <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><i data-lucide="printer" class="w-8 h-8"></i></div>
+                <h2 class="text-xl font-bold text-slate-800 mb-2 leading-snug uppercase">ETİKET YAZDIRMA (80x100)</h2>
+                <p class="text-slate-500 text-sm flex-grow">Sevk güncel dosyasından müşteri listesi oluşturup dikey 8x10 cm formatında koli etiketleri yazdırır.</p>
             </button>
         </div>
     </div>
@@ -72,6 +112,17 @@
                     </div>
                 </div>
             </header>
+            
+            <!-- MODÜL 1 TOPLU DOSYA SÜRÜKLEME ALANI -->
+            <div id="app1-masterDropArea" class="bg-gradient-to-b from-blue-50/70 to-indigo-50/40 border-2 border-dashed border-blue-300 hover:border-blue-500 rounded-2xl p-6 text-center cursor-pointer transition shadow-sm group">
+                <input type="file" id="app1-masterFileInput" multiple accept=".xlsx, .xls, .csv" class="hidden">
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 bg-blue-600 group-hover:bg-blue-700 text-white rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition"><i data-lucide="folder-up" class="w-7 h-7"></i></div>
+                    <h3 class="text-base font-bold text-slate-800">2 Excel Dosyasını Buraya Birlikte Sürükleyip Bırakın</h3>
+                    <p class="text-xs text-slate-500 mt-1">Sistem dosyaları isim ve içeriğinden otomatik algılayıp eşleştirecektir.</p>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                     <h2 class="text-base font-bold text-slate-800">1. LİSTE (Sevkiyat / SAP Listesi)</h2>
@@ -130,12 +181,6 @@
     <!-- ========================================== -->
     <!-- MODÜL 2: SEVKİYAT LİSTESİ OLUŞTURMA (CrossDock) -->
     <!-- ========================================== -->
-    <div id="globalDropOverlay" class="fixed inset-0 bg-blue-900/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white hidden border-8 border-dashed border-blue-300 transition-all pointer-events-none">
-        <div class="p-6 bg-blue-600 rounded-3xl shadow-2xl flex flex-col items-center max-w-md text-center animate-bounce">
-            <i data-lucide="upload-cloud" class="w-20 h-20 text-white mb-3"></i><h2 class="text-2xl font-black">Dosyaları Buraya Bırakın</h2>
-        </div>
-    </div>
-
     <div id="app2Screen" class="hidden min-h-screen bg-slate-50">
         <header class="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-900 text-white shadow-lg">
             <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between gap-4">
@@ -159,7 +204,7 @@
                     <h3 class="text-base font-bold text-slate-800">3 Excel Dosyasını Buraya Birlikte Sürükleyip Bırakın</h3>
                 </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
                 <div class="bg-white rounded-2xl p-4 shadow-sm border flex flex-col"><div class="flex justify-between mb-2"><span class="px-2.5 py-0.5 text-[11px] font-semibold text-blue-700 bg-blue-50 rounded-full border border-blue-100">1. Dosya (Ana)</span><span id="status-1" class="text-xs text-slate-400">Bekleniyor</span></div><h3 class="font-bold text-sm mb-3">CD Kesilecekler</h3><div id="drop-1" class="border border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer hover:border-blue-500 transition"><input type="file" id="file-1" class="hidden"><p id="name-1" class="text-[11px] text-slate-600">Buraya Bırakın</p></div></div>
                 <div class="bg-white rounded-2xl p-4 shadow-sm border flex flex-col"><div class="flex justify-between mb-2"><span class="px-2.5 py-0.5 text-[11px] font-semibold text-amber-700 bg-amber-50 rounded-full border border-amber-100">2. Dosya (Çıkış)</span><span id="status-2" class="text-xs text-slate-400">Bekleniyor</span></div><h3 class="font-bold text-sm mb-3">Çıkış Excel (S2)</h3><div id="drop-2" class="border border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer hover:border-amber-500 transition"><input type="file" id="file-2" class="hidden"><p id="name-2" class="text-[11px] text-slate-600">Buraya Bırakın</p></div></div>
                 <div class="bg-white rounded-2xl p-4 shadow-sm border flex flex-col"><div class="flex justify-between mb-2"><span class="px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 rounded-full border border-emerald-100">3. Dosya (Stok)</span><span id="status-3" class="text-xs text-slate-400">Bekleniyor</span></div><h3 class="font-bold text-sm mb-3">ZF Stok (S1)</h3><div id="drop-3" class="border border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer hover:border-emerald-500 transition"><input type="file" id="file-3" class="hidden"><p id="name-3" class="text-[11px] text-slate-600">Buraya Bırakın</p></div></div>
@@ -214,6 +259,16 @@
                     </div>
                 </div>
             </header>
+
+            <!-- MODÜL 3 TOPLU DOSYA SÜRÜKLEME ALANI -->
+            <div id="app3-masterDropArea" class="bg-gradient-to-b from-violet-50/70 to-fuchsia-50/40 border-2 border-dashed border-violet-300 hover:border-violet-500 rounded-2xl p-6 text-center cursor-pointer transition shadow-sm group">
+                <input type="file" id="app3-masterFileInput" multiple accept=".xlsx, .xls, .csv" class="hidden">
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 bg-violet-600 group-hover:bg-violet-700 text-white rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition"><i data-lucide="folder-up" class="w-7 h-7"></i></div>
+                    <h3 class="text-base font-bold text-slate-800">2 Excel Dosyasını Buraya Birlikte Sürükleyip Bırakın</h3>
+                    <p class="text-xs text-slate-500 mt-1">Sistem dosyaları isim ve içeriğinden otomatik algılayıp eşleştirecektir.</p>
+                </div>
+            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- 1. Dosya -->
@@ -354,7 +409,60 @@
                     </table>
                 </div>
             </div>
+        </div>
+    </div>
+    
+    <!-- ========================================== -->
+    <!-- MODÜL 4: ETİKET YAZDIRMA                   -->
+    <!-- ========================================== -->
+    <div id="app4Screen" class="hidden min-h-screen bg-slate-100">
+        <div class="max-w-4xl mx-auto p-4 md:p-8 space-y-6">
+            <header class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 no-print">
+                <div class="flex items-center gap-4">
+                    <button onclick="switchApp('homeScreen')" class="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition text-slate-600"><i data-lucide="home" class="w-5 h-5"></i></button>
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+                            <div class="w-8 h-8 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center"><i data-lucide="printer" class="w-5 h-5"></i></div>
+                            ETİKET YAZDIRMA (80x100 Dikey)
+                        </h1>
+                    </div>
+                </div>
+            </header>
 
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6 no-print">
+                <div class="form-group">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">1. Excel Dosyasını Yükle (sevk güncel.xlsx)</label>
+                    <div id="app4-dropZone" 
+                         ondragover="handleDragOver1(event, this)" 
+                         ondragleave="handleDragLeave1(event, this)" 
+                         ondrop="handleDrop4(event, this)"
+                         onclick="document.getElementById('app4-fileInput').click()"
+                         class="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 hover:border-orange-500 hover:bg-orange-50/30 rounded-xl p-6 cursor-pointer transition group">
+                        <i data-lucide="file-spreadsheet" class="w-8 h-8 text-slate-400 group-hover:text-orange-500 mb-2 transition"></i>
+                        <span class="text-sm font-semibold text-slate-600 group-hover:text-orange-600 text-center" id="app4-fileName">Dosyayı Buraya Sürükleyin veya Tıklayın</span>
+                        <input type="file" id="app4-fileInput" accept=".xlsx, .xls" class="hidden" onchange="handleFileInput4(event)">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">2. Müşteri Seçin (Kap sayısı otomatik dolar)</label>
+                    <input type="text" id="app4-customerSearch" placeholder="İsim veya şehir yazarak ara..." class="w-full px-4 py-2 border border-slate-300 rounded-xl mb-2 outline-none focus:border-orange-500">
+                    <select id="app4-customerSelect" size="6" class="w-full p-2 border border-slate-300 rounded-xl outline-none focus:border-orange-500">
+                        <option value="">Lütfen önce Excel yükleyin</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">3. Kaç Kap Etiket Çıkacak?</label>
+                    <input type="number" id="app4-kapCount" min="1" value="1" class="w-full px-4 py-2 border border-slate-300 rounded-xl outline-none focus:border-orange-500 font-bold text-orange-700 text-lg">
+                </div>
+                
+                <button id="app4-generateBtn" type="button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded-xl text-lg flex items-center justify-center gap-2 transition-colors">
+                    <i data-lucide="printer" class="w-5 h-5"></i> Etiketleri Yazdır
+                </button>
+            </div>
+            
+            <div id="print-area"></div>
         </div>
     </div>
 
@@ -365,7 +473,7 @@
         lucide.createIcons();
 
         function switchApp(targetId) {
-            ['homeScreen', 'app1Screen', 'app2Screen', 'app3Screen'].forEach(id => { document.getElementById(id).classList.add('hidden'); });
+            ['homeScreen', 'app1Screen', 'app2Screen', 'app3Screen', 'app4Screen'].forEach(id => { document.getElementById(id).classList.add('hidden'); });
             document.getElementById(targetId).classList.remove('hidden');
         }
 
@@ -405,7 +513,6 @@
             return "";
         }
 
-        // Modül 1 ve 2 için görünür satır bulucu
         function getVisibleRows(ws) {
             let json = XLSX.utils.sheet_to_json(ws, { defval: "" });
             let rowsMeta = ws['!rows'] || [];
@@ -413,9 +520,7 @@
                 json = json.filter(row => {
                     let rIdx = row.__rowNum__; 
                     if (rIdx !== undefined && rowsMeta[rIdx]) {
-                        if (rowsMeta[rIdx].hidden === true || rowsMeta[rIdx].hpx === 0 || rowsMeta[rIdx].hpt === 0) {
-                            return false; 
-                        }
+                        if (rowsMeta[rIdx].hidden === true || rowsMeta[rIdx].hpx === 0 || rowsMeta[rIdx].hpt === 0) return false; 
                     }
                     return true;
                 });
@@ -423,16 +528,13 @@
             return json;
         }
 
-        // Modül 3 için Excel kalıp korumalı ham okuyucu
         function parseRawArrayData(ws) {
             let rawData = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
             let rowsMeta = ws['!rows'] || [];
-            
             let delivCol = -1, plakaCol = -1, bayiCol = -1, sehirCol = -1;
             
             for (let r = 0; r < Math.min(10, rawData.length); r++) {
                 if (rowsMeta[r] && (rowsMeta[r].hidden === true || rowsMeta[r].hpx === 0 || rowsMeta[r].hpt === 0)) continue;
-                
                 let row = rawData[r];
                 if (!row) continue;
                 for (let c = 0; c < row.length; c++) {
@@ -461,31 +563,88 @@
             let dataList = [];
             for (let r = 0; r < rawData.length; r++) {
                 if (rowsMeta[r] && (rowsMeta[r].hidden === true || rowsMeta[r].hpx === 0 || rowsMeta[r].hpt === 0)) continue;
-                
                 let row = rawData[r];
                 if (!row || !row.length) continue;
-                
                 let dVal = delivCol !== -1 ? String(row[delivCol] || '').trim() : '';
                 let dNorm = normalizeHeaderName(dVal);
-                
                 if (!dVal || dNorm.includes('delivery') || dNorm.includes('irsaliye') || dNorm.includes('referans') || dNorm.includes('teslimat')) continue;
                 
                 dataList.push({
-                    originalRowIndex: r, 
-                    delivery: dVal,
+                    originalRowIndex: r, delivery: dVal,
                     plaka: plakaCol !== -1 ? String(row[plakaCol] || '').trim() : '',
                     bayi: bayiCol !== -1 ? String(row[bayiCol] || '').trim() : '',
                     sehir: sehirCol !== -1 ? String(row[sehirCol] || '').trim() : ''
                 });
             }
-            
             return { dataList, delivCol, plakaCol, bayiCol, sehirCol };
         }
 
+        // ==========================================
+        // GLOABAL SÜRÜKLE BIRAK YÖNETİMİ
+        // ==========================================
+        let dragCounter = 0; 
+        const overlay = document.getElementById('globalDropOverlay');
+        
+        window.addEventListener('dragenter', (e) => { 
+            if (!document.getElementById('homeScreen').classList.contains('hidden')) return; 
+            e.preventDefault(); dragCounter++; overlay.classList.remove('hidden'); 
+        });
+        window.addEventListener('dragleave', (e) => { 
+            if (!document.getElementById('homeScreen').classList.contains('hidden')) return; 
+            e.preventDefault(); dragCounter--; if (dragCounter <= 0) { dragCounter = 0; overlay.classList.add('hidden'); } 
+        });
+        window.addEventListener('dragover', (e) => e.preventDefault()); 
+        window.addEventListener('drop', (e) => { 
+            if (!document.getElementById('homeScreen').classList.contains('hidden')) return; 
+            e.preventDefault(); dragCounter = 0; overlay.classList.add('hidden'); 
+            if (e.dataTransfer.files.length > 0) {
+                const files = Array.from(e.dataTransfer.files);
+                if (!document.getElementById('app1Screen').classList.contains('hidden')) handleMultipleFilesApp1(files);
+                else if (!document.getElementById('app2Screen').classList.contains('hidden')) handleMultipleFiles(files);
+                else if (!document.getElementById('app3Screen').classList.contains('hidden')) handleMultipleFilesApp3(files);
+                else if (!document.getElementById('app4Screen').classList.contains('hidden')) processFile4(files[0]);
+            }
+        });
+
         /* ==========================================
-           MODÜL 1 KODLARI
+           MODÜL 1 KODLARI (TOPLU SÜRÜKLE DAHİL)
            ========================================== */
         let rawList1 = null; let rawList2 = null; let matchedData = [];
+        
+        document.getElementById('app1-masterDropArea').addEventListener('click', () => document.getElementById('app1-masterFileInput').click());
+        document.getElementById('app1-masterFileInput').addEventListener('change', (e) => { if(e.target.files.length) handleMultipleFilesApp1(Array.from(e.target.files)); });
+        
+        const app1Master = document.getElementById('app1-masterDropArea');
+        app1Master.addEventListener('dragover', (e) => { e.preventDefault(); app1Master.classList.add('border-blue-500'); });
+        app1Master.addEventListener('dragleave', (e) => { e.preventDefault(); app1Master.classList.remove('border-blue-500'); });
+        app1Master.addEventListener('drop', (e) => { e.preventDefault(); app1Master.classList.remove('border-blue-500'); if (e.dataTransfer.files.length > 0) handleMultipleFilesApp1(Array.from(e.dataTransfer.files)); });
+        
+        async function handleMultipleFilesApp1(files) {
+            for (let f of files) {
+                const s = await identifyFileSlotApp1(f);
+                if (s === 1) processFile1(f);
+                if (s === 2) processFile2(f);
+            }
+        }
+        
+        function identifyFileSlotApp1(file) {
+            return new Promise((resolve) => {
+                const n = file.name.toLowerCase();
+                if (n.includes('sap') || n.includes('sevk')) return resolve(1);
+                if (n.includes('antrepo') || n.includes('beyan') || n.includes('an')) return resolve(2);
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                        const h = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 })[0].map(x => String(x).toLowerCase().trim());
+                        if (h.includes('shipment') || h.includes('bill.doc.')) resolve(1);
+                        else resolve(2);
+                    } catch(err) { resolve(1); }
+                }; reader.readAsArrayBuffer(file);
+            });
+        }
+
         function handleDragOver1(e, el) { e.preventDefault(); el.classList.add('drag-active'); }
         function handleDragLeave1(e, el) { e.preventDefault(); el.classList.remove('drag-active'); }
         function handleDrop1(e, el) { e.preventDefault(); el.classList.remove('drag-active'); if(e.dataTransfer.files.length) processFile1(e.dataTransfer.files[0]); }
@@ -532,13 +691,12 @@
         }
 
         /* ==========================================
-           MODÜL 2 KODLARI
+           MODÜL 2 KODLARI (SÜRÜKLE BIRAK ZATEN VAR)
            ========================================== */
-        let rawData1 = null; let rawData2 = null; let rawData3 = null; let finalResult = []; let globalStokMap = new Map(); let dragCounter = 0; const overlay = document.getElementById('globalDropOverlay');
-        window.addEventListener('dragenter', (e) => { if (document.getElementById('app2Screen').classList.contains('hidden')) return; e.preventDefault(); dragCounter++; overlay.classList.remove('hidden'); });
-        window.addEventListener('dragleave', (e) => { if (document.getElementById('app2Screen').classList.contains('hidden')) return; e.preventDefault(); dragCounter--; if (dragCounter <= 0) { dragCounter = 0; overlay.classList.add('hidden'); } });
-        window.addEventListener('dragover', (e) => e.preventDefault()); window.addEventListener('drop', (e) => { if (document.getElementById('app2Screen').classList.contains('hidden')) return; e.preventDefault(); dragCounter = 0; overlay.classList.add('hidden'); if (e.dataTransfer.files.length > 0) handleMultipleFiles(Array.from(e.dataTransfer.files)); });
-        document.getElementById('masterDropArea').addEventListener('click', () => document.getElementById('masterFileInput').click()); document.getElementById('masterFileInput').addEventListener('change', (e) => { if(e.target.files.length) handleMultipleFiles(Array.from(e.target.files)); });
+        let rawData1 = null; let rawData2 = null; let rawData3 = null; let finalResult = []; let globalStokMap = new Map(); 
+        
+        document.getElementById('masterDropArea').addEventListener('click', () => document.getElementById('masterFileInput').click()); 
+        document.getElementById('masterFileInput').addEventListener('change', (e) => { if(e.target.files.length) handleMultipleFiles(Array.from(e.target.files)); });
         [1,2,3].forEach(idx => { document.getElementById(`drop-${idx}`).addEventListener('click', () => document.getElementById(`file-${idx}`).click()); document.getElementById(`file-${idx}`).addEventListener('change', (e) => { if (e.target.files.length) processFileBySlot(idx, e.target.files[0]); }); });
 
         async function handleMultipleFiles(files) { for (let f of files) { const s = await identifyFileSlot(f); if (s) await processFileBySlot(s, f); } checkReadyApp2(); }
@@ -615,75 +773,49 @@
 
 
         /* ==========================================
-           MODÜL 3: SEVKİYAT PLAKA EŞLEŞTİRME (EN KARARLI SÜRÜM)
+           MODÜL 3 KODLARI (TOPLU SÜRÜKLE DAHİL)
            ========================================== */
         let rawList3_1 = null; let rawList3_2 = null; let matchedData3 = []; 
-        let originalFile3_1_Buffer = null; 
-        let app3SortConfig = { field: null, isAsc: true };
+        let originalFile3_1_Buffer = null; let app3SortConfig = { field: null, isAsc: true };
+
+        document.getElementById('app3-masterDropArea').addEventListener('click', () => document.getElementById('app3-masterFileInput').click());
+        document.getElementById('app3-masterFileInput').addEventListener('change', (e) => { if(e.target.files.length) handleMultipleFilesApp3(Array.from(e.target.files)); });
+        
+        const app3Master = document.getElementById('app3-masterDropArea');
+        app3Master.addEventListener('dragover', (e) => { e.preventDefault(); app3Master.classList.add('border-violet-500'); });
+        app3Master.addEventListener('dragleave', (e) => { e.preventDefault(); app3Master.classList.remove('border-violet-500'); });
+        app3Master.addEventListener('drop', (e) => { e.preventDefault(); app3Master.classList.remove('border-violet-500'); if (e.dataTransfer.files.length > 0) handleMultipleFilesApp3(Array.from(e.dataTransfer.files)); });
+        
+        async function handleMultipleFilesApp3(files) {
+            for (let f of files) {
+                const s = await identifyFileSlotApp3(f);
+                if (s === 1) processFile3_1(f);
+                if (s === 2) processFile3_2(f);
+            }
+        }
+        
+        function identifyFileSlotApp3(file) {
+            return new Promise((resolve) => {
+                const n = file.name.toLowerCase();
+                if (n.includes('güncel') || n.includes('guncel')) return resolve(1);
+                if (n.includes('zf') || n.includes('takip') || n.includes('sipariş') || n.includes('siparis')) return resolve(2);
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                        const h = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 })[0].map(x => String(x).toLowerCase().trim());
+                        if (h.includes('kap') || h.includes('shiptoname') || h.includes('ship to name')) resolve(1);
+                        else resolve(2);
+                    } catch(err) { resolve(2); }
+                }; reader.readAsArrayBuffer(file);
+            });
+        }
 
         function handleDrop3_1(e, el) { e.preventDefault(); el.classList.remove('drag-active'); if(e.dataTransfer.files.length) processFile3_1(e.dataTransfer.files[0]); }
         function handleDrop3_2(e, el) { e.preventDefault(); el.classList.remove('drag-active'); if(e.dataTransfer.files.length) processFile3_2(e.dataTransfer.files[0]); }
         function handleFileInput3_1(e) { if(e.target.files.length) processFile3_1(e.target.files[0]); }
         function handleFileInput3_2(e) { if(e.target.files.length) processFile3_2(e.target.files[0]); }
-
-        function parseRawArrayData(ws) {
-            let rawData = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-            let rowsMeta = ws['!rows'] || [];
-            
-            let delivCol = -1, plakaCol = -1, bayiCol = -1, sehirCol = -1;
-            
-            // Başlık Arama
-            for (let r = 0; r < Math.min(10, rawData.length); r++) {
-                if (rowsMeta[r] && (rowsMeta[r].hidden === true || rowsMeta[r].hpx === 0 || rowsMeta[r].hpt === 0)) continue;
-                let row = rawData[r];
-                if (!row) continue;
-                for (let c = 0; c < row.length; c++) {
-                    let val = normalizeHeaderName(String(row[c]));
-                    if (delivCol === -1 && (val.includes('delivery') || val.includes('irsaliye') || val.includes('teslimat') || val.includes('referans'))) delivCol = c;
-                    if (plakaCol === -1 && (val.includes('plaka') || val.includes('aracbilgisi'))) plakaCol = c;
-                    if (bayiCol === -1 && (val.includes('shiptoname') || val.includes('bayi') || val.includes('musteri') || val.includes('alici'))) bayiCol = c;
-                    if (sehirCol === -1 && (val === 'sehir' || val === 'il' || val === 'city' || val.includes('teslimatili'))) sehirCol = c;
-                }
-            }
-            
-            // GÜVENLİK AĞI: Veriden Arama (Başlıklar bozuksa hayat kurtarır)
-            if (delivCol === -1 || plakaCol === -1) {
-                for (let r = 0; r < Math.min(50, rawData.length); r++) {
-                    if (rowsMeta[r] && (rowsMeta[r].hidden === true || rowsMeta[r].hpx === 0 || rowsMeta[r].hpt === 0)) continue;
-                    let row = rawData[r];
-                    if (!row) continue;
-                    for (let c = 0; c < row.length; c++) {
-                        let val = String(row[c]).trim();
-                        if (!val) continue;
-                        if (delivCol === -1 && (val.startsWith('166') && val.length >= 9 || val.startsWith('WMS-') || /^\d{9}-\d{4}/.test(val))) delivCol = c;
-                        if (plakaCol === -1 && /^\d{2}\s+[A-Za-z]{1,3}\s+\d{2,4}$/.test(val)) plakaCol = c;
-                    }
-                }
-            }
-
-            let dataList = [];
-            for (let r = 0; r < rawData.length; r++) {
-                if (rowsMeta[r] && (rowsMeta[r].hidden === true || rowsMeta[r].hpx === 0 || rowsMeta[r].hpt === 0)) continue;
-                
-                let row = rawData[r];
-                if (!row || !row.length) continue;
-                
-                let dVal = delivCol !== -1 ? String(row[delivCol] || '').trim() : '';
-                let dNorm = normalizeHeaderName(dVal);
-                
-                if (!dVal || dNorm.includes('delivery') || dNorm.includes('irsaliye') || dNorm.includes('referans') || dNorm.includes('teslimat')) continue;
-                
-                dataList.push({
-                    originalRowIndex: r, 
-                    delivery: dVal,
-                    plaka: plakaCol !== -1 ? String(row[plakaCol] || '').trim() : '',
-                    bayi: bayiCol !== -1 ? String(row[bayiCol] || '').trim() : '',
-                    sehir: sehirCol !== -1 ? String(row[sehirCol] || '').trim() : ''
-                });
-            }
-            
-            return { dataList, delivCol, plakaCol, bayiCol, sehirCol };
-        }
 
         function processFile3_1(file) {
             document.getElementById('app3-file1Name').innerText = '✓ ' + file.name; document.getElementById('app3-file1Info').innerText = "Okunuyor...";
@@ -691,20 +823,13 @@
             reader.onload = function(evt) {
                 originalFile3_1_Buffer = evt.target.result; 
                 const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
-                
                 let res = parseRawArrayData(wb.Sheets[wb.SheetNames[0]]);
-                
-                // KESİN I SÜTUNU: Orijinal dosyadaki "ARAÇ Bilgisi" 9. sütundur (index 8). 
                 let rawData = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: "" });
-                res.dataList.forEach(item => {
-                    item.plaka = String(rawData[item.originalRowIndex][8] || '').trim();
-                });
-
+                res.dataList.forEach(item => { item.plaka = String(rawData[item.originalRowIndex][8] || '').trim(); });
                 rawList3_1 = res.dataList;
                 document.getElementById('app3-file1Info').innerHTML = `<span class="text-violet-600 font-bold">Hazır (${rawList3_1.length} satır)</span>`;
                 checkAndProcessApp3();
-            };
-            reader.readAsArrayBuffer(file);
+            }; reader.readAsArrayBuffer(file);
         }
 
         function processFile3_2(file) {
@@ -712,30 +837,22 @@
             const reader = new FileReader();
             reader.onload = function(evt) {
                 const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
-                
                 let res = parseRawArrayData(wb.Sheets[wb.SheetNames[0]]);
                 rawList3_2 = res.dataList;
-                
                 document.getElementById('app3-file2Info').innerHTML = `<span class="text-violet-600 font-bold">Hazır (${rawList3_2.length} satır)</span>`;
                 checkAndProcessApp3();
-            };
-            reader.readAsArrayBuffer(file);
+            }; reader.readAsArrayBuffer(file);
         }
 
         function checkAndProcessApp3() {
             if (!rawList3_1 || !rawList3_2) return;
-
             let plakaList = [];
             rawList3_2.forEach(item => {
-                let irsaliye = item.delivery; 
-                let plaka = item.plaka;
-                
+                let irsaliye = item.delivery; let plaka = item.plaka;
                 if (irsaliye && plaka) {
                     let irsParts = irsaliye.split(/[-,\/\n|; \t]+/);
                     for (let part of irsParts) {
-                        let pTrim = part.trim();
-                        if(!pTrim) continue;
-                        
+                        let pTrim = part.trim(); if(!pTrim) continue;
                         let irsStr = pTrim.replace(/[^a-zA-Z0-9]/g, ''); 
                         if(irsStr) {
                             let irsNoZero = irsStr.replace(/^0+/, '');
@@ -744,203 +861,158 @@
                     }
                 }
             });
-
             matchedData3 = []; let matchedCount = 0;
-
             rawList3_1.forEach((item, idx) => {
-                let deliveryOriginal = item.delivery;
-                let bayiAdi = item.bayi;
-                let sehirAdi = item.sehir;
-                let existingPlaka = item.plaka;
-
-                let matchedPlaka = "";
-                let isMatched = false;
-                
-                // MÜKEMMEL RANDEVU EZME MANTIĞI! 
-                // Önce her zaman plaka arayacağız. Varsa RANDEVU yazsa bile ezilecek.
+                let deliveryOriginal = item.delivery; let bayiAdi = item.bayi; let sehirAdi = item.sehir; let existingPlaka = item.plaka;
+                let matchedPlaka = ""; let isMatched = false;
                 if(deliveryOriginal) {
                     let deliveryParts = deliveryOriginal.split(/[-,\/\n|; \t]+/);
-
                     for (let part of deliveryParts) {
-                        let pTrim = part.trim();
-                        if(!pTrim) continue;
-
+                        let pTrim = part.trim(); if(!pTrim) continue;
                         let delivStr = pTrim.replace(/[^a-zA-Z0-9]/g, '');
                         let delivNoZero = delivStr.replace(/^0+/, '');
                         let last4Deliv = delivStr.length >= 4 ? delivStr.slice(-4) : delivStr; 
-                        
                         if(!delivStr) continue;
-
                         let bestMatch = plakaList.find(x => x.irsNoZero === delivNoZero && delivNoZero !== "");
-
                         if (!bestMatch && delivNoZero !== "") {
-                            bestMatch = plakaList.find(x => 
-                                x.irsNoZero !== "" && x.irsNoZero.length >= 3 && delivNoZero.length >= 3 && 
-                                (delivNoZero.endsWith(x.irsNoZero) || x.irsNoZero.endsWith(delivNoZero))
-                            );
+                            bestMatch = plakaList.find(x => x.irsNoZero !== "" && x.irsNoZero.length >= 3 && delivNoZero.length >= 3 && (delivNoZero.endsWith(x.irsNoZero) || x.irsNoZero.endsWith(delivNoZero)));
                         }
-
                         if (!bestMatch && last4Deliv.length >= 4) {
-                            bestMatch = plakaList.find(x => {
-                                let last4Irs = x.irsStr.length >= 4 ? x.irsStr.slice(-4) : x.irsStr;
-                                return last4Deliv === last4Irs;
-                            });
+                            bestMatch = plakaList.find(x => { let last4Irs = x.irsStr.length >= 4 ? x.irsStr.slice(-4) : x.irsStr; return last4Deliv === last4Irs; });
                         }
-
-                        if (bestMatch) {
-                            matchedPlaka = bestMatch.plk;
-                            isMatched = true;
-                            break; 
-                        }
+                        if (bestMatch) { matchedPlaka = bestMatch.plk; isMatched = true; break; }
                     }
                 }
-
                 if(isMatched) matchedCount++;
-                
-                // Plaka bulduysak onu kullan. Bulamadıysak eski veriyi (RANDEVU) koru.
                 let finalPlaka = matchedPlaka || existingPlaka;
-
-                matchedData3.push({
-                    id: 'a3_' + Math.random().toString(36).substring(2, 9), 
-                    originalRowIndex: item.originalRowIndex, 
-                    bayi: bayiAdi,                      
-                    sehir: sehirAdi, 
-                    delivery: deliveryOriginal,         
-                    plaka: finalPlaka,                  
-                    status: isMatched ? 'Eşleşti (Güncellendi)' : (existingPlaka ? 'Eski Plaka Korundu' : 'Bulunamadı')
-                });
+                matchedData3.push({ id: 'a3_' + Math.random().toString(36).substring(2, 9), originalRowIndex: item.originalRowIndex, bayi: bayiAdi, sehir: sehirAdi, delivery: deliveryOriginal, plaka: finalPlaka, status: isMatched ? 'Eşleşti (Güncellendi)' : (existingPlaka ? 'Eski Plaka Korundu' : 'Bulunamadı') });
             });
-
-            document.getElementById('app3-statTotal').innerText = matchedData3.length;
-            document.getElementById('app3-statMatched').innerText = matchedCount;
-            document.getElementById('app3-actionArea').classList.remove('hidden');
-            document.getElementById('app3-previewArea').classList.remove('hidden');
-            
+            document.getElementById('app3-statTotal').innerText = matchedData3.length; document.getElementById('app3-statMatched').innerText = matchedCount;
+            document.getElementById('app3-actionArea').classList.remove('hidden'); document.getElementById('app3-previewArea').classList.remove('hidden');
             filterApp3Table();
         }
 
-        function updateApp3Field(id, field, value) {
-            const item = matchedData3.find(x => x.id === id); 
-            if (item) { item[field] = value.trim(); }
-        }
-
-        function sortApp3ByField(field) {
-            if (app3SortConfig.field === field) {
-                app3SortConfig.isAsc = !app3SortConfig.isAsc;
-            } else {
-                app3SortConfig.field = field;
-                app3SortConfig.isAsc = true;
-            }
-            filterApp3Table();
-        }
-
+        function updateApp3Field(id, field, value) { const item = matchedData3.find(x => x.id === id); if (item) { item[field] = value.trim(); } }
+        function sortApp3ByField(field) { if (app3SortConfig.field === field) { app3SortConfig.isAsc = !app3SortConfig.isAsc; } else { app3SortConfig.field = field; app3SortConfig.isAsc = true; } filterApp3Table(); }
         function filterApp3Table() {
-            let bFilter = document.getElementById('filterApp3Bayi').value.toLowerCase();
-            let sFilter = document.getElementById('filterApp3Sehir').value.toLowerCase();
-            let dFilter = document.getElementById('filterApp3Deliv').value.toLowerCase();
-            let pFilter = document.getElementById('filterApp3Plaka').value.toLowerCase();
+            let bFilter = document.getElementById('filterApp3Bayi').value.toLowerCase(); let sFilter = document.getElementById('filterApp3Sehir').value.toLowerCase();
+            let dFilter = document.getElementById('filterApp3Deliv').value.toLowerCase(); let pFilter = document.getElementById('filterApp3Plaka').value.toLowerCase();
             let stFilter = document.getElementById('filterApp3Durum').value.toLowerCase();
-
-            let resultData = matchedData3.filter(item => {
-                return (item.bayi || '').toLowerCase().includes(bFilter) &&
-                       (item.sehir || '').toLowerCase().includes(sFilter) &&
-                       (item.delivery || '').toLowerCase().includes(dFilter) &&
-                       (item.plaka || '').toLowerCase().includes(pFilter) &&
-                       (item.status || '').toLowerCase().includes(stFilter);
-            });
-
-            if (app3SortConfig.field) {
-                resultData.sort((a, b) => {
-                    let valA = String(a[app3SortConfig.field] || "").toUpperCase();
-                    let valB = String(b[app3SortConfig.field] || "").toUpperCase();
-                    if (valA === valB) return 0;
-                    if (app3SortConfig.isAsc) return valA.localeCompare(valB);
-                    return valB.localeCompare(valA);
-                });
-            }
-
+            let resultData = matchedData3.filter(item => { return (item.bayi || '').toLowerCase().includes(bFilter) && (item.sehir || '').toLowerCase().includes(sFilter) && (item.delivery || '').toLowerCase().includes(dFilter) && (item.plaka || '').toLowerCase().includes(pFilter) && (item.status || '').toLowerCase().includes(stFilter); });
+            if (app3SortConfig.field) { resultData.sort((a, b) => { let valA = String(a[app3SortConfig.field] || "").toUpperCase(); let valB = String(b[app3SortConfig.field] || "").toUpperCase(); if (valA === valB) return 0; if (app3SortConfig.isAsc) return valA.localeCompare(valB); return valB.localeCompare(valA); }); }
             renderApp3TableWithData(resultData);
         }
-
-        function resetApp3Filters() {
-            document.getElementById('filterApp3Bayi').value = '';
-            document.getElementById('filterApp3Sehir').value = '';
-            document.getElementById('filterApp3Deliv').value = '';
-            document.getElementById('filterApp3Plaka').value = '';
-            document.getElementById('filterApp3Durum').value = '';
-            app3SortConfig = { field: null, isAsc: true };
-            filterApp3Table();
-        }
-
+        function resetApp3Filters() { document.getElementById('filterApp3Bayi').value = ''; document.getElementById('filterApp3Sehir').value = ''; document.getElementById('filterApp3Deliv').value = ''; document.getElementById('filterApp3Plaka').value = ''; document.getElementById('filterApp3Durum').value = ''; app3SortConfig = { field: null, isAsc: true }; filterApp3Table(); }
         function renderApp3TableWithData(data) {
             const tbody = document.getElementById('app3-previewBody');
             tbody.innerHTML = data.map((item, idx) => `
                 <tr class="hover:bg-slate-50 transition-colors h-[50px] border-b border-slate-100">
                     <td class="p-3 border-r border-slate-200 text-center font-semibold text-slate-400">${idx + 1}</td>
-                    
-                    <td class="p-0 border-r border-slate-200 bg-white group hover:bg-blue-50/30 transition">
-                        <input type="text" value="${item.bayi || ''}" onchange="updateApp3Field('${item.id}', 'bayi', this.value)" 
-                               class="w-full h-[48px] px-3 bg-transparent outline-none text-xs font-semibold text-slate-700">
-                    </td>
-
-                    <td class="p-0 border-r border-slate-200 bg-white group hover:bg-blue-50/30 transition">
-                        <input type="text" value="${item.sehir || ''}" onchange="updateApp3Field('${item.id}', 'sehir', this.value)" 
-                               class="w-full h-[48px] px-3 bg-transparent outline-none text-xs font-semibold text-slate-700">
-                    </td>
-                    
-                    <td class="p-0 border-r border-slate-200 bg-white group hover:bg-blue-50/30 transition font-mono text-sm">
-                        <input type="text" value="${item.delivery || ''}" onchange="updateApp3Field('${item.id}', 'delivery', this.value)" 
-                               class="w-full h-[48px] px-3 bg-transparent outline-none text-slate-800">
-                    </td>
-                    
-                    <td class="p-1 border-r border-slate-200 bg-violet-50/30 group hover:bg-white transition">
-                        <input type="text" value="${item.plaka}" placeholder="Plaka girin" onchange="updateApp3Field('${item.id}', 'plaka', this.value)"
-                            class="w-full h-full px-3 py-2 bg-transparent border border-transparent hover:border-slate-300 focus:bg-white focus:border-violet-500 rounded outline-none transition-colors font-bold ${item.plaka ? 'text-violet-800' : 'text-red-400'}">
-                    </td>
-                    
-                    <td class="p-3 text-xs font-semibold ${item.status.includes('Eşleşti') ? 'text-emerald-600' : (item.status.includes('Bulunamadı') ? 'text-red-500' : 'text-slate-500')}">
-                        ${item.status}
-                    </td>
+                    <td class="p-0 border-r border-slate-200 bg-white group hover:bg-blue-50/30 transition"><input type="text" value="${item.bayi || ''}" onchange="updateApp3Field('${item.id}', 'bayi', this.value)" class="w-full h-[48px] px-3 bg-transparent outline-none text-xs font-semibold text-slate-700"></td>
+                    <td class="p-0 border-r border-slate-200 bg-white group hover:bg-blue-50/30 transition"><input type="text" value="${item.sehir || ''}" onchange="updateApp3Field('${item.id}', 'sehir', this.value)" class="w-full h-[48px] px-3 bg-transparent outline-none text-xs font-semibold text-slate-700"></td>
+                    <td class="p-0 border-r border-slate-200 bg-white group hover:bg-blue-50/30 transition font-mono text-sm"><input type="text" value="${item.delivery || ''}" onchange="updateApp3Field('${item.id}', 'delivery', this.value)" class="w-full h-[48px] px-3 bg-transparent outline-none text-slate-800"></td>
+                    <td class="p-1 border-r border-slate-200 bg-violet-50/30 group hover:bg-white transition"><input type="text" value="${item.plaka}" placeholder="Plaka girin" onchange="updateApp3Field('${item.id}', 'plaka', this.value)" class="w-full h-full px-3 py-2 bg-transparent border border-transparent hover:border-slate-300 focus:bg-white focus:border-violet-500 rounded outline-none transition-colors font-bold ${item.plaka ? 'text-violet-800' : 'text-red-400'}"></td>
+                    <td class="p-3 text-xs font-semibold ${item.status.includes('Eşleşti') ? 'text-emerald-600' : (item.status.includes('Bulunamadı') ? 'text-red-500' : 'text-slate-500')}">${item.status}</td>
                 </tr>
-            `).join('');
-            lucide.createIcons();
+            `).join(''); lucide.createIcons();
         }
-
-        // =========================================================================
-        // ORİJİNAL DOSYAYI AÇIP SADECE I SÜTUNUNA (9. SÜTUN) YAZDIRMA GARANTİSİ
-        // =========================================================================
         async function downloadApp3Excel() {
             if (!originalFile3_1_Buffer) return;
-
-            const wb = new ExcelJS.Workbook();
-            await wb.xlsx.load(originalFile3_1_Buffer);
-            const ws = wb.worksheets[0]; 
-
-            let plakaColIdx = 9; // KESİN SABİT: Orijinal SEVK GÜNCEL dosyasında ARAÇ Bilgisi 9. sütundur (I sütunu).
-
-            // Eğer I Sütunu başlığı yoksa oraya başlık aç
+            const wb = new ExcelJS.Workbook(); await wb.xlsx.load(originalFile3_1_Buffer); const ws = wb.worksheets[0]; 
+            let plakaColIdx = 9; 
             let headerRow = ws.getRow(1);
-            if (!headerRow.getCell(plakaColIdx).value) {
-                headerRow.getCell(plakaColIdx).value = 'ARAÇ Bilgisi';
-                headerRow.getCell(plakaColIdx).font = { bold: true }; 
-            }
-
-            // Ekranda güncellenen veya eşleşen HER plaka DİREKT o satırın I hücresine yazılır. Diğer sütunlar ellenmez.
-            matchedData3.forEach(item => {
-                let targetRow = ws.getRow(item.originalRowIndex + 1); 
-                
-                if (item.plaka) {
-                    targetRow.getCell(plakaColIdx).value = item.plaka;
-                }
-            });
-
-            const d = new Date(); 
-            const dateStr = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
-            const buf = await wb.xlsx.writeBuffer(); 
-            saveAs(new Blob([buf]), `${dateStr}_REVIZE_SEVK_GUNCEL.xlsx`);
+            if (!headerRow.getCell(plakaColIdx).value) { headerRow.getCell(plakaColIdx).value = 'ARAÇ Bilgisi'; headerRow.getCell(plakaColIdx).font = { bold: true }; }
+            matchedData3.forEach(item => { let targetRow = ws.getRow(item.originalRowIndex + 1); if (item.plaka) { targetRow.getCell(plakaColIdx).value = item.plaka; } });
+            const d = new Date(); const dateStr = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+            const buf = await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]), `${dateStr}_REVIZE_SEVK_GUNCEL.xlsx`);
         }
 
+        /* ==========================================
+           MODÜL 4: ETİKET YAZDIRMA (KAP OTOMATİK)
+           ========================================== */
+        let app4Customers = [];
+        function handleDrop4(e, el) { e.preventDefault(); el.classList.remove('drag-active'); if(e.dataTransfer.files.length) processFile4(e.dataTransfer.files[0]); }
+        function handleFileInput4(e) { if(e.target.files.length) processFile4(e.target.files[0]); }
+
+        function processFile4(file) {
+            document.getElementById('app4-fileName').innerText = '✓ ' + file.name;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheetName = workbook.SheetNames[0]; const worksheet = workbook.Sheets[firstSheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
+                app4Customers = []; const selectElement = document.getElementById('app4-customerSelect'); selectElement.innerHTML = '';
+                
+                json.forEach(row => {
+                    const musteriAdi = String(row['Ship to Name'] || row['Müşteri'] || '').trim();
+                    const sehir = String(row['şehir '] || row['şehir'] || row['City'] || '').trim();
+                    let kap = parseInt(row['kap'] || row['KAP'] || row['# packages'] || row['Packages']) || 0;
+                    
+                    if(musteriAdi) {
+                        const existing = app4Customers.find(c => c.name === musteriAdi && c.city === sehir);
+                        if (!existing) { app4Customers.push({name: musteriAdi, city: sehir, kap: kap > 0 ? kap : 1}); } 
+                        else { existing.kap += kap; }
+                    }
+                });
+                app4Customers.sort((a, b) => a.name.localeCompare(b.name, 'tr-TR'));
+                renderCustomerList4(app4Customers);
+            }; reader.readAsArrayBuffer(file);
+        }
+
+        function renderCustomerList4(list) {
+            const selectElement = document.getElementById('app4-customerSelect'); selectElement.innerHTML = '';
+            if (list.length === 0) { selectElement.innerHTML = '<option value="">Sonuç bulunamadı</option>'; return; }
+            list.forEach((cust, index) => {
+                const option = document.createElement('option'); option.value = index; 
+                option.textContent = `${cust.name} (${cust.city}) - [${cust.kap} KAP]`; 
+                option.setAttribute('data-name', cust.name); option.setAttribute('data-city', cust.city); option.setAttribute('data-kap', cust.kap);
+                selectElement.appendChild(option);
+            });
+        }
+
+        document.getElementById('app4-customerSearch').addEventListener('input', function(e) {
+            const term = e.target.value.toLocaleLowerCase('tr-TR');
+            const filtered = app4Customers.filter(c => c.name.toLocaleLowerCase('tr-TR').includes(term) || c.city.toLocaleLowerCase('tr-TR').includes(term));
+            renderCustomerList4(filtered);
+        });
+
+        document.getElementById('app4-customerSelect').addEventListener('change', function(e) {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption && selectedOption.value !== "") {
+                const autoKap = selectedOption.getAttribute('data-kap');
+                if (autoKap) { document.getElementById('app4-kapCount').value = autoKap; }
+            }
+        });
+
+        document.getElementById('app4-generateBtn').addEventListener('click', function() {
+            const selectElement = document.getElementById('app4-customerSelect');
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            
+            if (!selectedOption || selectedOption.value === "") { alert('Lütfen yazdırmadan önce bir müşteri seçin!'); return; }
+            const kapCount = parseInt(document.getElementById('app4-kapCount').value);
+            if (!kapCount || kapCount < 1) { alert('Lütfen en az 1 kap girin!'); return; }
+
+            const musteriAdi = selectedOption.getAttribute('data-name');
+            const sehir = selectedOption.getAttribute('data-city');
+            const printArea = document.getElementById('print-area'); printArea.innerHTML = ''; 
+            
+            for (let i = 1; i <= kapCount; i++) {
+                const pageDiv = document.createElement('div'); pageDiv.className = 'label-page';
+                const nameDiv = document.createElement('div'); nameDiv.className = 'customer-name'; nameDiv.textContent = musteriAdi;
+                const cityDiv = document.createElement('div'); cityDiv.className = 'customer-city';
+                if(sehir) { cityDiv.textContent = `(${sehir})`; }
+                const fractionDiv = document.createElement('div'); fractionDiv.className = 'fraction'; fractionDiv.textContent = `${i}/${kapCount}`;
+                const kapTextDiv = document.createElement('div'); kapTextDiv.className = 'kap-text'; kapTextDiv.textContent = 'KAP';
+                
+                pageDiv.appendChild(nameDiv); pageDiv.appendChild(cityDiv); pageDiv.appendChild(fractionDiv); pageDiv.appendChild(kapTextDiv);
+                printArea.appendChild(pageDiv);
+            }
+            
+            document.body.classList.add('printing-app4');
+            window.print();
+            document.body.classList.remove('printing-app4');
+        });
     </script>
-<div class="fixed bottom-2 right-4 text-xs text-slate-400 font-medium z-50">Created by Rıdvan Ayaz</div>
+<div class="fixed bottom-2 right-4 text-xs text-slate-400 font-medium z-50 no-print">Created by Rıdvan Ayaz</div>
 </body>
 </html>
