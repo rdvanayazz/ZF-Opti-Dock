@@ -51,6 +51,27 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen relative font-sans">
 
+    <!-- ========================================== -->
+    <!-- LİSANS / KULLANIM HAKKI KİLİT EKRANI       -->
+    <!-- ========================================== -->
+    <div id="licenseOverlay" class="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-6 hidden no-print">
+        <form id="licenseForm" class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm text-center space-y-5" autocomplete="off">
+            <div class="w-16 h-16 mx-auto bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center"><i data-lucide="lock" class="w-8 h-8"></i></div>
+            <div>
+                <h2 class="text-2xl font-black text-blue-700">ZF OptiDock</h2>
+                <p id="licenseMessage" class="text-sm text-slate-500 mt-2">Devam etmek için şifreyi girin.</p>
+            </div>
+            <input type="password" id="licensePassword" placeholder="Şifre" class="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 text-center font-bold tracking-widest">
+            <p id="licenseError" class="text-xs font-semibold text-red-500 hidden">Hatalı şifre!</p>
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors"><i data-lucide="unlock" class="w-5 h-5"></i> Kilidi Aç</button>
+        </form>
+    </div>
+
+    <!-- KALAN KULLANIM HAKKI GÖSTERGESİ -->
+    <div id="licenseBadge" class="fixed top-3 right-4 z-40 no-print bg-white/90 border border-slate-200 shadow-sm rounded-full px-3 py-1 text-xs font-bold text-slate-600 flex items-center gap-1.5">
+        <i data-lucide="ticket" class="w-3.5 h-3.5"></i> Kalan Hak: <span id="licenseRemaining">0</span>
+    </div>
+
     <!-- GENEL SÜRÜKLE BIRAK OVERLAY (TÜM MODÜLLER İÇİN) -->
     <div id="globalDropOverlay" class="fixed inset-0 bg-blue-900/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white hidden border-8 border-dashed border-blue-300 transition-all pointer-events-none">
         <div class="p-6 bg-blue-600 rounded-3xl shadow-2xl flex flex-col items-center max-w-md text-center animate-bounce">
@@ -485,6 +506,96 @@
     <script>
         lucide.createIcons();
 
+        /* LICENSE_HASH = sha256('OptiDock|ŞİFRE|KOTA'). Kota hash'in içinde olduğu için
+           LICENSE_QUOTA elle değiştirilirse mevcut haklar geçersiz olur ve şifre de tutmaz;
+           yeni kota için hash şifreyi bilen biri tarafından yeniden üretilmelidir. */
+        const LICENSE_QUOTA = 200;
+        const LICENSE_SALT = 'OptiDock';
+        const LICENSE_HASH = '47978d1068586325ad3d5e42f38b44906bcfc90ce6408dedd432937e78ee7d11';
+        const LICENSE_KEY = 'zfOptiDockLicense';
+
+        function sha256(str) {
+            const K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+            const H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+            const bytes = Array.from(new TextEncoder().encode(str));
+            const bitLen = bytes.length * 8;
+            bytes.push(0x80);
+            while (bytes.length % 64 !== 56) bytes.push(0);
+            for (let i = 7; i >= 0; i--) bytes.push(i > 3 ? 0 : (bitLen >>> (i * 8)) & 0xff);
+            const rotr = (x, n) => (x >>> n) | (x << (32 - n));
+            const W = new Array(64);
+            for (let off = 0; off < bytes.length; off += 64) {
+                for (let t = 0; t < 16; t++) W[t] = (bytes[off+t*4] << 24) | (bytes[off+t*4+1] << 16) | (bytes[off+t*4+2] << 8) | bytes[off+t*4+3];
+                for (let t = 16; t < 64; t++) {
+                    const s0 = rotr(W[t-15], 7) ^ rotr(W[t-15], 18) ^ (W[t-15] >>> 3);
+                    const s1 = rotr(W[t-2], 17) ^ rotr(W[t-2], 19) ^ (W[t-2] >>> 10);
+                    W[t] = (W[t-16] + s0 + W[t-7] + s1) | 0;
+                }
+                let [a, b, c, d, e, f, g, h] = H;
+                for (let t = 0; t < 64; t++) {
+                    const T1 = (h + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + K[t] + W[t]) | 0;
+                    const T2 = ((rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+                    h = g; g = f; f = e; e = (d + T1) | 0; d = c; c = b; b = a; a = (T1 + T2) | 0;
+                }
+                H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+                H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+            }
+            return H.map(x => (x >>> 0).toString(16).padStart(8, '0')).join('');
+        }
+
+        // Kalan hak, elle değiştirilmesin diye imzalı saklanır; imza tutmazsa hak 0 sayılır.
+        function licenseSign(remaining) { return sha256(`${LICENSE_SALT}|${remaining}|${LICENSE_QUOTA}|${LICENSE_HASH}`); }
+        function getRemainingUses() {
+            try {
+                const data = JSON.parse(localStorage.getItem(LICENSE_KEY) || 'null');
+                if (data && Number.isInteger(data.r) && data.r >= 0 && data.r <= LICENSE_QUOTA && data.s === licenseSign(data.r)) return data.r;
+            } catch (err) {}
+            return 0;
+        }
+        function setRemainingUses(remaining) {
+            try { localStorage.setItem(LICENSE_KEY, JSON.stringify({ r: remaining, s: licenseSign(remaining) })); } catch (err) {}
+            document.getElementById('licenseRemaining').innerText = remaining;
+            const badge = document.getElementById('licenseBadge');
+            badge.classList.toggle('text-red-600', remaining <= 20);
+            badge.classList.toggle('text-slate-600', remaining > 20);
+        }
+        function showLicenseLock(message) {
+            document.getElementById('licenseMessage').innerText = message;
+            document.getElementById('licenseError').classList.add('hidden');
+            document.getElementById('licensePassword').value = '';
+            document.getElementById('licenseOverlay').classList.remove('hidden');
+            setTimeout(() => document.getElementById('licensePassword').focus(), 50);
+        }
+        // Çıktı üreten her işlemden önce çağrılır; hak yoksa işlemi durdurur.
+        function consumeUse() {
+            const remaining = getRemainingUses();
+            if (remaining <= 0) {
+                setRemainingUses(0);
+                showLicenseLock(`${LICENSE_QUOTA} kullanım hakkınız doldu. Devam etmek için şifreyi tekrar girin.`);
+                return false;
+            }
+            setRemainingUses(remaining - 1);
+            return true;
+        }
+
+        document.getElementById('licenseForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const pwd = document.getElementById('licensePassword').value;
+            if (sha256(`${LICENSE_SALT}|${pwd}|${LICENSE_QUOTA}`) === LICENSE_HASH) {
+                setRemainingUses(LICENSE_QUOTA);
+                document.getElementById('licenseOverlay').classList.add('hidden');
+            } else {
+                document.getElementById('licenseError').classList.remove('hidden');
+                document.getElementById('licensePassword').select();
+            }
+        });
+
+        (function initLicense() {
+            const remaining = getRemainingUses();
+            setRemainingUses(remaining);
+            if (remaining <= 0) showLicenseLock(`Devam etmek için şifreyi girin. (${LICENSE_QUOTA} kullanım hakkı tanımlanacaktır)`);
+        })();
+
         function switchApp(targetId) {
             ['homeScreen', 'app1Screen', 'app2Screen', 'app3Screen', 'app4Screen'].forEach(id => { document.getElementById(id).classList.add('hidden'); });
             document.getElementById(targetId).classList.remove('hidden');
@@ -690,7 +801,7 @@
         }
         function updatePreviewPlaka() { document.getElementById('previewPlakaLabel').innerText = document.getElementById('inputPlaka').value.trim() || '-'; }
         async function downloadFinalExcel() {
-            if (!matchedData.length) return; const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Sayfa1');
+            if (!matchedData.length) return; if (!consumeUse()) return; const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Sayfa1');
             const fontStyle = { name: 'Tahoma', size: 14, bold: true }; const alignStyle = { vertical: 'middle', horizontal: 'center' }; const borderStyle = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
             const finalPlaka = document.getElementById('inputPlaka').value.trim() || 'PLAKA'; const finalTransport = document.getElementById('inputTransport').value.trim() || 'TRANSPORT';
             const r1 = ws.addRow([finalPlaka]); r1.height = 37.5; ws.mergeCells('A1:H1'); const r2 = ws.addRow(['Delivery', 'Shipment', 'Bill.Doc.', 'Ship-To', '# packages', 'Gross Weight', 'an', 'Lokasyon']); r2.height = 37.5;
@@ -773,6 +884,7 @@
         function renderTable(data) { document.getElementById('tableBody').innerHTML = data.map((r,i) => ` <tr class="h-[50px] border-b border-slate-200 ${i%2===0?'bg-white':'bg-slate-50'} hover:bg-blue-50"> <td class="p-1"><input type="text" value="${r.AN || ''}" onchange="updateManualAN('${r.id}', this.value)" class="w-full text-center bg-transparent focus:bg-white rounded py-1 outline-none font-bold ${r.AN ? 'text-slate-800' : 'text-red-500'}"></td> <td class="text-blue-700 font-semibold" id="lok-${r.id}">${r.LOK||'-'}</td><td>${r.Delivery}</td><td>${r['# packages']}</td> <td>${r['Ship-To']}</td><td class="text-left pl-4">${r['Ship to Name']}</td><td>${r.City}</td><td>${r['Gross Weight'].toFixed(3)}</td> <td colspan="3" class="bg-slate-50/50"></td><td class="text-indigo-600 font-mono font-semibold">${r.IM || '-'}</td><td class="text-slate-600 font-mono font-semibold">${r.IM_TARIHI || '-'}</td> </tr> `).join(''); }
         document.getElementById('searchInput').addEventListener('input', (e) => { const t = e.target.value.toLowerCase(); renderTable(finalResult.filter(r => r.City.toLowerCase().includes(t) || r['Ship to Name'].toLowerCase().includes(t) || r.Delivery.toLowerCase().includes(t) || r.AN.toLowerCase().includes(t))); });
         document.getElementById('downloadExcelBtn').addEventListener('click', async () => {
+            if (!finalResult.length || !consumeUse()) return;
             const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Sayfa1', {views:[{showGridLines:true}]});
             ws.columns = [ {header:'AN', key:'AN', width:28}, {header:'LOK', key:'LOK', width:14}, {header:'Delivery', key:'Delivery', width:15}, {header:'# packages', key:'packages', width:16}, {header:'Ship-To', key:'ShipTo', width:15}, {header:'Ship to Name', key:'ShipToName', width:48}, {header:'City', key:'City', width:16}, {header:'Gross Weight', key:'GrossWeight', width:18}, {header:'', key:'e1', width:10}, {header:'', key:'e2', width:10}, {header:'', key:'e3', width:10}, {header:'IM', key:'IM', width:20}, {header:'IM TARİHİ', key:'IM_TARIHI', width:15} ];
             const head = ws.getRow(1); head.height = 50; head.eachCell(c => { c.font={name:'Calibri',size:14,bold:true}; c.alignment={vertical:'middle',horizontal:'center'}; c.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}}; });
@@ -928,6 +1040,7 @@
         }
         async function downloadApp3Excel() {
             if (!originalFile3_1_Buffer) return;
+            if (!consumeUse()) return;
             const wb = new ExcelJS.Workbook(); await wb.xlsx.load(originalFile3_1_Buffer); const ws = wb.worksheets[0]; 
             let plakaColIdx = 9; 
             let headerRow = ws.getRow(1);
@@ -1034,6 +1147,7 @@
             if (!selectedOption || selectedOption.value === "") { alert('Lütfen yazdırmadan önce listeden bir müşteri seçin!'); return; }
             const kapCount = parseInt(document.getElementById('app4-kapCount').value);
             if (!kapCount || kapCount < 1) { alert('Lütfen en az 1 kap girin!'); return; }
+            if (!consumeUse()) return;
 
             const musteriAdi = selectedOption.getAttribute('data-name');
             const sehir = selectedOption.getAttribute('data-city');
