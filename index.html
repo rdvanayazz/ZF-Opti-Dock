@@ -997,7 +997,7 @@
                         if(!delivStr) continue;
                         let bestMatch = plakaList.find(x => x.irsNoZero === delivNoZero && delivNoZero !== "");
                         if (!bestMatch && delivNoZero !== "") {
-                            bestMatch = plakaList.find(x => x.irsNoZero !== "" && x.irsNoZero.length >= 3 && delivNoZero.length >= 3 && (delivNoZero.endsWith(x.irsNoZero) || x.irsNoZero.endsWith(delivNoZero)));
+                            bestMatch = plakaList.find(x => x.irsStr !== "" && x.irsStr.length >= 3 && delivStr.length >= 3 && (delivStr.endsWith(x.irsStr) || x.irsStr.endsWith(delivStr)));
                         }
                         if (!bestMatch && last4Deliv.length >= 4) {
                             bestMatch = plakaList.find(x => { let last4Irs = x.irsStr.length >= 4 ? x.irsStr.slice(-4) : x.irsStr; return last4Deliv === last4Irs; });
