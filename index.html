@@ -109,6 +109,36 @@
                 page-break-inside: avoid;
                 break-inside: avoid;
             }
+            body.printing-app3 .app3-summary-wrap {
+                margin-top: 8px;
+                page-break-inside: avoid;
+                break-inside: avoid;
+                display: inline-block;
+            }
+            body.printing-app3 .app3-summary-table {
+                border-collapse: collapse;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+            body.printing-app3 .app3-summary-table th,
+            body.printing-app3 .app3-summary-table td {
+                border: 1px solid #000;
+                padding: 2px 8px;
+                font-size: 8pt;
+                line-height: 1.2;
+                color: #000;
+            }
+            body.printing-app3 .app3-summary-table th {
+                background-color: #e2e8f0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                font-weight: 700;
+            }
+            body.printing-app3 .app3-summary-total td {
+                font-weight: 800;
+                background-color: #f1f5f9 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
         }
     </style>
     <style id="dynamic-print-page-style"></style>
@@ -430,7 +460,7 @@
                         <div>
                             <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
                                 <i data-lucide="printer" class="w-4 h-4 text-violet-600"></i>
-                                Plaka Bazlı A4 Yatay Çıktı (A - I Sütunları / Her Plaka 2 Nüsha)
+                                Plaka Bazlı A4 Yatay Çıktı (A - H Sütunları / Her Plaka 2 Nüsha)
                             </h3>
                             <p class="text-xs text-slate-500">Yazdırmak istediğiniz plakaları seçin. Seçilen her plaka kendi satırlarıyla ayrı 2 sayfa olarak basılır.</p>
                         </div>
@@ -444,7 +474,11 @@
                         <span class="text-xs text-slate-400">Eşleşen plaka bulunamadı.</span>
                     </div>
 
-                    <div class="flex justify-end">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+                        <label class="inline-flex items-center gap-2.5 px-3.5 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl cursor-pointer select-none text-xs font-bold text-slate-700 transition">
+                            <input type="checkbox" id="app3-includeSummaryToggle" checked class="w-4 h-4 accent-emerald-600 rounded">
+                            <span>Özet Tablo Ekle (Müşteri / Şehir Bazlı Toplam Kap)</span>
+                        </label>
                         <button type="button" onclick="printSelectedApp3Plates()" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm transition">
                             <i data-lucide="printer" class="w-5 h-5"></i> Seçili Plakaları Yazdır (2 Nüsha / Yatay A4)
                         </button>
@@ -989,6 +1023,7 @@
         let originalFile3_1_Buffer = null; let app3SortConfig = { field: null, isAsc: true };
         let app3RawSheetMatrix = [];
         let app3HeaderRowIndex = 0;
+        let app3KapColIndex = -1;
 
         document.getElementById('app3-masterDropArea').addEventListener('click', () => document.getElementById('app3-masterFileInput').click());
         document.getElementById('app3-masterFileInput').addEventListener('change', (e) => { if(e.target.files.length) handleMultipleFilesApp3(Array.from(e.target.files)); });
@@ -1041,10 +1076,19 @@
                 app3RawSheetMatrix = rawData;
                 
                 app3HeaderRowIndex = 0;
+                app3KapColIndex = -1;
                 for (let r = 0; r < Math.min(10, rawData.length); r++) {
-                    const rowStr = (rawData[r] || []).map(x => normalizeHeaderName(String(x))).join('|');
+                    const rowArr = rawData[r] || [];
+                    const rowStr = rowArr.map(x => normalizeHeaderName(String(x))).join('|');
                     if (rowStr.includes('delivery') || rowStr.includes('shiptoname') || rowStr.includes('kap')) {
                         app3HeaderRowIndex = r;
+                        for (let c = 0; c < rowArr.length; c++) {
+                            const hNorm = normalizeHeaderName(String(rowArr[c]));
+                            if (hNorm === 'kap' || hNorm.includes('package') || hNorm === 'koli' || hNorm === 'paket') {
+                                app3KapColIndex = c;
+                                break;
+                            }
+                        }
                         break;
                     }
                 }
@@ -1173,12 +1217,15 @@
             }
             if (!consumeUse()) return;
 
+            const includeSummary = document.getElementById('app3-includeSummaryToggle').checked;
+            const now = new Date();
+            const printDateStr = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}.${now.getFullYear()}`;
+
+            // A - H sütunları (ilk 8 sütun; I sütunu/plaka sütunu dahil edilmez)
             const headerRow = app3RawSheetMatrix[app3HeaderRowIndex] || [];
-            const headersAI = [];
-            for (let c = 0; c < 9; c++) {
-                let hVal = String(headerRow[c] ?? '').trim();
-                if (c === 8 && !hVal) hVal = 'ARAÇ Bilgisi';
-                headersAI.push(hVal);
+            const headersAH = [];
+            for (let c = 0; c < 8; c++) {
+                headersAH.push(String(headerRow[c] ?? '').trim());
             }
 
             const printArea = document.getElementById('app3-print-area');
@@ -1189,29 +1236,78 @@
                 if (plateItems.length === 0) return;
 
                 let rowsHtml = '';
+                const summaryMap = new Map();
+                let grandTotalKap = 0;
+
                 plateItems.forEach(item => {
                     const rawRow = app3RawSheetMatrix[item.originalRowIndex] || [];
                     let cellsHtml = '';
-                    for (let c = 0; c < 9; c++) {
-                        let cellVal = c === 8 ? (item.plaka || '') : String(rawRow[c] ?? '');
-                        cellsHtml += `<td>${escapeHtmlApp3(cellVal)}</td>`;
+                    for (let c = 0; c < 8; c++) {
+                        cellsHtml += `<td>${escapeHtmlApp3(String(rawRow[c] ?? ''))}</td>`;
                     }
                     rowsHtml += `<tr>${cellsHtml}</tr>`;
+
+                    if (includeSummary) {
+                        const rawKap = app3KapColIndex !== -1 ? String(rawRow[app3KapColIndex] ?? '').replace(/[^\d.-]/g, '') : '';
+                        const kapVal = parseInt(rawKap, 10) || 0;
+                        grandTotalKap += kapVal;
+
+                        const bayiKey = (item.bayi || '').trim();
+                        const sehirKey = (item.sehir || '').trim();
+                        const label = sehirKey ? `${bayiKey} - ${sehirKey}` : (bayiKey || '-');
+                        const normKey = label.toLocaleLowerCase('tr-TR');
+
+                        if (!summaryMap.has(normKey)) {
+                            summaryMap.set(normKey, { label: label, kap: 0 });
+                        }
+                        summaryMap.get(normKey).kap += kapVal;
+                    }
                 });
+
+                let summaryHtml = '';
+                if (includeSummary && summaryMap.size > 0) {
+                    const summaryRowsHtml = Array.from(summaryMap.values()).map(entry => `
+                        <tr>
+                            <td>${escapeHtmlApp3(entry.label)}</td>
+                            <td style="text-align:right; font-weight:700;">${entry.kap}</td>
+                        </tr>
+                    `).join('');
+
+                    summaryHtml = `
+                        <div class="app3-summary-wrap">
+                            <table class="app3-summary-table">
+                                <thead>
+                                    <tr>
+                                        <th>Müşteri / Şehir</th>
+                                        <th>Toplam Kap</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${summaryRowsHtml}
+                                    <tr class="app3-summary-total">
+                                        <td>TOPLAM</td>
+                                        <td style="text-align:right;">${grandTotalKap}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
 
                 const tableBlock = `
                     <div class="app3-print-header">
                         <span>PLAKA: ${escapeHtmlApp3(plate)}</span>
-                        <span>Toplam Kayıt: ${plateItems.length}</span>
+                        <span>${printDateStr}</span>
                     </div>
                     <table class="app3-print-table">
                         <thead>
-                            <tr>${headersAI.map(h => `<th>${escapeHtmlApp3(h)}</th>`).join('')}</tr>
+                            <tr>${headersAH.map(h => `<th>${escapeHtmlApp3(h)}</th>`).join('')}</tr>
                         </thead>
                         <tbody>
                             ${rowsHtml}
                         </tbody>
                     </table>
+                    ${summaryHtml}
                 `;
 
                 pagesHtml += `<div class="app3-print-page">${tableBlock}</div>`;
