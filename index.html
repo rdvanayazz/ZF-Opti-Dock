@@ -88,6 +88,13 @@
                 table-layout: auto;
                 font-family: Arial, Helvetica, sans-serif;
             }
+            body.printing-app3 .app3-print-table thead {
+                display: table-header-group;
+            }
+            body.printing-app3 .app3-print-table tbody.app3-group-block {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
             body.printing-app3 .app3-print-table th,
             body.printing-app3 .app3-print-table td {
                 border: 1px solid #000;
@@ -109,31 +116,7 @@
                 page-break-inside: avoid;
                 break-inside: avoid;
             }
-            body.printing-app3 .app3-summary-wrap {
-                margin-top: 8px;
-                page-break-inside: avoid;
-                break-inside: avoid;
-                display: inline-block;
-            }
-            body.printing-app3 .app3-summary-table {
-                border-collapse: collapse;
-                font-family: Arial, Helvetica, sans-serif;
-            }
-            body.printing-app3 .app3-summary-table th,
-            body.printing-app3 .app3-summary-table td {
-                border: 1px solid #000;
-                padding: 2px 8px;
-                font-size: 8pt;
-                line-height: 1.2;
-                color: #000;
-            }
-            body.printing-app3 .app3-summary-table th {
-                background-color: #e2e8f0 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                font-weight: 700;
-            }
-            body.printing-app3 .app3-summary-total td {
+            body.printing-app3 .app3-subtotal-row td {
                 font-weight: 800;
                 background-color: #f1f5f9 !important;
                 -webkit-print-color-adjust: exact;
@@ -477,7 +460,7 @@
                     <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
                         <label class="inline-flex items-center gap-2.5 px-3.5 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl cursor-pointer select-none text-xs font-bold text-slate-700 transition">
                             <input type="checkbox" id="app3-includeSummaryToggle" checked class="w-4 h-4 accent-emerald-600 rounded">
-                            <span>Özet Tablo Ekle (Müşteri / Şehir Bazlı Toplam Kap)</span>
+                            <span>Müşteri / Şehir Altı Toplam Satırı Ekle</span>
                         </label>
                         <button type="button" onclick="printSelectedApp3Plates()" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm transition">
                             <i data-lucide="printer" class="w-5 h-5"></i> Seçili Plakaları Yazdır (2 Nüsha / Yatay A4)
@@ -1210,6 +1193,23 @@
                 .replace(/'/g, '&#39;');
         }
 
+        function buildApp3SubtotalRowHtml(label, totalKap) {
+            const kapIdx = app3KapColIndex;
+            if (kapIdx >= 0 && kapIdx < 8) {
+                let html = '<tr class="app3-subtotal-row">';
+                if (kapIdx > 0) {
+                    html += `<td colspan="${kapIdx}" style="text-align:right;">${escapeHtmlApp3(label)} TOPLAM:</td>`;
+                }
+                html += `<td style="text-align:center;">${kapIdx === 0 ? `${escapeHtmlApp3(label)} TOPLAM: ${totalKap}` : totalKap}</td>`;
+                if (kapIdx < 7) {
+                    html += `<td colspan="${8 - kapIdx - 1}"></td>`;
+                }
+                html += '</tr>';
+                return html;
+            }
+            return `<tr class="app3-subtotal-row"><td colspan="8" style="text-align:right;">${escapeHtmlApp3(label)} TOPLAM KAP: ${totalKap}</td></tr>`;
+        }
+
         function printSelectedApp3Plates() {
             const selectedPlates = Array.from(document.querySelectorAll('#app3-plateCheckboxList input[type="checkbox"]:checked')).map(cb => cb.value);
             if (selectedPlates.length === 0) {
@@ -1222,7 +1222,7 @@
             }
             if (!consumeUse()) return;
 
-            const includeSummary = document.getElementById('app3-includeSummaryToggle').checked;
+            const includeSubtotals = document.getElementById('app3-includeSummaryToggle').checked;
             const now = new Date();
             const printDateStr = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}.${now.getFullYear()}`;
 
@@ -1239,63 +1239,51 @@
                 const plateItems = matchedData3.filter(item => (item.plaka || '').trim() === plate);
                 if (plateItems.length === 0) return;
 
-                let rowsHtml = '';
-                const summaryMap = new Map();
-                let grandTotalKap = 0;
+                let bodyBlocksHtml = '';
 
-                plateItems.forEach(item => {
-                    const rawRow = app3RawSheetMatrix[item.originalRowIndex] || [];
-                    let cellsHtml = '';
-                    for (let c = 0; c < 8; c++) {
-                        cellsHtml += `<td>${escapeHtmlApp3(String(rawRow[c] ?? ''))}</td>`;
-                    }
-                    rowsHtml += `<tr>${cellsHtml}</tr>`;
-
-                    if (includeSummary) {
-                        const rawKap = app3KapColIndex !== -1 ? String(rawRow[app3KapColIndex] ?? '').replace(/[^\d.-]/g, '') : '';
-                        const kapVal = parseInt(rawKap, 10) || 0;
-                        grandTotalKap += kapVal;
-
+                if (includeSubtotals) {
+                    const groups = new Map();
+                    plateItems.forEach(item => {
                         const bayiKey = (item.bayi || '').trim();
                         const sehirKey = (item.sehir || '').trim();
                         const label = sehirKey ? `${bayiKey} - ${sehirKey}` : (bayiKey || '-');
                         const normKey = label.toLocaleLowerCase('tr-TR');
 
-                        if (!summaryMap.has(normKey)) {
-                            summaryMap.set(normKey, { label: label, kap: 0 });
+                        if (!groups.has(normKey)) {
+                            groups.set(normKey, { label: label, items: [], kap: 0 });
                         }
-                        summaryMap.get(normKey).kap += kapVal;
-                    }
-                });
+                        const grp = groups.get(normKey);
+                        grp.items.push(item);
 
-                let summaryHtml = '';
-                if (includeSummary && summaryMap.size > 0) {
-                    const summaryRowsHtml = Array.from(summaryMap.values()).map(entry => `
-                        <tr>
-                            <td>${escapeHtmlApp3(entry.label)}</td>
-                            <td style="text-align:right; font-weight:700;">${entry.kap}</td>
-                        </tr>
-                    `).join('');
+                        const rawRow = app3RawSheetMatrix[item.originalRowIndex] || [];
+                        const rawKap = app3KapColIndex !== -1 ? String(rawRow[app3KapColIndex] ?? '').replace(/[^\d.-]/g, '') : '';
+                        grp.kap += parseInt(rawKap, 10) || 0;
+                    });
 
-                    summaryHtml = `
-                        <div class="app3-summary-wrap">
-                            <table class="app3-summary-table">
-                                <thead>
-                                    <tr>
-                                        <th>Müşteri / Şehir</th>
-                                        <th>Toplam Kap</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${summaryRowsHtml}
-                                    <tr class="app3-summary-total">
-                                        <td>TOPLAM</td>
-                                        <td style="text-align:right;">${grandTotalKap}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
+                    groups.forEach(grp => {
+                        let groupRowsHtml = '';
+                        grp.items.forEach(item => {
+                            const rawRow = app3RawSheetMatrix[item.originalRowIndex] || [];
+                            let cellsHtml = '';
+                            for (let c = 0; c < 8; c++) {
+                                cellsHtml += `<td>${escapeHtmlApp3(String(rawRow[c] ?? ''))}</td>`;
+                            }
+                            groupRowsHtml += `<tr>${cellsHtml}</tr>`;
+                        });
+                        groupRowsHtml += buildApp3SubtotalRowHtml(grp.label, grp.kap);
+                        bodyBlocksHtml += `<tbody class="app3-group-block">${groupRowsHtml}</tbody>`;
+                    });
+                } else {
+                    let rowsHtml = '';
+                    plateItems.forEach(item => {
+                        const rawRow = app3RawSheetMatrix[item.originalRowIndex] || [];
+                        let cellsHtml = '';
+                        for (let c = 0; c < 8; c++) {
+                            cellsHtml += `<td>${escapeHtmlApp3(String(rawRow[c] ?? ''))}</td>`;
+                        }
+                        rowsHtml += `<tr>${cellsHtml}</tr>`;
+                    });
+                    bodyBlocksHtml = `<tbody>${rowsHtml}</tbody>`;
                 }
 
                 const tableBlock = `
@@ -1307,11 +1295,8 @@
                         <thead>
                             <tr>${headersAH.map(h => `<th>${escapeHtmlApp3(h)}</th>`).join('')}</tr>
                         </thead>
-                        <tbody>
-                            ${rowsHtml}
-                        </tbody>
+                        ${bodyBlocksHtml}
                     </table>
-                    ${summaryHtml}
                 `;
 
                 pagesHtml += `<div class="app3-print-page">${tableBlock}</div>`;
