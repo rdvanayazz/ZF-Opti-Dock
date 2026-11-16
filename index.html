@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZF OptiDock | Lojistik & Operasyon Merkezi</title>
+    <title>ZF OptiDock - Lojistik & Operasyon Merkezi</title>
     
     <!-- Ortak Kütüphaneler -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -29,7 +29,6 @@
             body.printing-app4 #app4Screen * { visibility: visible; }
             body.printing-app4 .no-print { display: none !important; }
             body.printing-app4 #print-area { display: block; position: absolute; left: 0; top: 0; width: 100%; }
-            body.printing-app4 @page { size: 80mm 100mm; margin: 0 !important; }
             body.printing-app4, body.printing-app4 html { margin: 0; padding: 0; background: #fff; width: 80mm; height: 100mm; }
             
             body.printing-app4 .label-page {
@@ -46,8 +45,73 @@
             body.printing-app4 .customer-city { font-size: 28pt; font-weight: 900; line-height: 1; margin: 0; }
             body.printing-app4 .fraction { font-size: 65pt; font-weight: 900; line-height: 0.9; margin: 0; }
             body.printing-app4 .kap-text { font-size: 35pt; font-weight: 900; line-height: 0.9; margin: 0; }
+
+            /* === MODÜL 3 A4 YATAY 2 NÜSHA YAZDIRMA AYARLARI === */
+            body.printing-app3 > *:not(#app3-print-area) { display: none !important; }
+            body.printing-app3, body.printing-app3 html {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #fff !important;
+                width: 100% !important;
+            }
+            body.printing-app3 #app3-print-area {
+                display: block !important;
+                width: 100%;
+                background: #fff;
+            }
+            body.printing-app3 .app3-print-page {
+                page-break-after: always;
+                break-after: page;
+                width: 100%;
+                padding: 4mm 6mm;
+                box-sizing: border-box;
+                background: #fff;
+            }
+            body.printing-app3 .app3-print-page:last-child {
+                page-break-after: auto;
+                break-after: auto;
+            }
+            body.printing-app3 .app3-print-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 2px solid #000;
+                padding-bottom: 4px;
+                margin-bottom: 6px;
+                font-size: 13pt;
+                font-weight: 800;
+                color: #000;
+            }
+            body.printing-app3 .app3-print-table {
+                width: 100%;
+                border-collapse: collapse;
+                table-layout: auto;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+            body.printing-app3 .app3-print-table th,
+            body.printing-app3 .app3-print-table td {
+                border: 1px solid #000;
+                padding: 4px 5px;
+                font-size: 9.5pt;
+                line-height: 1.25;
+                color: #000;
+                text-align: left;
+                word-wrap: break-word;
+            }
+            body.printing-app3 .app3-print-table th {
+                background-color: #e2e8f0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                font-weight: 700;
+                text-align: center;
+            }
+            body.printing-app3 .app3-print-table tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
         }
     </style>
+    <style id="dynamic-print-page-style"></style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen relative font-sans">
 
@@ -134,7 +198,6 @@
                 </div>
             </header>
             
-            <!-- MODÜL 1 TOPLU DOSYA SÜRÜKLEME ALANI -->
             <div id="app1-masterDropArea" class="bg-gradient-to-b from-blue-50/70 to-indigo-50/40 border-2 border-dashed border-blue-300 hover:border-blue-500 rounded-2xl p-6 text-center cursor-pointer transition shadow-sm group">
                 <input type="file" id="app1-masterFileInput" multiple accept=".xlsx, .xls, .csv" class="hidden">
                 <div class="flex flex-col items-center">
@@ -238,8 +301,8 @@
                     <div class="bg-purple-50 border p-2.5 rounded-xl"><span class="text-[11px] font-semibold text-purple-600">Kilo</span><br><span id="kpiTotalWeight" class="text-lg font-bold text-purple-700">0</span></div>
                 </div>
                 <div class="flex flex-wrap gap-3">
-                    <button id="processBtn" disabled class="px-5 bg-blue-600 text-white font-bold rounded-xl text-xs disabled:opacity-50">Eşleştir</button>
-                    <button id="downloadExcelBtn" disabled class="px-5 bg-emerald-600 text-white font-bold rounded-xl text-xs disabled:opacity-50">Excel İndir</button>
+                    <button id="processBtn" disabled class="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-xl text-xs disabled:opacity-50">Eşleştir</button>
+                    <button id="downloadExcelBtn" disabled class="px-5 py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs disabled:opacity-50">Excel İndir</button>
                 </div>
             </div>
             <div class="bg-white rounded-2xl border overflow-hidden">
@@ -250,7 +313,7 @@
                 <div class="overflow-x-auto max-h-[500px]">
                     <table class="w-full text-center border-collapse text-xs">
                         <thead class="bg-slate-100 font-bold sticky top-0 h-[50px]">
-                            <tr><th>AN</th><th>LOK</th><th>Delivery</th><th>packages</th><th>Ship-To</th><th>Ship to Name</th><th>City</th><th>Gross Weight</th><th></th><th></th><th></th><th>IM</th><th>IM TARİHİ</th></tr>
+                            <tr><th>AN</th><th>LOK</th><th>Delivery</th><th># packages</th><th>Ship-To</th><th>Ship to Name</th><th>City</th><th>Gross Weight</th><th></th><th></th><th></th><th>IM</th><th>IM TARİHİ</th></tr>
                         </thead>
                         <tbody id="tableBody" class="divide-y text-slate-700"></tbody>
                     </table>
@@ -351,12 +414,39 @@
                         <div id="app3-debugInfo" class="text-[10px] text-slate-400 mt-2 font-mono"></div>
                     </div>
                     
-                    <div class="flex gap-3">
+                    <div class="flex flex-wrap gap-3">
                         <button onclick="resetApp3Filters()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm transition border border-slate-300 text-xs">
                             <i data-lucide="filter-x" class="w-4 h-4"></i> Filtreleri Sıfırla
                         </button>
                         <button onclick="downloadApp3Excel()" class="w-full sm:w-auto px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm transition">
                             <i data-lucide="download" class="w-5 h-5"></i> Revize Excel'i İndir
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PLAKA SEÇEREK YATAY A4 2 NÜSHA YAZDIRMA ALANI -->
+                <div class="pt-5 border-t border-slate-200 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <i data-lucide="printer" class="w-4 h-4 text-violet-600"></i>
+                                Plaka Bazlı A4 Yatay Çıktı (A - I Sütunları / Her Plaka 2 Nüsha)
+                            </h3>
+                            <p class="text-xs text-slate-500">Yazdırmak istediğiniz plakaları seçin. Seçilen her plaka kendi satırlarıyla ayrı 2 sayfa olarak basılır.</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleAllApp3PrintPlates(true)" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-xs border border-slate-300 transition">Tümünü Seç</button>
+                            <button type="button" onclick="toggleAllApp3PrintPlates(false)" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-xs border border-slate-300 transition">Seçimi Temizle</button>
+                        </div>
+                    </div>
+                    
+                    <div id="app3-plateCheckboxList" class="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-3 bg-slate-50 rounded-xl border border-slate-200 custom-scroll">
+                        <span class="text-xs text-slate-400">Eşleşen plaka bulunamadı.</span>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="button" onclick="printSelectedApp3Plates()" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm transition">
+                            <i data-lucide="printer" class="w-5 h-5"></i> Seçili Plakaları Yazdır (2 Nüsha / Yatay A4)
                         </button>
                     </div>
                 </div>
@@ -465,7 +555,6 @@
                     </div>
                 </div>
                 
-                <!-- YENİ: PLAKA FİLTRESİ VE MÜŞTERİ ARAMA YAN YANA -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="form-group mb-0">
                         <label class="block text-sm font-bold text-slate-700 mb-2">2. Plaka Seçin (Filtre)</label>
@@ -487,7 +576,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label class="block text-sm font-bold text-slate-700 mb-2">5. Kaç Kap Etiket Çıkacak?</label>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">5. Kaç Kap Etiket Çıkacak</label>
                     <input type="number" id="app4-kapCount" min="1" value="1" class="w-full px-4 py-2 border border-slate-300 rounded-xl outline-none focus:border-orange-500 font-bold text-orange-700 text-lg">
                 </div>
                 
@@ -500,15 +589,15 @@
         </div>
     </div>
 
+    <!-- MODÜL 3 YAZDIRMA ALANI (SADECE YAZDIRMADA GÖRÜNÜR) -->
+    <div id="app3-print-area" class="hidden"></div>
+
     <!-- ========================================== -->
     <!-- JAVASCRIPT & UYGULAMA MANTIĞI              -->
     <!-- ========================================== -->
     <script>
         lucide.createIcons();
 
-        /* LICENSE_HASH = sha256('OptiDock|ŞİFRE|KOTA'). Kota hash'in içinde olduğu için
-           LICENSE_QUOTA elle değiştirilirse mevcut haklar geçersiz olur ve şifre de tutmaz;
-           yeni kota için hash şifreyi bilen biri tarafından yeniden üretilmelidir. */
         const LICENSE_QUOTA = 200;
         const LICENSE_SALT = 'OptiDock';
         const LICENSE_HASH = 'cf2f29321bae3593f299acbe4e7dc3a205072e008a53254eb00fbe798b3e39d7';
@@ -529,21 +618,20 @@
                 for (let t = 16; t < 64; t++) {
                     const s0 = rotr(W[t-15], 7) ^ rotr(W[t-15], 18) ^ (W[t-15] >>> 3);
                     const s1 = rotr(W[t-2], 17) ^ rotr(W[t-2], 19) ^ (W[t-2] >>> 10);
-                    W[t] = (W[t-16] + s0 + W[t-7] + s1) | 0;
+                    W[t] = (W[t-16] + s0 + W[t-7] + s1) >>> 0;
                 }
                 let [a, b, c, d, e, f, g, h] = H;
                 for (let t = 0; t < 64; t++) {
-                    const T1 = (h + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + K[t] + W[t]) | 0;
-                    const T2 = ((rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
-                    h = g; g = f; f = e; e = (d + T1) | 0; d = c; c = b; b = a; a = (T1 + T2) | 0;
+                    const T1 = (h + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + K[t] + W[t]) >>> 0;
+                    const T2 = ((rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) >>> 0;
+                    h = g; g = f; f = e; e = (d + T1) >>> 0; d = c; c = b; b = a; a = (T1 + T2) >>> 0;
                 }
-                H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
-                H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+                H[0] = (H[0] + a) >>> 0; H[1] = (H[1] + b) >>> 0; H[2] = (H[2] + c) >>> 0; H[3] = (H[3] + d) >>> 0;
+                H[4] = (H[4] + e) >>> 0; H[5] = (H[5] + f) >>> 0; H[6] = (H[6] + g) >>> 0; H[7] = (H[7] + h) >>> 0;
             }
             return H.map(x => (x >>> 0).toString(16).padStart(8, '0')).join('');
         }
 
-        // Kalan hak, elle değiştirilmesin diye imzalı saklanır; imza tutmazsa hak 0 sayılır.
         function licenseSign(remaining) { return sha256(`${LICENSE_SALT}|${remaining}|${LICENSE_QUOTA}|${LICENSE_HASH}`); }
         function getRemainingUses() {
             try {
@@ -566,7 +654,6 @@
             document.getElementById('licenseOverlay').classList.remove('hidden');
             setTimeout(() => document.getElementById('licensePassword').focus(), 50);
         }
-        // Çıktı üreten her işlemden önce çağrılır; hak yoksa işlemi durdurur.
         function consumeUse() {
             const remaining = getRemainingUses();
             if (remaining <= 0) {
@@ -602,7 +689,7 @@
         }
 
         function normalizeHeaderName(str) {
-            if (!str) return "";
+            if (!str) return '';
             return String(str).replace(/İ/g, 'i').replace(/I/g, 'i').replace(/ı/g, 'i').toLowerCase().replace(/[^a-z0-9]/g, ''); 
         }
 
@@ -627,15 +714,15 @@
         function getColValue(row, possibleNames) {
             const keys = Object.keys(row);
             for (let name of possibleNames) {
-                const clean = name.toLowerCase().replace(/[\s\._\-]/g, '');
-                const mk = keys.find(k => k.toLowerCase().replace(/[\s\._\-]/g, '') === clean);
+                const clean = name.toLowerCase().replace(/[\s._-]/g, '');
+                const mk = keys.find(k => k.toLowerCase().replace(/[\s._-]/g, '') === clean);
                 if (mk && row[mk] !== undefined) return row[mk];
             }
-            return "";
+            return '';
         }
 
         function getVisibleRows(ws) {
-            let json = XLSX.utils.sheet_to_json(ws, { defval: "" });
+            let json = XLSX.utils.sheet_to_json(ws, { defval: '' });
             let rowsMeta = ws['!rows'] || [];
             if (rowsMeta.length > 0) {
                 json = json.filter(row => {
@@ -650,7 +737,7 @@
         }
 
         function parseRawArrayData(ws) {
-            let rawData = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+            let rawData = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
             let rowsMeta = ws['!rows'] || [];
             let delivCol = -1, plakaCol = -1, bayiCol = -1, sehirCol = -1;
             
@@ -675,7 +762,7 @@
                     for (let c = 0; c < row.length; c++) {
                         let val = String(row[c]).trim();
                         if (!val) continue;
-                        if (delivCol === -1 && (val.startsWith('166') && val.length >= 9 || val.startsWith('WMS-') || /^\d{9}-\d{4}/.test(val))) delivCol = c;
+                        if (delivCol === -1 && ((val.startsWith('166') && val.length >= 9) || val.startsWith('WMS-') || /^\d{9}-\d{4}/.test(val))) delivCol = c;
                         if (plakaCol === -1 && /^\d{2}\s+[A-Za-z]{1,3}\s+\d{2,4}$/.test(val)) plakaCol = c;
                     }
                 }
@@ -701,7 +788,7 @@
         }
 
         // ==========================================
-        // GLOABAL SÜRÜKLE BIRAK YÖNETİMİ
+        // GLOBAL SÜRÜKLE BIRAK YÖNETİMİ
         // ==========================================
         let dragCounter = 0; 
         const overlay = document.getElementById('globalDropOverlay');
@@ -727,9 +814,9 @@
             }
         });
 
-        /* ==========================================
-           MODÜL 1 KODLARI (TOPLU SÜRÜKLE DAHİL)
-           ========================================== */
+        // ==========================================
+        // MODÜL 1 KODLARI
+        // ==========================================
         let rawList1 = null; let rawList2 = null; let matchedData = [];
         
         document.getElementById('app1-masterDropArea').addEventListener('click', () => document.getElementById('app1-masterFileInput').click());
@@ -778,14 +865,15 @@
         
         function checkAndProcessApp1() {
             if (!rawList1 || !rawList2) return;
-            let autoPlaka = rawList2[0]?.['PLAKA'] || rawList2[0]?.['Plaka'] || ''; let autoTransport = rawList2[0]?.['Transport'] || rawList2[0]?.['Shipment'] || rawList1[0]?.['Shipment'] || '';
+            let autoPlaka = (rawList2[0] && (rawList2[0]['PLAKA'] || rawList2[0]['Plaka'])) || ''; 
+            let autoTransport = (rawList2[0] && (rawList2[0]['Transport'] || rawList2[0]['Shipment'])) || (rawList1[0] && rawList1[0]['Shipment']) || '';
             const pInput = document.getElementById('inputPlaka'); const tInput = document.getElementById('inputTransport');
             if (!pInput.value || pInput.value === 'PLAKA') pInput.value = autoPlaka; if (!tInput.value) tInput.value = autoTransport;
             updatePreviewPlaka(); matchedData = []; let matchedCount = 0;
             rawList1.forEach(row1 => {
                 const deliv = String(row1['Delivery'] || '').trim(); const ship = row1['Shipment'] || tInput.value || ''; const bill = String(row1['Bill.Doc.'] || row1['Fatura No'] || '').trim(); const shipto = row1['Ship-To'] || row1['Ship-to'] || '';
                 const pkg = row1['# packages'] || row1['Packages'] || row1['KAP'] || 0; const gw = row1['Gross Weight'] || row1['KG'] || 0; const lokasyon = row1['Lokasyon'] || row1['LOKASYON'] || row1['Location'] || row1['Depo'] || '';
-                let anVal = "";
+                let anVal = '';
                 for (let row2 of rawList2) {
                     const fatura2 = String(row2['Fatura No'] || row2['Fatura No.1'] || '').trim(); const deliv2 = String(row2['DELİVERY'] || row2['Delivery'] || '').trim(); const an2 = String(row2['AN NO'] || row2['AN No'] || row2['an'] || '').trim();
                     if (bill && (fatura2.includes(bill))) { anVal = an2; break; } if (deliv && (deliv2.includes(deliv))) { anVal = an2; break; }
@@ -811,9 +899,9 @@
             const buf = await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]), `${finalTransport}-${finalPlaka} HAZIR.xlsx`);
         }
 
-        /* ==========================================
-           MODÜL 2 KODLARI (SÜRÜKLE BIRAK ZATEN VAR)
-           ========================================== */
+        // ==========================================
+        // MODÜL 2 KODLARI
+        // ==========================================
         let rawData1 = null; let rawData2 = null; let rawData3 = null; let finalResult = []; let globalStokMap = new Map(); 
         
         document.getElementById('masterDropArea').addEventListener('click', () => document.getElementById('masterFileInput').click()); 
@@ -836,7 +924,7 @@
         }
         function processFileBySlot(idx, file) {
             return new Promise((resolve) => {
-                document.getElementById(`name-${idx}`).innerText = file.name; document.getElementById(`status-${idx}`).innerText = "Okunuyor..."; const reader = new FileReader();
+                document.getElementById(`name-${idx}`).innerText = file.name; document.getElementById(`status-${idx}`).innerText = 'Okunuyor...'; const reader = new FileReader();
                 reader.onload = function(e) {
                     try {
                         const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' }); let sName = wb.SheetNames[0]; 
@@ -846,7 +934,7 @@
                         const json = getVisibleRows(wb.Sheets[sName]);
                         if (idx===1) rawData1 = json; if (idx===2) rawData2 = json; if (idx===3) rawData3 = json;
                         document.getElementById(`status-${idx}`).innerHTML = `<span class="text-emerald-600 font-semibold">${json.length} Satır</span>`; resolve();
-                    } catch(err) { document.getElementById(`status-${idx}`).innerText = "Hata!"; resolve(); }
+                    } catch(err) { document.getElementById(`status-${idx}`).innerText = 'Hata!'; resolve(); }
                 }; reader.readAsArrayBuffer(file);
             });
         }
@@ -856,7 +944,7 @@
             rawData2.forEach(row => {
                 const d = String(getColValue(row, ['DELİVERY', 'Delivery', 'Teslimat', 'Teslimat No'])).trim(); const a = String(getColValue(row, ['AN NO', 'AN', 'Ant.Beyan No', 'Beyan No'])).trim();
                 const f = String(getColValue(row, ['Fatura No', 'Fatura', 'Bill.Doc.'])).trim(); const p = parseInt(getColValue(row, ['# packages', 'packages', 'Koli', 'Kap', 'KAP', 'Paket'])) || 0;
-                const im = String(getColValue(row, ['IM NO', 'IM', 'IM_NO', 'İthalat No', 'IM No'])).trim(); let imTarihi = ""; const rawImTarih = getColValue(row, ['IM TARİHİ', 'IM TARİH', 'IM Tarihi', 'İthalat Tarihi', 'IM Date']);
+                const im = String(getColValue(row, ['IM NO', 'IM', 'IM_NO', 'İthalat No', 'IM No'])).trim(); let imTarihi = ''; const rawImTarih = getColValue(row, ['IM TARİHİ', 'IM TARİH', 'IM Tarihi', 'İthalat Tarihi', 'IM Date']);
                 if (rawImTarih) { let numVal = Number(rawImTarih); if (!isNaN(numVal) && numVal > 30000 && numVal < 100000) { const dt = new Date(Math.round((numVal - 25569) * 86400 * 1000)); imTarihi = `${String(dt.getUTCDate()).padStart(2, '0')}.${String(dt.getUTCMonth() + 1).padStart(2, '0')}.${dt.getUTCFullYear()}`; } else { imTarihi = String(rawImTarih).trim(); } }
                 if (d || f) cikisEntries.push({ d, a, f, p, im, imTarihi });
             });
@@ -865,10 +953,10 @@
             rawData1.forEach(row => {
                 const delivery = String(getColValue(row, ['Delivery', 'Teslimat No', 'DELİVERY'])).trim(); const billDoc = String(getColValue(row, ['Bill.Doc.', 'Fatura No', 'Fatura'])).trim();
                 const pkg = parseInt(getColValue(row, ['# packages', 'packages', 'Koli', 'Kap'])) || 0; const gw = parseFloat(getColValue(row, ['Gross Weight', 'KG', 'Brüt Kilo'])) || 0;
-                let fAN = ""; let fIM = ""; let fImTarihi = ""; let matchedCikis = null;
+                let fAN = ''; let fIM = ''; let fImTarihi = ''; let matchedCikis = null;
                 for (let c of cikisEntries) { if (delivery && c.d && (c.d === delivery || c.d.includes(delivery) || delivery.includes(c.d))) { matchedCikis = c; break; } if (!matchedCikis && billDoc && c.f && (c.f === billDoc || c.f.includes(billDoc) || billDoc.includes(c.f))) { matchedCikis = c; } }
                 if (matchedCikis) { fAN = matchedCikis.a; if (matchedCikis.p === pkg && pkg > 0) { fIM = matchedCikis.im; fImTarihi = matchedCikis.imTarihi; } }
-                let fLOK = ""; if (fAN) { if (globalStokMap.has(fAN)) { fLOK = globalStokMap.get(fAN); } else { for (let [k,v] of globalStokMap.entries()) { if (k.includes(fAN) || fAN.includes(k)) { fLOK = v; break; } } } }
+                let fLOK = ''; if (fAN) { if (globalStokMap.has(fAN)) { fLOK = globalStokMap.get(fAN); } else { for (let [k,v] of globalStokMap.entries()) { if (k.includes(fAN) || fAN.includes(k)) { fLOK = v; break; } } } }
                 if (fAN) mCount++; tPkg += pkg; tWt += gw;
                 finalResult.push({ id: 'r_' + Math.random().toString(36).substring(2, 9), AN: fAN, LOK: fLOK, Delivery: delivery, '# packages': pkg, 'Ship-To': getColValue(row, ['Ship-To', 'Alıcı Kod']), 'Ship to Name': getColValue(row, ['Ship to Name', 'Alıcı Adı', 'Müşteri']), City: getColValue(row, ['City', 'Şehir', 'İl']), 'Gross Weight': Number(gw.toFixed(3)), IM: fIM, IM_TARIHI: fImTarihi });
             });
@@ -878,7 +966,7 @@
         function updateKPIs() { let matched = finalResult.filter(r => r.AN).length; document.getElementById('kpiTotalRows').innerText = finalResult.length; document.getElementById('kpiMatchedRows').innerText = `${matched} / ${finalResult.length}`; document.getElementById('kpiTotalPackages').innerText = finalResult.reduce((sum, r) => sum + r['# packages'], 0); document.getElementById('kpiTotalWeight').innerText = finalResult.reduce((sum, r) => sum + r['Gross Weight'], 0).toLocaleString('tr-TR'); }
         function updateManualAN(id, newAN) {
             const item = finalResult.find(x => x.id === id); if (!item) return; newAN = newAN.trim(); item.AN = newAN;
-            if (!newAN) { item.LOK = ""; } else { let fLOK = ""; if (globalStokMap.has(newAN)) { fLOK = globalStokMap.get(newAN); } else { for (let [k,v] of globalStokMap.entries()) { if (k.includes(newAN) || newAN.includes(k)) { fLOK = v; break; } } } item.LOK = fLOK; }
+            if (!newAN) { item.LOK = ''; } else { let fLOK = ''; if (globalStokMap.has(newAN)) { fLOK = globalStokMap.get(newAN); } else { for (let [k,v] of globalStokMap.entries()) { if (k.includes(newAN) || newAN.includes(k)) { fLOK = v; break; } } } item.LOK = fLOK; }
             updateKPIs(); const t = document.getElementById('searchInput').value.toLowerCase(); if(t) { renderTable(finalResult.filter(r => r.City.toLowerCase().includes(t) || r.Delivery.toLowerCase().includes(t) || r.AN.toLowerCase().includes(t))); } else { renderTable(finalResult); }
         }
         function renderTable(data) { document.getElementById('tableBody').innerHTML = data.map((r,i) => ` <tr class="h-[50px] border-b border-slate-200 ${i%2===0?'bg-white':'bg-slate-50'} hover:bg-blue-50"> <td class="p-1"><input type="text" value="${r.AN || ''}" onchange="updateManualAN('${r.id}', this.value)" class="w-full text-center bg-transparent focus:bg-white rounded py-1 outline-none font-bold ${r.AN ? 'text-slate-800' : 'text-red-500'}"></td> <td class="text-blue-700 font-semibold" id="lok-${r.id}">${r.LOK||'-'}</td><td>${r.Delivery}</td><td>${r['# packages']}</td> <td>${r['Ship-To']}</td><td class="text-left pl-4">${r['Ship to Name']}</td><td>${r.City}</td><td>${r['Gross Weight'].toFixed(3)}</td> <td colspan="3" class="bg-slate-50/50"></td><td class="text-indigo-600 font-mono font-semibold">${r.IM || '-'}</td><td class="text-slate-600 font-mono font-semibold">${r.IM_TARIHI || '-'}</td> </tr> `).join(''); }
@@ -894,11 +982,13 @@
         document.getElementById('resetAllBtn').addEventListener('click', () => { location.reload(); });
 
 
-        /* ==========================================
-           MODÜL 3 KODLARI (TOPLU SÜRÜKLE DAHİL)
-           ========================================== */
+        // ==========================================
+        // MODÜL 3 KODLARI
+        // ==========================================
         let rawList3_1 = null; let rawList3_2 = null; let matchedData3 = []; 
         let originalFile3_1_Buffer = null; let app3SortConfig = { field: null, isAsc: true };
+        let app3RawSheetMatrix = [];
+        let app3HeaderRowIndex = 0;
 
         document.getElementById('app3-masterDropArea').addEventListener('click', () => document.getElementById('app3-masterFileInput').click());
         document.getElementById('app3-masterFileInput').addEventListener('change', (e) => { if(e.target.files.length) handleMultipleFilesApp3(Array.from(e.target.files)); });
@@ -940,14 +1030,26 @@
         function handleFileInput3_2(e) { if(e.target.files.length) processFile3_2(e.target.files[0]); }
 
         function processFile3_1(file) {
-            document.getElementById('app3-file1Name').innerText = '✓ ' + file.name; document.getElementById('app3-file1Info').innerText = "Okunuyor...";
+            document.getElementById('app3-file1Name').innerText = '✓ ' + file.name; document.getElementById('app3-file1Info').innerText = 'Okunuyor...';
             const reader = new FileReader();
             reader.onload = function(evt) {
                 originalFile3_1_Buffer = evt.target.result; 
                 const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
-                let res = parseRawArrayData(wb.Sheets[wb.SheetNames[0]]);
-                let rawData = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: "" });
-                res.dataList.forEach(item => { item.plaka = String(rawData[item.originalRowIndex][8] || '').trim(); });
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                let res = parseRawArrayData(ws);
+                let rawData = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
+                app3RawSheetMatrix = rawData;
+                
+                app3HeaderRowIndex = 0;
+                for (let r = 0; r < Math.min(10, rawData.length); r++) {
+                    const rowStr = (rawData[r] || []).map(x => normalizeHeaderName(String(x))).join('|');
+                    if (rowStr.includes('delivery') || rowStr.includes('shiptoname') || rowStr.includes('kap')) {
+                        app3HeaderRowIndex = r;
+                        break;
+                    }
+                }
+
+                res.dataList.forEach(item => { item.plaka = String((rawData[item.originalRowIndex] && rawData[item.originalRowIndex][8]) || '').trim(); });
                 rawList3_1 = res.dataList;
                 document.getElementById('app3-file1Info').innerHTML = `<span class="text-violet-600 font-bold">Hazır (${rawList3_1.length} satır)</span>`;
                 checkAndProcessApp3();
@@ -955,7 +1057,7 @@
         }
 
         function processFile3_2(file) {
-            document.getElementById('app3-file2Name').innerText = '✓ ' + file.name; document.getElementById('app3-file2Info').innerText = "Okunuyor...";
+            document.getElementById('app3-file2Name').innerText = '✓ ' + file.name; document.getElementById('app3-file2Info').innerText = 'Okunuyor...';
             const reader = new FileReader();
             reader.onload = function(evt) {
                 const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
@@ -972,7 +1074,7 @@
             rawList3_2.forEach(item => {
                 let irsaliye = item.delivery; let plaka = item.plaka;
                 if (irsaliye && plaka) {
-                    let irsParts = irsaliye.split(/[-,\/\n|; \t]+/);
+                    let irsParts = irsaliye.split(/[-,\n;\t]+/);
                     for (let part of irsParts) {
                         let pTrim = part.trim(); if(!pTrim) continue;
                         let irsStr = pTrim.replace(/[^a-zA-Z0-9]/g, ''); 
@@ -986,18 +1088,18 @@
             matchedData3 = []; let matchedCount = 0;
             rawList3_1.forEach((item, idx) => {
                 let deliveryOriginal = item.delivery; let bayiAdi = item.bayi; let sehirAdi = item.sehir; let existingPlaka = item.plaka;
-                let matchedPlaka = ""; let isMatched = false;
+                let matchedPlaka = ''; let isMatched = false;
                 if(deliveryOriginal) {
-                    let deliveryParts = deliveryOriginal.split(/[-,\/\n|; \t]+/);
+                    let deliveryParts = deliveryOriginal.split(/[-,\n;\t]+/);
                     for (let part of deliveryParts) {
                         let pTrim = part.trim(); if(!pTrim) continue;
                         let delivStr = pTrim.replace(/[^a-zA-Z0-9]/g, '');
                         let delivNoZero = delivStr.replace(/^0+/, '');
                         let last4Deliv = delivStr.length >= 4 ? delivStr.slice(-4) : delivStr; 
                         if(!delivStr) continue;
-                        let bestMatch = plakaList.find(x => x.irsNoZero === delivNoZero && delivNoZero !== "");
-                        if (!bestMatch && delivNoZero !== "") {
-                            bestMatch = plakaList.find(x => x.irsStr !== "" && x.irsStr.length >= 3 && delivStr.length >= 3 && (delivStr.endsWith(x.irsStr) || x.irsStr.endsWith(delivStr)));
+                        let bestMatch = plakaList.find(x => x.irsNoZero === delivNoZero && delivNoZero !== '');
+                        if (!bestMatch && delivNoZero !== '') {
+                            bestMatch = plakaList.find(x => x.irsStr !== '' && x.irsStr.length >= 3 && delivStr.length >= 3 && (delivStr.endsWith(x.irsStr) || x.irsStr.endsWith(delivStr)));
                         }
                         if (!bestMatch && last4Deliv.length >= 4) {
                             bestMatch = plakaList.find(x => { let last4Irs = x.irsStr.length >= 4 ? x.irsStr.slice(-4) : x.irsStr; return last4Deliv === last4Irs; });
@@ -1011,17 +1113,136 @@
             });
             document.getElementById('app3-statTotal').innerText = matchedData3.length; document.getElementById('app3-statMatched').innerText = matchedCount;
             document.getElementById('app3-actionArea').classList.remove('hidden'); document.getElementById('app3-previewArea').classList.remove('hidden');
+            refreshApp3PrintPlateOptions();
             filterApp3Table();
         }
 
-        function updateApp3Field(id, field, value) { const item = matchedData3.find(x => x.id === id); if (item) { item[field] = value.trim(); } }
+        function refreshApp3PrintPlateOptions() {
+            const container = document.getElementById('app3-plateCheckboxList');
+            const prevChecked = new Set(Array.from(container.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value));
+            
+            const plateCounts = new Map();
+            matchedData3.forEach(item => {
+                const p = (item.plaka || '').trim();
+                if (p) plateCounts.set(p, (plateCounts.get(p) || 0) + 1);
+            });
+
+            if (plateCounts.size === 0) {
+                container.innerHTML = '<span class="text-xs text-slate-400">Eşleşen plaka bulunamadı.</span>';
+                return;
+            }
+
+            const sortedPlates = Array.from(plateCounts.keys()).sort((a, b) => a.localeCompare(b, 'tr-TR'));
+            container.innerHTML = sortedPlates.map(plate => {
+                const count = plateCounts.get(plate);
+                const isChecked = prevChecked.has(plate) ? 'checked' : '';
+                return `
+                    <label class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-300 hover:border-violet-500 rounded-lg cursor-pointer select-none text-xs font-bold text-slate-700 shadow-xs transition">
+                        <input type="checkbox" value="${escapeHtmlApp3(plate)}" ${isChecked} class="w-4 h-4 accent-violet-600 rounded">
+                        <span>${escapeHtmlApp3(plate)}</span>
+                        <span class="px-1.5 py-0.5 bg-violet-100 text-violet-700 rounded text-[10px]">${count} satır</span>
+                    </label>
+                `;
+            }).join('');
+        }
+
+        function toggleAllApp3PrintPlates(selectAll) {
+            document.querySelectorAll('#app3-plateCheckboxList input[type="checkbox"]').forEach(cb => {
+                cb.checked = selectAll;
+            });
+        }
+
+        function escapeHtmlApp3(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function printSelectedApp3Plates() {
+            const selectedPlates = Array.from(document.querySelectorAll('#app3-plateCheckboxList input[type="checkbox"]:checked')).map(cb => cb.value);
+            if (selectedPlates.length === 0) {
+                alert('Lütfen yazdırmak için en az bir plaka seçin!');
+                return;
+            }
+            if (!app3RawSheetMatrix || app3RawSheetMatrix.length === 0) {
+                alert('Excel tablo verisi bulunamadı!');
+                return;
+            }
+            if (!consumeUse()) return;
+
+            const headerRow = app3RawSheetMatrix[app3HeaderRowIndex] || [];
+            const headersAI = [];
+            for (let c = 0; c < 9; c++) {
+                let hVal = String(headerRow[c] ?? '').trim();
+                if (c === 8 && !hVal) hVal = 'ARAÇ Bilgisi';
+                headersAI.push(hVal);
+            }
+
+            const printArea = document.getElementById('app3-print-area');
+            let pagesHtml = '';
+
+            selectedPlates.forEach(plate => {
+                const plateItems = matchedData3.filter(item => (item.plaka || '').trim() === plate);
+                if (plateItems.length === 0) return;
+
+                let rowsHtml = '';
+                plateItems.forEach(item => {
+                    const rawRow = app3RawSheetMatrix[item.originalRowIndex] || [];
+                    let cellsHtml = '';
+                    for (let c = 0; c < 9; c++) {
+                        let cellVal = c === 8 ? (item.plaka || '') : String(rawRow[c] ?? '');
+                        cellsHtml += `<td>${escapeHtmlApp3(cellVal)}</td>`;
+                    }
+                    rowsHtml += `<tr>${cellsHtml}</tr>`;
+                });
+
+                const tableBlock = `
+                    <div class="app3-print-header">
+                        <span>PLAKA: ${escapeHtmlApp3(plate)}</span>
+                        <span>Toplam Kayıt: ${plateItems.length}</span>
+                    </div>
+                    <table class="app3-print-table">
+                        <thead>
+                            <tr>${headersAI.map(h => `<th>${escapeHtmlApp3(h)}</th>`).join('')}</tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml}
+                        </tbody>
+                    </table>
+                `;
+
+                pagesHtml += `<div class="app3-print-page">${tableBlock}</div>`;
+                pagesHtml += `<div class="app3-print-page">${tableBlock}</div>`;
+            });
+
+            printArea.innerHTML = pagesHtml;
+
+            const dynStyle = document.getElementById('dynamic-print-page-style');
+            dynStyle.textContent = `@media print { @page { size: A4 landscape; margin: 6mm; } }`;
+
+            document.body.classList.add('printing-app3');
+            window.print();
+            document.body.classList.remove('printing-app3');
+            dynStyle.textContent = '';
+        }
+
+        function updateApp3Field(id, field, value) { 
+            const item = matchedData3.find(x => x.id === id); 
+            if (item) { 
+                item[field] = value.trim(); 
+                if (field === 'plaka') refreshApp3PrintPlateOptions();
+            } 
+        }
         function sortApp3ByField(field) { if (app3SortConfig.field === field) { app3SortConfig.isAsc = !app3SortConfig.isAsc; } else { app3SortConfig.field = field; app3SortConfig.isAsc = true; } filterApp3Table(); }
         function filterApp3Table() {
             let bFilter = document.getElementById('filterApp3Bayi').value.toLowerCase(); let sFilter = document.getElementById('filterApp3Sehir').value.toLowerCase();
             let dFilter = document.getElementById('filterApp3Deliv').value.toLowerCase(); let pFilter = document.getElementById('filterApp3Plaka').value.toLowerCase();
             let stFilter = document.getElementById('filterApp3Durum').value.toLowerCase();
             let resultData = matchedData3.filter(item => { return (item.bayi || '').toLowerCase().includes(bFilter) && (item.sehir || '').toLowerCase().includes(sFilter) && (item.delivery || '').toLowerCase().includes(dFilter) && (item.plaka || '').toLowerCase().includes(pFilter) && (item.status || '').toLowerCase().includes(stFilter); });
-            if (app3SortConfig.field) { resultData.sort((a, b) => { let valA = String(a[app3SortConfig.field] || "").toUpperCase(); let valB = String(b[app3SortConfig.field] || "").toUpperCase(); if (valA === valB) return 0; if (app3SortConfig.isAsc) return valA.localeCompare(valB); return valB.localeCompare(valA); }); }
+            if (app3SortConfig.field) { resultData.sort((a, b) => { let valA = String(a[app3SortConfig.field] || '').toUpperCase(); let valB = String(b[app3SortConfig.field] || '').toUpperCase(); if (valA === valB) return 0; if (app3SortConfig.isAsc) return valA.localeCompare(valB); return valB.localeCompare(valA); }); }
             renderApp3TableWithData(resultData);
         }
         function resetApp3Filters() { document.getElementById('filterApp3Bayi').value = ''; document.getElementById('filterApp3Sehir').value = ''; document.getElementById('filterApp3Deliv').value = ''; document.getElementById('filterApp3Plaka').value = ''; document.getElementById('filterApp3Durum').value = ''; app3SortConfig = { field: null, isAsc: true }; filterApp3Table(); }
@@ -1030,10 +1251,10 @@
             tbody.innerHTML = data.map((item, idx) => `
                 <tr class="hover:bg-slate-50 transition-colors h-[50px] border-b border-slate-100">
                     <td class="p-3 border-r border-slate-200 text-center font-semibold text-slate-400">${idx + 1}</td>
-                    <td class="p-0 border-r border-slate-200 bg-white group hover:bg-blue-50/30 transition"><input type="text" value="${item.bayi || ''}" onchange="updateApp3Field('${item.id}', 'bayi', this.value)" class="w-full h-[48px] px-3 bg-transparent outline-none text-xs font-semibold text-slate-700"></td>
-                    <td class="p-0 border-r border-slate-200 bg-white group hover:bg-blue-50/30 transition"><input type="text" value="${item.sehir || ''}" onchange="updateApp3Field('${item.id}', 'sehir', this.value)" class="w-full h-[48px] px-3 bg-transparent outline-none text-xs font-semibold text-slate-700"></td>
-                    <td class="p-0 border-r border-slate-200 bg-white group hover:bg-blue-50/30 transition font-mono text-sm"><input type="text" value="${item.delivery || ''}" onchange="updateApp3Field('${item.id}', 'delivery', this.value)" class="w-full h-[48px] px-3 bg-transparent outline-none text-slate-800"></td>
-                    <td class="p-1 border-r border-slate-200 bg-violet-50/30 group hover:bg-white transition"><input type="text" value="${item.plaka}" placeholder="Plaka girin" onchange="updateApp3Field('${item.id}', 'plaka', this.value)" class="w-full h-full px-3 py-2 bg-transparent border border-transparent hover:border-slate-300 focus:bg-white focus:border-violet-500 rounded outline-none transition-colors font-bold ${item.plaka ? 'text-violet-800' : 'text-red-400'}"></td>
+                    <td class="p-0 border-r border-slate-200 bg-white group hover:bg-blue-50/30 transition"><input type="text" value="${escapeHtmlApp3(item.bayi || '')}" onchange="updateApp3Field('${item.id}', 'bayi', this.value)" class="w-full h-[48px] px-3 bg-transparent outline-none text-xs font-semibold text-slate-700"></td>
+                    <td class="p-0 border-r border-slate-200 bg-white group hover:bg-blue-50/30 transition"><input type="text" value="${escapeHtmlApp3(item.sehir || '')}" onchange="updateApp3Field('${item.id}', 'sehir', this.value)" class="w-full h-[48px] px-3 bg-transparent outline-none text-xs font-semibold text-slate-700"></td>
+                    <td class="p-0 border-r border-slate-200 bg-white group hover:bg-blue-50/30 transition font-mono text-sm"><input type="text" value="${escapeHtmlApp3(item.delivery || '')}" onchange="updateApp3Field('${item.id}', 'delivery', this.value)" class="w-full h-[48px] px-3 bg-transparent outline-none text-slate-800"></td>
+                    <td class="p-1 border-r border-slate-200 bg-violet-50/30 group hover:bg-white transition"><input type="text" value="${escapeHtmlApp3(item.plaka)}" placeholder="Plaka girin" onchange="updateApp3Field('${item.id}', 'plaka', this.value)" class="w-full h-full px-3 py-2 bg-transparent border border-transparent hover:border-slate-300 focus:bg-white focus:border-violet-500 rounded outline-none transition-colors font-bold ${item.plaka ? 'text-violet-800' : 'text-red-400'}"></td>
                     <td class="p-3 text-xs font-semibold ${item.status.includes('Eşleşti') ? 'text-emerald-600' : (item.status.includes('Bulunamadı') ? 'text-red-500' : 'text-slate-500')}">${item.status}</td>
                 </tr>
             `).join(''); lucide.createIcons();
@@ -1050,9 +1271,9 @@
             const buf = await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]), `${dateStr}_REVIZE_SEVK_GUNCEL.xlsx`);
         }
 
-        /* ==========================================
-           MODÜL 4: ETİKET YAZDIRMA (PLAKA FİLTRESİ)
-           ========================================== */
+        // ==========================================
+        // MODÜL 4: ETİKET YAZDIRMA (PLAKA FİLTRESİ)
+        // ==========================================
         let app4Customers = [];
         let uniquePlates = new Set();
 
@@ -1065,7 +1286,7 @@
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, {type: 'array'});
                 const firstSheetName = workbook.SheetNames[0]; const worksheet = workbook.Sheets[firstSheetName];
-                const json = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
+                const json = XLSX.utils.sheet_to_json(worksheet, {defval: ''});
                 
                 app4Customers = []; 
                 uniquePlates.clear();
@@ -1075,12 +1296,10 @@
                     const sehir = String(row['şehir '] || row['şehir'] || row['City'] || '').trim();
                     let kap = parseInt(row['kap'] || row['KAP'] || row['# packages'] || row['Packages']) || 0;
                     
-                    // Plakayı Oku
                     let plaka = String(row['ARAÇ Bilgisi'] || row['Plaka'] || row['PLAKA'] || row['Araç Plaka'] || '').trim();
                     if(plaka) { uniquePlates.add(plaka); }
                     
                     if(musteriAdi) {
-                        // Aynı Müşteri, Şehir VE PLAKA'daki kayıtları birleştir
                         const existing = app4Customers.find(c => c.name === musteriAdi && c.city === sehir && c.plaka === plaka);
                         if (!existing) { 
                             app4Customers.push({name: musteriAdi, city: sehir, kap: kap > 0 ? kap : 1, plaka: plaka}); 
@@ -1089,7 +1308,6 @@
                     }
                 });
                 
-                // Plaka Dropdown'unu doldur
                 const plateSelect = document.getElementById('app4-plateSelect');
                 plateSelect.innerHTML = '<option value="">Tüm Plakalar</option>';
                 Array.from(uniquePlates).sort().forEach(p => {
@@ -1099,7 +1317,7 @@
                 });
 
                 app4Customers.sort((a, b) => a.name.localeCompare(b.name, 'tr-TR'));
-                filterApp4Customers(); // İlk yüklemede hepsini göster
+                filterApp4Customers();
             }; reader.readAsArrayBuffer(file);
         }
 
@@ -1109,7 +1327,7 @@
 
             const filtered = app4Customers.filter(c => {
                 const matchName = c.name.toLocaleLowerCase('tr-TR').includes(term) || c.city.toLocaleLowerCase('tr-TR').includes(term);
-                const matchPlate = selectedPlate === "" || c.plaka === selectedPlate;
+                const matchPlate = selectedPlate === '' || c.plaka === selectedPlate;
                 return matchName && matchPlate;
             });
             renderCustomerList4(filtered);
@@ -1120,21 +1338,18 @@
             if (list.length === 0) { selectElement.innerHTML = '<option value="">Sonuç bulunamadı</option>'; return; }
             list.forEach((cust, index) => {
                 const option = document.createElement('option'); option.value = index; 
-                // Listede plaka bilgisi de gösterilir
                 option.textContent = `${cust.name} (${cust.city}) - [${cust.kap} KAP] ${cust.plaka ? '- ' + cust.plaka : ''}`; 
                 option.setAttribute('data-name', cust.name); option.setAttribute('data-city', cust.city); option.setAttribute('data-kap', cust.kap);
                 selectElement.appendChild(option);
             });
         }
 
-        // Arama ve Plaka filtreleme tetikleyicileri
         document.getElementById('app4-customerSearch').addEventListener('input', filterApp4Customers);
         document.getElementById('app4-plateSelect').addEventListener('change', filterApp4Customers);
 
-        // Listeden seçim yapınca Kap sayısı otomatik dolar
         document.getElementById('app4-customerSelect').addEventListener('change', function(e) {
             const selectedOption = this.options[this.selectedIndex];
-            if (selectedOption && selectedOption.value !== "") {
+            if (selectedOption && selectedOption.value !== '') {
                 const autoKap = selectedOption.getAttribute('data-kap');
                 if (autoKap) { document.getElementById('app4-kapCount').value = autoKap; }
             }
@@ -1144,7 +1359,7 @@
             const selectElement = document.getElementById('app4-customerSelect');
             const selectedOption = selectElement.options[selectElement.selectedIndex];
             
-            if (!selectedOption || selectedOption.value === "") { alert('Lütfen yazdırmadan önce listeden bir müşteri seçin!'); return; }
+            if (!selectedOption || selectedOption.value === '') { alert('Lütfen yazdırmadan önce listeden bir müşteri seçin!'); return; }
             const kapCount = parseInt(document.getElementById('app4-kapCount').value);
             if (!kapCount || kapCount < 1) { alert('Lütfen en az 1 kap girin!'); return; }
             if (!consumeUse()) return;
@@ -1165,11 +1380,15 @@
                 printArea.appendChild(pageDiv);
             }
             
+            const dynStyle = document.getElementById('dynamic-print-page-style');
+            dynStyle.textContent = `@media print { @page { size: 80mm 100mm; margin: 0 !important; } }`;
+
             document.body.classList.add('printing-app4');
             window.print();
             document.body.classList.remove('printing-app4');
+            dynStyle.textContent = '';
         });
     </script>
-<div class="fixed bottom-2 right-4 text-xs text-slate-400 font-medium z-50 no-print">Created by Rıdvan Ayaz</div>
+    <div class="fixed bottom-2 right-4 text-xs text-slate-400 font-medium z-50 no-print">Created by Rıdvan Ayaz</div>
 </body>
 </html>
