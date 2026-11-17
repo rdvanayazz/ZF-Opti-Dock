@@ -126,6 +126,42 @@
                 print-color-adjust: exact;
             }
         }
+
+        /* === MODÜL 4 EKRAN İÇİ CANLI A4 ÖNİZLEME STİLLERİ === */
+        .a4-preview-sheet .app3-print-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #0f172a;
+            padding-bottom: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .a4-preview-sheet .app3-print-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .a4-preview-sheet .app3-print-table th,
+        .a4-preview-sheet .app3-print-table td {
+            border: 1px solid #475569;
+            padding: 5px 6px;
+            font-size: 11px;
+            line-height: 1.3;
+            color: #0f172a;
+            text-align: left;
+        }
+        .a4-preview-sheet .app3-print-table th {
+            background-color: #e2e8f0;
+            font-weight: 700;
+            text-align: center;
+        }
+        .a4-preview-sheet .app3-subtotal-row td {
+            font-weight: 800;
+            background-color: #f1f5f9;
+        }
     </style>
     <style id="dynamic-print-page-style"></style>
 </head>
@@ -525,145 +561,248 @@
     </div>
     
     <!-- ========================================== -->
-    <!-- MODÜL 4: ETİKET YAZDIRMA                   -->
+    <!-- MODÜL 4: ETİKET YAZDIRMA (KOKPİT & SEKMELİ TASARIM) -->
     <!-- ========================================== -->
-    <div id="app4Screen" class="hidden min-h-screen bg-slate-100">
-        <div class="max-w-4xl mx-auto p-4 md:p-8 space-y-6">
-            <header class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 no-print">
-                <div class="flex items-center gap-4">
-                    <button onclick="switchApp('homeScreen')" class="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition text-slate-600"><i data-lucide="home" class="w-5 h-5"></i></button>
-                    <div>
-                        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
-                            <div class="w-8 h-8 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center"><i data-lucide="printer" class="w-5 h-5"></i></div>
-                            ETİKET YAZDIRMA (80x100 Dikey)
-                        </h1>
+    <div id="app4Screen" class="hidden min-h-screen bg-slate-100/90">
+        <div class="max-w-7xl mx-auto p-4 md:p-6 space-y-5">
+            
+            <!-- ÜST BAŞLIK & KOKPİT KONTROL ŞERİDİ -->
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200/90 overflow-hidden no-print">
+                <div class="px-6 py-4 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div class="flex items-center gap-3.5">
+                        <button onclick="switchApp('homeScreen')" class="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition text-white" title="Ana Menüye Dön">
+                            <i data-lucide="home" class="w-5 h-5"></i>
+                        </button>
+                        <div>
+                            <h1 class="text-lg md:text-xl font-black tracking-tight flex items-center gap-2.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-orange-400 animate-pulse"></span>
+                                SEVKİYAT ÇIKTI & ETİKET MERKEZİ
+                            </h1>
+                            <p class="text-[11px] text-slate-300">Tek merkezden koli etiketi, plaka A4 listesi ve taşıma irsaliyesi PDF dökümü yönetimi</p>
+                        </div>
+                    </div>
+                    <!-- CANLI KPI ÖZET KUTULARI -->
+                    <div class="flex items-center gap-2.5 flex-wrap">
+                        <div class="px-3 py-1.5 rounded-xl bg-white/10 border border-white/10 text-center min-w-[76px]">
+                            <div class="text-[10px] uppercase tracking-wider text-slate-300 font-semibold">Müşteri</div>
+                            <div id="app4-kpiCustCount" class="text-sm font-black text-white">0</div>
+                        </div>
+                        <div class="px-3 py-1.5 rounded-xl bg-orange-500/20 border border-orange-400/30 text-center min-w-[76px]">
+                            <div class="text-[10px] uppercase tracking-wider text-orange-200 font-semibold">Toplam Kap</div>
+                            <div id="app4-kpiKapCount" class="text-sm font-black text-orange-300">0</div>
+                        </div>
+                        <div class="px-3 py-1.5 rounded-xl bg-rose-500/20 border border-rose-400/30 text-center min-w-[76px]">
+                            <div class="text-[10px] uppercase tracking-wider text-rose-200 font-semibold">Hazır PDF</div>
+                            <div id="app4-kpiPdfCount" class="text-sm font-black text-rose-300">0</div>
+                        </div>
                     </div>
                 </div>
-            </header>
 
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6 no-print">
-                <div class="form-group">
-                    <label class="block text-sm font-bold text-slate-700 mb-2">1. Excel Dosyasını Yükle (sevk güncel.xlsx)</label>
-                    <div id="app4-dropZone" 
-                         ondragover="handleDragOver1(event, this)" 
-                         ondragleave="handleDragLeave1(event, this)" 
-                         ondrop="handleDrop4(event, this)"
-                         onclick="document.getElementById('app4-fileInput').click()"
-                         class="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 hover:border-orange-500 hover:bg-orange-50/30 rounded-xl p-6 cursor-pointer transition group">
-                        <i data-lucide="file-spreadsheet" class="w-8 h-8 text-slate-400 group-hover:text-orange-500 mb-2 transition"></i>
-                        <span class="text-sm font-semibold text-slate-600 group-hover:text-orange-600 text-center" id="app4-fileName">Dosyayı Buraya Sürükleyin veya Tıklayın</span>
-                        <input type="file" id="app4-fileInput" accept=".xlsx, .xls" class="hidden" onchange="handleFileInput4(event)">
+                <!-- ORTAK KAYNAK & FİLTRE ÇUBUĞU -->
+                <div class="p-4 md:p-5 bg-slate-50/70 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                    <div class="md:col-span-5">
+                        <div id="app4-dropZone"
+                             ondragover="handleDragOver1(event, this)"
+                             ondragleave="handleDragLeave1(event, this)"
+                             ondrop="handleDrop4(event, this)"
+                             onclick="document.getElementById('app4-fileInput').click()"
+                             class="flex items-center gap-3 border-2 border-dashed border-slate-300 hover:border-orange-500 bg-white hover:bg-orange-50/30 rounded-2xl px-4 py-3 cursor-pointer transition group">
+                            <div class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition">
+                                <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-orange-600">Kaynak Excel (Sevk Güncel)</div>
+                                <div class="text-xs font-bold text-slate-800 truncate" id="app4-fileName">Dosyayı sürükleyin veya seçin...</div>
+                            </div>
+                            <input type="file" id="app4-fileInput" accept=".xlsx, .xls" class="hidden" onchange="handleFileInput4(event)">
+                        </div>
                     </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="form-group mb-0">
-                        <label class="block text-sm font-bold text-slate-700 mb-2">2. Plaka Seçin (Filtre)</label>
-                        <select id="app4-plateSelect" class="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:border-orange-500 font-semibold text-slate-700 bg-orange-50">
+
+                    <div class="md:col-span-3">
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Araç Plakası</label>
+                        <select id="app4-plateSelect" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-orange-500 font-bold text-sm text-slate-800 bg-white shadow-2xs transition">
                             <option value="">Tüm Plakalar</option>
                         </select>
                     </div>
-                    <div class="form-group mb-0">
-                        <label class="block text-sm font-bold text-slate-700 mb-2">3. Müşteri Ara</label>
-                        <input type="text" id="app4-customerSearch" placeholder="İsim veya şehir yazarak ara..." class="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:border-orange-500">
+
+                    <div class="md:col-span-4">
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Müşteri veya Şehir Filtresi</label>
+                        <div class="relative">
+                            <input type="text" id="app4-customerSearch" placeholder="Müşteri adı veya şehir ara..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-orange-500 text-sm font-medium text-slate-800 bg-white shadow-2xs transition">
+                        </div>
                     </div>
                 </div>
-                
-                <div class="form-group">
-                    <label class="block text-sm font-bold text-slate-700 mb-2">4. Müşteri Seçin (Kap sayısı otomatik dolar)</label>
-                    <select id="app4-customerSelect" size="6" class="w-full p-2 border border-slate-300 rounded-xl outline-none focus:border-orange-500">
-                        <option value="">Lütfen önce Excel yükleyin</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label class="block text-sm font-bold text-slate-700 mb-2">5. Kaç Kap Etiket Çıkacak</label>
-                    <input type="number" id="app4-kapCount" min="1" value="1" class="w-full px-4 py-2 border border-slate-300 rounded-xl outline-none focus:border-orange-500 font-bold text-orange-700 text-lg">
-                </div>
-                
-                <div class="space-y-3">
-                    <button id="app4-generateBtn" type="button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded-xl text-lg flex items-center justify-center gap-2 transition-colors">
-                        <i data-lucide="printer" class="w-5 h-5"></i> Seçili Müşteri Etiketini Yazdır
-                    </button>
-                    <button id="app4-bulkGenerateBtn" type="button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl text-lg flex items-center justify-center gap-2 transition-colors">
-                        <i data-lucide="printer" class="w-5 h-5"></i> Seçili Plakadaki Tüm Yerleri Toplu Yazdır
-                    </button>
-                </div>
 
-                <!-- MODÜL 4 PLAKA SEÇEREK YATAY A4 2 NÜSHA YAZDIRMA ALANI -->
-                <div class="pt-6 border-t border-slate-200 space-y-3">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <!-- SEKMELER (TABS - A4 İKİNCİ SIRADA) -->
+                <div class="px-4 md:px-6 pt-2 bg-white border-t border-slate-200 flex flex-wrap gap-2">
+                    <button type="button" id="app4-tabBtn-labels" onclick="switchApp4Tab('labels')" class="px-4 py-3 text-xs md:text-sm font-extrabold border-b-2 border-orange-600 text-orange-600 flex items-center gap-2 transition">
+                        <i data-lucide="tag" class="w-4 h-4"></i> 1. Koli Etiketleri (80x100)
+                    </button>
+                    <button type="button" id="app4-tabBtn-plates" onclick="switchApp4Tab('plates')" class="px-4 py-3 text-xs md:text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2 transition">
+                        <i data-lucide="file-text" class="w-4 h-4"></i> 2. Plaka A4 Listesi (2 Nüsha)
+                    </button>
+                    <button type="button" id="app4-tabBtn-pdfs" onclick="switchApp4Tab('pdfs')" class="px-4 py-3 text-xs md:text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2 transition">
+                        <i data-lucide="file-archive" class="w-4 h-4"></i> 3. İrsaliye PDF Dökümü (ZIP)
+                    </button>
+                </div>
+            </div>
+
+            <!-- SEKME 1: KOLİ ETİKETLERİ & CANLI TERMAL ÖNİZLEME -->
+            <div id="app4-tabPanel-labels" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start no-print">
+                <div class="lg:col-span-7 bg-white rounded-3xl p-6 shadow-sm border border-slate-200/90 space-y-5">
+                    <div class="flex items-center justify-between">
                         <div>
-                            <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                                <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i>
-                                Plaka Bazlı A4 Yatay Liste Çıktısı (A - H Sütunları / Her Plaka 2 Nüsha)
-                            </h3>
-                            <p class="text-xs text-slate-500">Yazdırmak istediğiniz plakaları seçin. Seçilen her plaka kendi satırlarıyla ayrı 2 sayfa olarak basılır.</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleAllApp4PrintPlates(true)" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-xs border border-slate-300 transition">Tümünü Seç</button>
-                            <button type="button" onclick="toggleAllApp4PrintPlates(false)" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-xs border border-slate-300 transition">Seçimi Temizle</button>
+                            <h2 class="text-base font-extrabold text-slate-900">Müşteri Seçimi & Etiket Basımı</h2>
+                            <p class="text-xs text-slate-500">Listeden müşteri seçtiğinizde sağda gerçek 80x100 mm önizlemesi oluşur.</p>
                         </div>
                     </div>
-                    
-                    <div id="app4-plateCheckboxList" class="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-3 bg-slate-50 rounded-xl border border-slate-200 custom-scroll">
-                        <span class="text-xs text-slate-400">Önce Excel dosyası yükleyin.</span>
-                    </div>
 
-                    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
-                        <label class="inline-flex items-center gap-2.5 px-3.5 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl cursor-pointer select-none text-xs font-bold text-slate-700 transition">
-                            <input type="checkbox" id="app4-includeSummaryToggle" checked class="w-4 h-4 accent-emerald-600 rounded">
-                            <span>Müşteri / Şehir Altı Toplam Satırı Ekle</span>
-                        </label>
-                        <button type="button" onclick="printSelectedApp4Plates()" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm transition">
-                            <i data-lucide="printer" class="w-5 h-5"></i> Seçili Plakaları Yazdır (2 Nüsha / Yatay A4)
-                        </button>
-                    </div>
-                </div>
+                    <select id="app4-customerSelect" size="9" class="w-full p-2.5 border border-slate-300 rounded-2xl outline-none focus:border-orange-500 text-xs font-semibold text-slate-700 bg-slate-50/50 custom-scroll">
+                        <option value="">Lütfen önce yukarıdan Excel dosyasını yükleyin</option>
+                    </select>
 
-                <!-- MODÜL 4 TAŞIMA İRSALİYESİ PDF ZIP EŞLEŞTİRME & DÖKÜM ALANI -->
-                <div class="pt-6 border-t border-slate-200 space-y-4">
-                    <div>
-                        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                            <i data-lucide="file-archive" class="w-4 h-4 text-rose-600"></i>
-                            Taşıma İrsaliyesi PDF Eşleştirme ve Döküm (N Sütunu & ZIP)
-                        </h3>
-                        <p class="text-xs text-slate-500 mt-0.5">Revize Excel (N sütunu Taşıma İrsaliye No) yüklendikten sonra PDF'lerin bulunduğu ZIP dosyasını atın. Seçili plaka veya müşteriye ait PDF'leri tek seferde yazdırın.</p>
-                    </div>
-
-                    <div id="app4-zipDropZone"
-                         ondragover="handleDragOver1(event, this)"
-                         ondragleave="handleDragLeave1(event, this)"
-                         ondrop="handleDrop4Zip(event, this)"
-                         onclick="document.getElementById('app4-zipInput').click()"
-                         class="flex flex-col items-center justify-center border-2 border-dashed border-rose-300 hover:border-rose-500 hover:bg-rose-50/40 rounded-xl p-5 cursor-pointer transition group bg-rose-50/10">
-                        <i data-lucide="folder-archive" class="w-8 h-8 text-rose-400 group-hover:text-rose-600 mb-2 transition"></i>
-                        <span class="text-sm font-semibold text-slate-700 group-hover:text-rose-700 text-center" id="app4-zipFileName">İrsaliye PDF'lerini İçeren ZIP Dosyasını Buraya Sürükleyin veya Tıklayın</span>
-                        <span class="text-[11px] text-slate-400 mt-1" id="app4-zipSubInfo">Dosya adı veya PDF içindeki irsaliye numarasından otomatik eşleşir</span>
-                        <input type="file" id="app4-zipInput" accept=".zip" class="hidden" onchange="handleFileInput4Zip(event)">
-                    </div>
-
-                    <div id="app4-pdfStatusBox" class="hidden bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3 text-xs">
-                        <div class="flex flex-wrap items-center justify-between gap-2">
-                            <span class="font-bold text-slate-700" id="app4-pdfZipStats">ZIP: 0 PDF</span>
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-rose-700" id="app4-pdfFilterMatchStats">Seçili İrsaliye: 0 / 0</span>
-                                <button type="button" onclick="toggleAllApp4Waybills(true)" class="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-[11px] border border-slate-300 transition">Tümünü Seç</button>
-                                <button type="button" onclick="toggleAllApp4Waybills(false)" class="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-[11px] border border-slate-300 transition">Temizle</button>
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                            <div class="sm:col-span-4">
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Kap Adedi</label>
+                                <input type="number" id="app4-kapCount" min="1" value="1" oninput="updateApp4LabelLivePreview()" class="w-full px-3 py-2.5 border border-slate-300 bg-white rounded-xl outline-none focus:border-orange-500 font-black text-orange-700 text-center text-base">
+                            </div>
+                            <div class="sm:col-span-8">
+                                <button id="app4-generateBtn" type="button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-xs transition">
+                                    <i data-lucide="printer" class="w-4 h-4"></i> Seçili Müşteri Etiketini Yazdır
+                                </button>
                             </div>
                         </div>
-                        <div id="app4-waybillCheckboxList" class="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2.5 bg-white rounded-xl border border-slate-200 custom-scroll"></div>
-                        <div id="app4-pdfMissingList" class="hidden text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2.5 break-all"></div>
+
+                        <button id="app4-bulkGenerateBtn" type="button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-xs transition">
+                            <i data-lucide="layers" class="w-4 h-4"></i> Seçili Plakadaki Tüm Yerleri Toplu Yazdır
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CANLI ETİKET ÖNİZLEME KARTI -->
+                <div class="lg:col-span-5 bg-white rounded-3xl p-6 shadow-sm border border-slate-200/90 flex flex-col items-center">
+                    <div class="w-full flex items-center justify-between mb-4">
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                            <i data-lucide="eye" class="w-4 h-4 text-orange-500"></i> Canlı Etiket Önizleme
+                        </span>
+                        <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">80 x 100 mm</span>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <button id="app4-printPdfsBtn" type="button" onclick="outputMatchedApp4Pdfs('print')" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm transition">
-                            <i data-lucide="printer" class="w-5 h-5"></i> PDF'leri Dök (Yazdır)
-                        </button>
-                        <button id="app4-downloadPdfsBtn" type="button" onclick="outputMatchedApp4Pdfs('download')" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm transition">
-                            <i data-lucide="download" class="w-5 h-5"></i> Birleşik PDF İndir
+                    <div class="w-full bg-slate-100/80 rounded-2xl p-6 flex items-center justify-center border border-slate-200/70">
+                        <div class="w-[240px] h-[300px] bg-white rounded-xl shadow-md border-2 border-slate-300 p-3 flex flex-col items-center justify-center text-center gap-1.5 select-none">
+                            <div id="app4-previewName" class="text-lg font-black text-slate-900 leading-tight break-words w-full line-clamp-3">MÜŞTERİ ADI</div>
+                            <div id="app4-previewCity" class="text-xl font-black text-slate-800 leading-none">(ŞEHİR)</div>
+                            <div id="app4-previewFraction" class="text-5xl font-black text-slate-900 leading-none my-1">1/1</div>
+                            <div class="text-2xl font-black text-slate-900 leading-none">KAP</div>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-3 text-center">Yazdır butonuna basıldığında seçili kap adedi kadar sıralı etiket üretilir.</p>
+                </div>
+            </div>
+
+            <!-- SEKME 2: PLAKA BAZLI A4 YATAY LİSTE ÇIKTISI & CANLI A4 ÖNİZLEME -->
+            <div id="app4-tabPanel-plates" class="hidden space-y-5 no-print">
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/90 space-y-5">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                                <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center"><i data-lucide="file-text" class="w-4 h-4"></i></span>
+                                Plaka Bazlı A4 Yatay Liste Çıktısı (2 Nüsha)
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Üstten plaka seçtiğinizde otomatik işaretlenir. Seçilen her plaka A - H sütunlarıyla 2 nüsha olarak basılır.</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleAllApp4PrintPlates(true)" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs border border-slate-300 transition">Tümünü Seç</button>
+                            <button type="button" onclick="toggleAllApp4PrintPlates(false)" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs border border-slate-300 transition">Temizle</button>
+                        </div>
+                    </div>
+
+                    <div id="app4-plateCheckboxList" class="flex flex-wrap gap-2.5 max-h-44 overflow-y-auto p-4 bg-slate-50 rounded-2xl border border-slate-200 custom-scroll">
+                        <span class="text-xs text-slate-400">Önce yukarıdan Excel dosyası yükleyin.</span>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
+                        <label class="inline-flex items-center gap-2.5 px-4 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl cursor-pointer select-none text-xs font-bold text-slate-700 transition">
+                            <input type="checkbox" id="app4-includeSummaryToggle" checked onchange="updateApp4A4Preview()" class="w-4 h-4 accent-emerald-600 rounded">
+                            <span>Müşteri / Şehir Altı Toplam Satırı Ekle</span>
+                        </label>
+                        <button type="button" onclick="printSelectedApp4Plates()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-xs transition">
+                            <i data-lucide="printer" class="w-4 h-4"></i> Seçili Plakaları Yazdır (2 Nüsha / Yatay A4)
                         </button>
                     </div>
+                </div>
+
+                <!-- CANLI A4 YATAY ÖNİZLEME PANELİ -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/90 space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                            <i data-lucide="eye" class="w-4 h-4 text-emerald-600"></i> Canlı A4 Yatay Liste Önizleme
+                        </span>
+                        <span id="app4-a4PreviewBadge" class="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Plaka seçilmedi</span>
+                    </div>
+
+                    <div id="app4-a4PreviewContainer" class="bg-slate-200/70 rounded-2xl p-4 md:p-6 border border-slate-300/80 max-h-[540px] overflow-auto custom-scroll space-y-6">
+                        <div class="text-center py-10 text-xs font-semibold text-slate-500">Önizleme görmek için Excel yükleyin ve en az bir plaka seçin.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEKME 3: TAŞIMA İRSALİYESİ PDF DÖKÜMÜ -->
+            <div id="app4-tabPanel-pdfs" class="hidden bg-white rounded-3xl p-6 shadow-sm border border-slate-200/90 space-y-5 no-print">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center"><i data-lucide="file-archive" class="w-4 h-4"></i></span>
+                            Taşıma İrsaliyesi PDF Eşleştirme & Toplu Döküm
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Revize Excel dosyasındaki N sütunu (Taşıma İrsaliye No) ile ZIP içindeki PDF belgeleri otomatik eşleşir.</p>
+                    </div>
+                    <div class="flex items-center gap-2.5 flex-wrap">
+                        <button type="button" onclick="previewMatchedApp4Pdfs()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-xs transition">
+                            <i data-lucide="eye" class="w-4 h-4"></i> PDF Önizle
+                        </button>
+                        <button id="app4-printPdfsBtn" type="button" onclick="outputMatchedApp4Pdfs('print')" class="bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-xs transition">
+                            <i data-lucide="printer" class="w-4 h-4"></i> PDF'leri Dök (Yazdır)
+                        </button>
+                        <button id="app4-downloadPdfsBtn" type="button" onclick="outputMatchedApp4Pdfs('download')" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 px-5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-xs transition">
+                            <i data-lucide="download" class="w-4 h-4"></i> Birleşik PDF İndir
+                        </button>
+                    </div>
+                </div>
+
+                <div id="app4-zipDropZone"
+                     ondragover="handleDragOver1(event, this)"
+                     ondragleave="handleDragLeave1(event, this)"
+                     ondrop="handleDrop4Zip(event, this)"
+                     onclick="document.getElementById('app4-zipInput').click()"
+                     class="flex flex-col items-center justify-center border-2 border-dashed border-rose-300 hover:border-rose-500 hover:bg-rose-50/40 rounded-2xl p-6 cursor-pointer transition group bg-rose-50/10">
+                    <i data-lucide="folder-archive" class="w-9 h-9 text-rose-500 group-hover:scale-110 mb-2 transition"></i>
+                    <span class="text-sm font-bold text-slate-800 group-hover:text-rose-700 text-center" id="app4-zipFileName">İrsaliye PDF'lerini İçeren ZIP Dosyasını Buraya Sürükleyin veya Tıklayın</span>
+                    <span class="text-xs text-slate-400 mt-1 text-center" id="app4-zipSubInfo">Dosya adı veya PDF belge içeriğindeki irsaliye numarasından otomatik eşleşme yapılır</span>
+                    <input type="file" id="app4-zipInput" accept=".zip" class="hidden" onchange="handleFileInput4Zip(event)">
+                </div>
+
+                <div id="app4-pdfStatusBox" class="hidden bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3 text-xs">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="font-bold text-slate-700" id="app4-pdfZipStats">ZIP: 0 PDF</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-rose-700 mr-1" id="app4-pdfFilterMatchStats">Seçili: 0 / 0</span>
+                            <button type="button" onclick="toggleAllApp4Waybills(true)" class="px-3 py-1 bg-white hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-xs border border-slate-300 transition">Tümünü Seç</button>
+                            <button type="button" onclick="toggleAllApp4Waybills(false)" class="px-3 py-1 bg-white hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-xs border border-slate-300 transition">Temizle</button>
+                        </div>
+                    </div>
+                    <div id="app4-waybillCheckboxList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-72 overflow-y-auto p-3 bg-white rounded-xl border border-slate-200 custom-scroll"></div>
+                    <div id="app4-pdfMissingList" class="hidden text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3 break-all"></div>
+                </div>
+
+                <!-- CANLI BİRLEŞİK PDF ÖNİZLEME ÇERÇEVESİ -->
+                <div id="app4-pdfPreviewBox" class="hidden bg-slate-900 rounded-2xl p-3 space-y-2.5 border border-slate-700">
+                    <div class="flex items-center justify-between px-2 text-xs text-slate-200">
+                        <span class="font-bold flex items-center gap-1.5"><i data-lucide="file-check" class="w-4 h-4 text-amber-400"></i> <span id="app4-pdfPreviewTitle">Birleşik İrsaliye PDF Önizleme</span></span>
+                        <button type="button" onclick="closeApp4PdfPreview()" class="px-2.5 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-[11px] font-semibold">Önizlemeyi Kapat</button>
+                    </div>
+                    <iframe id="app4-pdfPreviewFrame" class="w-full h-[540px] rounded-xl bg-white" title="PDF Önizleme"></iframe>
                 </div>
             </div>
             
@@ -1525,6 +1664,9 @@
             if (isChecked) app4DeselectedWaybills.delete(code);
             else app4DeselectedWaybills.add(code);
             updateApp4WaybillCounterText();
+            if (app4ZipPdfDocs.length > 0 && app4RowItems.length > 0) {
+                previewMatchedApp4Pdfs(true);
+            }
         }
 
         function toggleAllApp4Waybills(selectAll) {
@@ -1536,12 +1678,17 @@
                 else app4DeselectedWaybills.add(code);
             });
             updateApp4WaybillCounterText();
+            if (app4ZipPdfDocs.length > 0 && app4RowItems.length > 0) {
+                previewMatchedApp4Pdfs(true);
+            }
         }
 
         function updateApp4WaybillCounterText() {
             const allCbs = Array.from(document.querySelectorAll('#app4-waybillCheckboxList input[type="checkbox"]'));
             const checkedCbs = allCbs.filter(cb => cb.checked);
             const matchedChecked = checkedCbs.filter(cb => cb.getAttribute('data-has-pdf') === '1').length;
+            const kpiPdfEl = document.getElementById('app4-kpiPdfCount');
+            if (kpiPdfEl) kpiPdfEl.textContent = app4ZipPdfDocs.length > 0 ? matchedChecked : allCbs.length;
             if (app4ZipPdfDocs.length > 0) {
                 document.getElementById('app4-pdfFilterMatchStats').innerText = `Seçili: ${checkedCbs.length} / ${allCbs.length} İrsaliye (${matchedChecked} PDF Hazır)`;
             } else {
@@ -1600,6 +1747,10 @@
             } else {
                 missingEl.classList.add('hidden');
                 missingEl.innerText = '';
+            }
+
+            if (app4ZipPdfDocs.length > 0 && app4RowItems.length > 0) {
+                previewMatchedApp4Pdfs(true);
             }
         }
 
@@ -1760,6 +1911,7 @@
 
         function refreshApp4PrintPlateOptions() {
             const container = document.getElementById('app4-plateCheckboxList');
+            const selectedTopPlate = document.getElementById('app4-plateSelect') ? document.getElementById('app4-plateSelect').value : '';
             const plateCounts = new Map();
             app4RowItems.forEach(item => {
                 const p = (item.plaka || '').trim();
@@ -1768,26 +1920,41 @@
 
             if (plateCounts.size === 0) {
                 container.innerHTML = '<span class="text-xs text-slate-400">Dosyada plaka bilgisi bulunamadı.</span>';
+                updateApp4A4Preview();
                 return;
             }
 
             const sortedPlates = Array.from(plateCounts.keys()).sort((a, b) => a.localeCompare(b, 'tr-TR'));
             container.innerHTML = sortedPlates.map(plate => {
                 const count = plateCounts.get(plate);
+                const isChecked = selectedTopPlate !== '' && plate === selectedTopPlate;
                 return `
                     <label class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-300 hover:border-emerald-500 rounded-lg cursor-pointer select-none text-xs font-bold text-slate-700 shadow-xs transition">
-                        <input type="checkbox" value="${escapeHtmlApp3(plate)}" class="w-4 h-4 accent-emerald-600 rounded">
+                        <input type="checkbox" value="${escapeHtmlApp3(plate)}" ${isChecked ? 'checked' : ''} onchange="updateApp4A4Preview()" class="w-4 h-4 accent-emerald-600 rounded">
                         <span>${escapeHtmlApp3(plate)}</span>
                         <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px]">${count} satır</span>
                     </label>
                 `;
             }).join('');
+            updateApp4A4Preview();
+        }
+
+        function syncApp4TopPlateToA4Checkboxes() {
+            const selectedTopPlate = document.getElementById('app4-plateSelect').value;
+            const cbs = document.querySelectorAll('#app4-plateCheckboxList input[type="checkbox"]');
+            if (selectedTopPlate !== '') {
+                cbs.forEach(cb => {
+                    cb.checked = (cb.value === selectedTopPlate);
+                });
+            }
+            updateApp4A4Preview();
         }
 
         function toggleAllApp4PrintPlates(selectAll) {
             document.querySelectorAll('#app4-plateCheckboxList input[type="checkbox"]').forEach(cb => {
                 cb.checked = selectAll;
             });
+            updateApp4A4Preview();
         }
 
         function buildApp4SubtotalRowHtml(label, totalKap) {
@@ -1805,6 +1972,201 @@
                 return html;
             }
             return `<tr class="app3-subtotal-row"><td colspan="8" style="text-align:right;">${escapeHtmlApp3(label)} TOPLAM KAP: ${totalKap}</td></tr>`;
+        }
+
+        function buildApp4SinglePlateTableHtml(plate, includeSubtotals, printDateStr, headersAH) {
+            const plateItems = app4RowItems.filter(item => (item.plaka || '').trim() === plate);
+            if (plateItems.length === 0) return '';
+
+            let bodyBlocksHtml = '';
+
+            if (includeSubtotals) {
+                const groups = new Map();
+                plateItems.forEach(item => {
+                    const bayiKey = (item.bayi || '').trim();
+                    const sehirKey = (item.sehir || '').trim();
+                    const label = sehirKey ? `${bayiKey} - ${sehirKey}` : (bayiKey || '-');
+                    const normKey = label.toLocaleLowerCase('tr-TR');
+
+                    if (!groups.has(normKey)) {
+                        groups.set(normKey, { label: label, items: [], kap: 0 });
+                    }
+                    const grp = groups.get(normKey);
+                    grp.items.push(item);
+
+                    const rawRow = app4RawSheetMatrix[item.originalRowIndex] || [];
+                    const rawKap = app4KapColIndex !== -1 ? String(rawRow[app4KapColIndex] ?? '').replace(/[^\d.-]/g, '') : '';
+                    grp.kap += parseInt(rawKap, 10) || 0;
+                });
+
+                groups.forEach(grp => {
+                    let groupRowsHtml = '';
+                    grp.items.forEach(item => {
+                        const rawRow = app4RawSheetMatrix[item.originalRowIndex] || [];
+                        let cellsHtml = '';
+                        for (let c = 0; c < 8; c++) {
+                            cellsHtml += `<td>${escapeHtmlApp3(String(rawRow[c] ?? ''))}</td>`;
+                        }
+                        groupRowsHtml += `<tr>${cellsHtml}</tr>`;
+                    });
+                    groupRowsHtml += buildApp4SubtotalRowHtml(grp.label, grp.kap);
+                    bodyBlocksHtml += `<tbody class="app3-group-block">${groupRowsHtml}</tbody>`;
+                });
+            } else {
+                let rowsHtml = '';
+                plateItems.forEach(item => {
+                    const rawRow = app4RawSheetMatrix[item.originalRowIndex] || [];
+                    let cellsHtml = '';
+                    for (let c = 0; c < 8; c++) {
+                        cellsHtml += `<td>${escapeHtmlApp3(String(rawRow[c] ?? ''))}</td>`;
+                    }
+                    rowsHtml += `<tr>${cellsHtml}</tr>`;
+                });
+                bodyBlocksHtml = `<tbody>${rowsHtml}</tbody>`;
+            }
+
+            return `
+                <div class="app3-print-header">
+                    <span>PLAKA: ${escapeHtmlApp3(plate)}</span>
+                    <span>${printDateStr}</span>
+                </div>
+                <table class="app3-print-table">
+                    <thead>
+                        <tr>${headersAH.map(h => `<th>${escapeHtmlApp3(h)}</th>`).join('')}</tr>
+                    </thead>
+                    ${bodyBlocksHtml}
+                </table>
+            `;
+        }
+
+        function updateApp4A4Preview() {
+            const container = document.getElementById('app4-a4PreviewContainer');
+            const badge = document.getElementById('app4-a4PreviewBadge');
+            if (!container || !badge) return;
+
+            const selectedPlates = Array.from(document.querySelectorAll('#app4-plateCheckboxList input[type="checkbox"]:checked')).map(cb => cb.value);
+
+            if (!app4RawSheetMatrix || app4RawSheetMatrix.length === 0) {
+                badge.textContent = 'Excel bekleniyor';
+                container.innerHTML = '<div class="text-center py-10 text-xs font-semibold text-slate-500">Önizleme görmek için yukarıdan Excel dosyasını yükleyin.</div>';
+                return;
+            }
+
+            if (selectedPlates.length === 0) {
+                badge.textContent = 'Plaka seçilmedi';
+                container.innerHTML = '<div class="text-center py-10 text-xs font-semibold text-slate-500">Önizleme görmek için yukarıdan en az bir plaka işaretleyin.</div>';
+                return;
+            }
+
+            const includeSubtotals = document.getElementById('app4-includeSummaryToggle').checked;
+            const now = new Date();
+            const printDateStr = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}.${now.getFullYear()}`;
+            const headerRow = app4RawSheetMatrix[app4HeaderRowIndex] || [];
+            const headersAH = [];
+            for (let c = 0; c < 8; c++) {
+                headersAH.push(String(headerRow[c] ?? '').trim());
+            }
+
+            badge.textContent = `${selectedPlates.length} Plaka Seçili (${selectedPlates.length * 2} Sayfa Çıktı)`;
+
+            let previewCardsHtml = '';
+            selectedPlates.forEach(plate => {
+                const tableBlock = buildApp4SinglePlateTableHtml(plate, includeSubtotals, printDateStr, headersAH);
+                if (!tableBlock) return;
+                previewCardsHtml += `
+                    <div class="bg-white rounded-xl shadow-md border border-slate-300 p-5 md:p-6 min-w-[760px] mx-auto space-y-2">
+                        <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200 mb-2">
+                            <span>A4 Yatay Sayfa Önizlemesi — ${escapeHtmlApp3(plate)}</span>
+                            <span>Yazdırmada 2 Nüsha Basılır</span>
+                        </div>
+                        <div class="a4-preview-sheet">${tableBlock}</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = previewCardsHtml || '<div class="text-center py-10 text-xs font-semibold text-slate-500">Seçili plakaya ait satır bulunamadı.</div>';
+        }
+
+        let app4LastPdfPreviewUrl = null;
+        let app4PdfPreviewActive = false;
+
+        function closeApp4PdfPreview() {
+            app4PdfPreviewActive = false;
+            const box = document.getElementById('app4-pdfPreviewBox');
+            const frame = document.getElementById('app4-pdfPreviewFrame');
+            if (box) box.classList.add('hidden');
+            if (frame) frame.src = 'about:blank';
+            if (app4LastPdfPreviewUrl) {
+                URL.revokeObjectURL(app4LastPdfPreviewUrl);
+                app4LastPdfPreviewUrl = null;
+            }
+        }
+
+        async function previewMatchedApp4Pdfs(silent = false) {
+            if (app4RowItems.length === 0) {
+                if (!silent) alert('Lütfen önce Excel dosyasını yükleyin!');
+                return;
+            }
+            if (app4ZipPdfDocs.length === 0) {
+                if (!silent) alert('Lütfen önce PDF dosyalarını içeren ZIP arşivini yükleyin!');
+                return;
+            }
+
+            const box = document.getElementById('app4-pdfPreviewBox');
+            const frame = document.getElementById('app4-pdfPreviewFrame');
+            const title = document.getElementById('app4-pdfPreviewTitle');
+
+            const checkedBoxes = Array.from(document.querySelectorAll('#app4-waybillCheckboxList input[type="checkbox"]:checked'));
+            const targetCodes = checkedBoxes.map(cb => cb.value);
+
+            const matchedDocs = [];
+            const usedDocs = new Set();
+            targetCodes.forEach(code => {
+                const doc = findPdfForWaybill(code);
+                if (doc && !usedDocs.has(doc)) {
+                    usedDocs.add(doc);
+                    matchedDocs.push(doc);
+                }
+            });
+
+            if (targetCodes.length === 0 || matchedDocs.length === 0) {
+                if (!silent) {
+                    alert(targetCodes.length === 0
+                        ? 'Önizlenecek en az bir irsaliye seçili olmalıdır!'
+                        : 'Seçili irsaliye numaralarıyla eşleşen PDF dosyası ZIP içinde bulunamadı!');
+                } else if (app4PdfPreviewActive && box && frame) {
+                    if (app4LastPdfPreviewUrl) {
+                        URL.revokeObjectURL(app4LastPdfPreviewUrl);
+                        app4LastPdfPreviewUrl = null;
+                    }
+                    frame.src = 'about:blank';
+                    if (title) title.textContent = 'Seçili plaka veya filtreye ait PDF bulunamadı';
+                }
+                return;
+            }
+
+            try {
+                const mergedPdf = await PDFLib.PDFDocument.create();
+                for (let doc of matchedDocs) {
+                    const srcPdf = await PDFLib.PDFDocument.load(doc.bytes);
+                    const copiedPages = await mergedPdf.copyPages(srcPdf, srcPdf.getPageIndices());
+                    copiedPages.forEach(page => mergedPdf.addPage(page));
+                }
+                const mergedBytes = await mergedPdf.save();
+                const blob = new Blob([mergedBytes], { type: 'application/pdf' });
+
+                if (app4LastPdfPreviewUrl) URL.revokeObjectURL(app4LastPdfPreviewUrl);
+                app4LastPdfPreviewUrl = URL.createObjectURL(blob);
+
+                app4PdfPreviewActive = true;
+                const selectedPlate = document.getElementById('app4-plateSelect') ? document.getElementById('app4-plateSelect').value : '';
+                const platePrefix = selectedPlate ? `[${selectedPlate}] ` : '';
+                if (title) title.textContent = `${platePrefix}Birleşik İrsaliye Önizleme (${matchedDocs.length} Belge / ${mergedPdf.getPageCount()} Sayfa)`;
+                if (frame) frame.src = app4LastPdfPreviewUrl;
+                if (box) box.classList.remove('hidden');
+            } catch (err) {
+                if (!silent) alert('PDF önizleme oluşturulurken hata oluştu: ' + (err.message || err));
+            }
         }
 
         function printSelectedApp4Plates() {
@@ -1833,69 +2195,8 @@
             let pagesHtml = '';
 
             selectedPlates.forEach(plate => {
-                const plateItems = app4RowItems.filter(item => (item.plaka || '').trim() === plate);
-                if (plateItems.length === 0) return;
-
-                let bodyBlocksHtml = '';
-
-                if (includeSubtotals) {
-                    const groups = new Map();
-                    plateItems.forEach(item => {
-                        const bayiKey = (item.bayi || '').trim();
-                        const sehirKey = (item.sehir || '').trim();
-                        const label = sehirKey ? `${bayiKey} - ${sehirKey}` : (bayiKey || '-');
-                        const normKey = label.toLocaleLowerCase('tr-TR');
-
-                        if (!groups.has(normKey)) {
-                            groups.set(normKey, { label: label, items: [], kap: 0 });
-                        }
-                        const grp = groups.get(normKey);
-                        grp.items.push(item);
-
-                        const rawRow = app4RawSheetMatrix[item.originalRowIndex] || [];
-                        const rawKap = app4KapColIndex !== -1 ? String(rawRow[app4KapColIndex] ?? '').replace(/[^\d.-]/g, '') : '';
-                        grp.kap += parseInt(rawKap, 10) || 0;
-                    });
-
-                    groups.forEach(grp => {
-                        let groupRowsHtml = '';
-                        grp.items.forEach(item => {
-                            const rawRow = app4RawSheetMatrix[item.originalRowIndex] || [];
-                            let cellsHtml = '';
-                            for (let c = 0; c < 8; c++) {
-                                cellsHtml += `<td>${escapeHtmlApp3(String(rawRow[c] ?? ''))}</td>`;
-                            }
-                            groupRowsHtml += `<tr>${cellsHtml}</tr>`;
-                        });
-                        groupRowsHtml += buildApp4SubtotalRowHtml(grp.label, grp.kap);
-                        bodyBlocksHtml += `<tbody class="app3-group-block">${groupRowsHtml}</tbody>`;
-                    });
-                } else {
-                    let rowsHtml = '';
-                    plateItems.forEach(item => {
-                        const rawRow = app4RawSheetMatrix[item.originalRowIndex] || [];
-                        let cellsHtml = '';
-                        for (let c = 0; c < 8; c++) {
-                            cellsHtml += `<td>${escapeHtmlApp3(String(rawRow[c] ?? ''))}</td>`;
-                        }
-                        rowsHtml += `<tr>${cellsHtml}</tr>`;
-                    });
-                    bodyBlocksHtml = `<tbody>${rowsHtml}</tbody>`;
-                }
-
-                const tableBlock = `
-                    <div class="app3-print-header">
-                        <span>PLAKA: ${escapeHtmlApp3(plate)}</span>
-                        <span>${printDateStr}</span>
-                    </div>
-                    <table class="app3-print-table">
-                        <thead>
-                            <tr>${headersAH.map(h => `<th>${escapeHtmlApp3(h)}</th>`).join('')}</tr>
-                        </thead>
-                        ${bodyBlocksHtml}
-                    </table>
-                `;
-
+                const tableBlock = buildApp4SinglePlateTableHtml(plate, includeSubtotals, printDateStr, headersAH);
+                if (!tableBlock) return;
                 pagesHtml += `<div class="app3-print-page">${tableBlock}</div>`;
                 pagesHtml += `<div class="app3-print-page">${tableBlock}</div>`;
             });
@@ -1911,6 +2212,60 @@
             dynStyle.textContent = '';
         }
 
+        function switchApp4Tab(tabName) {
+            const tabs = ['labels', 'pdfs', 'plates'];
+            const activeColors = {
+                labels: ['border-orange-600', 'text-orange-600'],
+                pdfs: ['border-rose-600', 'text-rose-600'],
+                plates: ['border-emerald-600', 'text-emerald-600']
+            };
+            tabs.forEach(t => {
+                const panel = document.getElementById('app4-tabPanel-' + t);
+                const btn = document.getElementById('app4-tabBtn-' + t);
+                if (!panel || !btn) return;
+                if (t === tabName) {
+                    panel.classList.remove('hidden');
+                    btn.classList.remove('border-transparent', 'text-slate-500', 'font-bold');
+                    btn.classList.add('font-extrabold', ...activeColors[t]);
+                    if (t === 'pdfs' && app4ZipPdfDocs.length > 0 && app4RowItems.length > 0) {
+                        previewMatchedApp4Pdfs(true);
+                    }
+                } else {
+                    panel.classList.add('hidden');
+                    btn.classList.remove('font-extrabold', 'border-orange-600', 'text-orange-600', 'border-rose-600', 'text-rose-600', 'border-emerald-600', 'text-emerald-600');
+                    btn.classList.add('border-transparent', 'text-slate-500', 'font-bold');
+                }
+            });
+        }
+
+        function updateApp4LabelLivePreview() {
+            const selectEl = document.getElementById('app4-customerSelect');
+            const selectedOpt = selectEl && selectEl.selectedIndex >= 0 ? selectEl.options[selectEl.selectedIndex] : null;
+            const kapVal = Math.max(1, parseInt(document.getElementById('app4-kapCount').value, 10) || 1);
+            const nameEl = document.getElementById('app4-previewName');
+            const cityEl = document.getElementById('app4-previewCity');
+            const fracEl = document.getElementById('app4-previewFraction');
+            if (!nameEl || !cityEl || !fracEl) return;
+
+            if (selectedOpt && selectedOpt.value !== '') {
+                const mName = selectedOpt.getAttribute('data-name') || 'MÜŞTERİ ADI';
+                const mCity = selectedOpt.getAttribute('data-city') || '';
+                nameEl.textContent = mName;
+                cityEl.textContent = mCity ? `(${mCity})` : '';
+            } else {
+                nameEl.textContent = 'MÜŞTERİ ADI';
+                cityEl.textContent = '(ŞEHİR)';
+            }
+            fracEl.textContent = `1/${kapVal}`;
+        }
+
+        function updateApp4TopKpis(filteredCustomers) {
+            const custEl = document.getElementById('app4-kpiCustCount');
+            const kapEl = document.getElementById('app4-kpiKapCount');
+            if (custEl) custEl.textContent = filteredCustomers.length;
+            if (kapEl) kapEl.textContent = filteredCustomers.reduce((sum, c) => sum + (c.kap || 0), 0);
+        }
+
         function filterApp4Customers() {
             const term = document.getElementById('app4-customerSearch').value.toLocaleLowerCase('tr-TR');
             const selectedPlate = document.getElementById('app4-plateSelect').value;
@@ -1924,8 +2279,9 @@
         }
 
         function renderCustomerList4(list) {
+            updateApp4TopKpis(list);
             const selectElement = document.getElementById('app4-customerSelect'); selectElement.innerHTML = '';
-            if (list.length === 0) { selectElement.innerHTML = '<option value="">Sonuç bulunamadı</option>'; return; }
+            if (list.length === 0) { selectElement.innerHTML = '<option value="">Sonuç bulunamadı</option>'; updateApp4LabelLivePreview(); return; }
             list.forEach((cust, index) => {
                 const option = document.createElement('option'); option.value = index; 
                 option.textContent = `${cust.name} (${cust.city}) - [${cust.kap} KAP] ${cust.plaka ? '- ' + cust.plaka : ''}`; 
@@ -1934,8 +2290,8 @@
             });
         }
 
-        document.getElementById('app4-customerSearch').addEventListener('input', () => { filterApp4Customers(); updateApp4PdfMatchStats(); });
-        document.getElementById('app4-plateSelect').addEventListener('change', () => { filterApp4Customers(); updateApp4PdfMatchStats(); });
+        document.getElementById('app4-customerSearch').addEventListener('input', () => { filterApp4Customers(); updateApp4PdfMatchStats(); if(app4ZipPdfDocs.length > 0 && app4RowItems.length > 0) previewMatchedApp4Pdfs(true); });
+        document.getElementById('app4-plateSelect').addEventListener('change', () => { filterApp4Customers(); syncApp4TopPlateToA4Checkboxes(); updateApp4PdfMatchStats(); if(app4ZipPdfDocs.length > 0 && app4RowItems.length > 0) previewMatchedApp4Pdfs(true); });
 
         document.getElementById('app4-customerSelect').addEventListener('change', function(e) {
             const selectedOption = this.options[this.selectedIndex];
@@ -1943,7 +2299,9 @@
                 const autoKap = selectedOption.getAttribute('data-kap');
                 if (autoKap) { document.getElementById('app4-kapCount').value = autoKap; }
             }
+            updateApp4LabelLivePreview();
             updateApp4PdfMatchStats();
+            if(app4ZipPdfDocs.length > 0 && app4RowItems.length > 0) previewMatchedApp4Pdfs(true);
         });
 
         // TEKLİ YAZDIRMA
