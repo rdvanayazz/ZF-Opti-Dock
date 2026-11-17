@@ -437,36 +437,7 @@
                     </div>
                 </div>
 
-                <!-- PLAKA SEÇEREK YATAY A4 2 NÜSHA YAZDIRMA ALANI -->
-                <div class="pt-5 border-t border-slate-200 space-y-3">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div>
-                            <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                                <i data-lucide="printer" class="w-4 h-4 text-violet-600"></i>
-                                Plaka Bazlı A4 Yatay Çıktı (A - H Sütunları / Her Plaka 2 Nüsha)
-                            </h3>
-                            <p class="text-xs text-slate-500">Yazdırmak istediğiniz plakaları seçin. Seçilen her plaka kendi satırlarıyla ayrı 2 sayfa olarak basılır.</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleAllApp3PrintPlates(true)" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-xs border border-slate-300 transition">Tümünü Seç</button>
-                            <button type="button" onclick="toggleAllApp3PrintPlates(false)" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-xs border border-slate-300 transition">Seçimi Temizle</button>
-                        </div>
-                    </div>
-                    
-                    <div id="app3-plateCheckboxList" class="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-3 bg-slate-50 rounded-xl border border-slate-200 custom-scroll">
-                        <span class="text-xs text-slate-400">Eşleşen plaka bulunamadı.</span>
-                    </div>
 
-                    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
-                        <label class="inline-flex items-center gap-2.5 px-3.5 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl cursor-pointer select-none text-xs font-bold text-slate-700 transition">
-                            <input type="checkbox" id="app3-includeSummaryToggle" checked class="w-4 h-4 accent-emerald-600 rounded">
-                            <span>Müşteri / Şehir Altı Toplam Satırı Ekle</span>
-                        </label>
-                        <button type="button" onclick="printSelectedApp3Plates()" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm transition">
-                            <i data-lucide="printer" class="w-5 h-5"></i> Seçili Plakaları Yazdır (2 Nüsha / Yatay A4)
-                        </button>
-                    </div>
-                </div>
             </div>
 
             <!-- Tablo Önizleme -->
@@ -604,6 +575,37 @@
                     <button id="app4-bulkGenerateBtn" type="button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl text-lg flex items-center justify-center gap-2 transition-colors">
                         <i data-lucide="printer" class="w-5 h-5"></i> Seçili Plakadaki Tüm Yerleri Toplu Yazdır
                     </button>
+                </div>
+
+                <!-- MODÜL 4 PLAKA SEÇEREK YATAY A4 2 NÜSHA YAZDIRMA ALANI -->
+                <div class="pt-6 border-t border-slate-200 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i>
+                                Plaka Bazlı A4 Yatay Liste Çıktısı (A - H Sütunları / Her Plaka 2 Nüsha)
+                            </h3>
+                            <p class="text-xs text-slate-500">Yazdırmak istediğiniz plakaları seçin. Seçilen her plaka kendi satırlarıyla ayrı 2 sayfa olarak basılır.</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleAllApp4PrintPlates(true)" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-xs border border-slate-300 transition">Tümünü Seç</button>
+                            <button type="button" onclick="toggleAllApp4PrintPlates(false)" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-xs border border-slate-300 transition">Seçimi Temizle</button>
+                        </div>
+                    </div>
+                    
+                    <div id="app4-plateCheckboxList" class="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-3 bg-slate-50 rounded-xl border border-slate-200 custom-scroll">
+                        <span class="text-xs text-slate-400">Önce Excel dosyası yükleyin.</span>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+                        <label class="inline-flex items-center gap-2.5 px-3.5 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl cursor-pointer select-none text-xs font-bold text-slate-700 transition">
+                            <input type="checkbox" id="app4-includeSummaryToggle" checked class="w-4 h-4 accent-emerald-600 rounded">
+                            <span>Müşteri / Şehir Altı Toplam Satırı Ekle</span>
+                        </label>
+                        <button type="button" onclick="printSelectedApp4Plates()" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm transition">
+                            <i data-lucide="printer" class="w-5 h-5"></i> Seçili Plakaları Yazdır (2 Nüsha / Yatay A4)
+                        </button>
+                    </div>
                 </div>
             </div>
             
@@ -1145,43 +1147,7 @@
             });
             document.getElementById('app3-statTotal').innerText = matchedData3.length; document.getElementById('app3-statMatched').innerText = matchedCount;
             document.getElementById('app3-actionArea').classList.remove('hidden'); document.getElementById('app3-previewArea').classList.remove('hidden');
-            refreshApp3PrintPlateOptions();
             filterApp3Table();
-        }
-
-        function refreshApp3PrintPlateOptions() {
-            const container = document.getElementById('app3-plateCheckboxList');
-            const prevChecked = new Set(Array.from(container.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value));
-            
-            const plateCounts = new Map();
-            matchedData3.forEach(item => {
-                const p = (item.plaka || '').trim();
-                if (p) plateCounts.set(p, (plateCounts.get(p) || 0) + 1);
-            });
-
-            if (plateCounts.size === 0) {
-                container.innerHTML = '<span class="text-xs text-slate-400">Eşleşen plaka bulunamadı.</span>';
-                return;
-            }
-
-            const sortedPlates = Array.from(plateCounts.keys()).sort((a, b) => a.localeCompare(b, 'tr-TR'));
-            container.innerHTML = sortedPlates.map(plate => {
-                const count = plateCounts.get(plate);
-                const isChecked = prevChecked.has(plate) ? 'checked' : '';
-                return `
-                    <label class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-300 hover:border-violet-500 rounded-lg cursor-pointer select-none text-xs font-bold text-slate-700 shadow-xs transition">
-                        <input type="checkbox" value="${escapeHtmlApp3(plate)}" ${isChecked} class="w-4 h-4 accent-violet-600 rounded">
-                        <span>${escapeHtmlApp3(plate)}</span>
-                        <span class="px-1.5 py-0.5 bg-violet-100 text-violet-700 rounded text-[10px]">${count} satır</span>
-                    </label>
-                `;
-            }).join('');
-        }
-
-        function toggleAllApp3PrintPlates(selectAll) {
-            document.querySelectorAll('#app3-plateCheckboxList input[type="checkbox"]').forEach(cb => {
-                cb.checked = selectAll;
-            });
         }
 
         function escapeHtmlApp3(str) {
@@ -1193,132 +1159,10 @@
                 .replace(/'/g, '&#39;');
         }
 
-        function buildApp3SubtotalRowHtml(label, totalKap) {
-            const kapIdx = app3KapColIndex;
-            if (kapIdx >= 0 && kapIdx < 8) {
-                let html = '<tr class="app3-subtotal-row">';
-                if (kapIdx > 0) {
-                    html += `<td colspan="${kapIdx}" style="text-align:right;">${escapeHtmlApp3(label)} TOPLAM:</td>`;
-                }
-                html += `<td style="text-align:center;">${kapIdx === 0 ? `${escapeHtmlApp3(label)} TOPLAM: ${totalKap}` : totalKap}</td>`;
-                if (kapIdx < 7) {
-                    html += `<td colspan="${8 - kapIdx - 1}"></td>`;
-                }
-                html += '</tr>';
-                return html;
-            }
-            return `<tr class="app3-subtotal-row"><td colspan="8" style="text-align:right;">${escapeHtmlApp3(label)} TOPLAM KAP: ${totalKap}</td></tr>`;
-        }
-
-        function printSelectedApp3Plates() {
-            const selectedPlates = Array.from(document.querySelectorAll('#app3-plateCheckboxList input[type="checkbox"]:checked')).map(cb => cb.value);
-            if (selectedPlates.length === 0) {
-                alert('Lütfen yazdırmak için en az bir plaka seçin!');
-                return;
-            }
-            if (!app3RawSheetMatrix || app3RawSheetMatrix.length === 0) {
-                alert('Excel tablo verisi bulunamadı!');
-                return;
-            }
-            if (!consumeUse()) return;
-
-            const includeSubtotals = document.getElementById('app3-includeSummaryToggle').checked;
-            const now = new Date();
-            const printDateStr = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}.${now.getFullYear()}`;
-
-            const headerRow = app3RawSheetMatrix[app3HeaderRowIndex] || [];
-            const headersAH = [];
-            for (let c = 0; c < 8; c++) {
-                headersAH.push(String(headerRow[c] ?? '').trim());
-            }
-
-            const printArea = document.getElementById('app3-print-area');
-            let pagesHtml = '';
-
-            selectedPlates.forEach(plate => {
-                const plateItems = matchedData3.filter(item => (item.plaka || '').trim() === plate);
-                if (plateItems.length === 0) return;
-
-                let bodyBlocksHtml = '';
-
-                if (includeSubtotals) {
-                    const groups = new Map();
-                    plateItems.forEach(item => {
-                        const bayiKey = (item.bayi || '').trim();
-                        const sehirKey = (item.sehir || '').trim();
-                        const label = sehirKey ? `${bayiKey} - ${sehirKey}` : (bayiKey || '-');
-                        const normKey = label.toLocaleLowerCase('tr-TR');
-
-                        if (!groups.has(normKey)) {
-                            groups.set(normKey, { label: label, items: [], kap: 0 });
-                        }
-                        const grp = groups.get(normKey);
-                        grp.items.push(item);
-
-                        const rawRow = app3RawSheetMatrix[item.originalRowIndex] || [];
-                        const rawKap = app3KapColIndex !== -1 ? String(rawRow[app3KapColIndex] ?? '').replace(/[^\d.-]/g, '') : '';
-                        grp.kap += parseInt(rawKap, 10) || 0;
-                    });
-
-                    groups.forEach(grp => {
-                        let groupRowsHtml = '';
-                        grp.items.forEach(item => {
-                            const rawRow = app3RawSheetMatrix[item.originalRowIndex] || [];
-                            let cellsHtml = '';
-                            for (let c = 0; c < 8; c++) {
-                                cellsHtml += `<td>${escapeHtmlApp3(String(rawRow[c] ?? ''))}</td>`;
-                            }
-                            groupRowsHtml += `<tr>${cellsHtml}</tr>`;
-                        });
-                        groupRowsHtml += buildApp3SubtotalRowHtml(grp.label, grp.kap);
-                        bodyBlocksHtml += `<tbody class="app3-group-block">${groupRowsHtml}</tbody>`;
-                    });
-                } else {
-                    let rowsHtml = '';
-                    plateItems.forEach(item => {
-                        const rawRow = app3RawSheetMatrix[item.originalRowIndex] || [];
-                        let cellsHtml = '';
-                        for (let c = 0; c < 8; c++) {
-                            cellsHtml += `<td>${escapeHtmlApp3(String(rawRow[c] ?? ''))}</td>`;
-                        }
-                        rowsHtml += `<tr>${cellsHtml}</tr>`;
-                    });
-                    bodyBlocksHtml = `<tbody>${rowsHtml}</tbody>`;
-                }
-
-                const tableBlock = `
-                    <div class="app3-print-header">
-                        <span>PLAKA: ${escapeHtmlApp3(plate)}</span>
-                        <span>${printDateStr}</span>
-                    </div>
-                    <table class="app3-print-table">
-                        <thead>
-                            <tr>${headersAH.map(h => `<th>${escapeHtmlApp3(h)}</th>`).join('')}</tr>
-                        </thead>
-                        ${bodyBlocksHtml}
-                    </table>
-                `;
-
-                pagesHtml += `<div class="app3-print-page">${tableBlock}</div>`;
-                pagesHtml += `<div class="app3-print-page">${tableBlock}</div>`;
-            });
-
-            printArea.innerHTML = pagesHtml;
-
-            const dynStyle = document.getElementById('dynamic-print-page-style');
-            dynStyle.textContent = `@media print { @page { size: A4 landscape; margin: 6mm; } }`;
-
-            document.body.classList.add('printing-app3');
-            window.print();
-            document.body.classList.remove('printing-app3');
-            dynStyle.textContent = '';
-        }
-
         function updateApp3Field(id, field, value) { 
             const item = matchedData3.find(x => x.id === id); 
             if (item) { 
                 item[field] = value.trim(); 
-                if (field === 'plaka') refreshApp3PrintPlateOptions();
             } 
         }
         function sortApp3ByField(field) { if (app3SortConfig.field === field) { app3SortConfig.isAsc = !app3SortConfig.isAsc; } else { app3SortConfig.field = field; app3SortConfig.isAsc = true; } filterApp3Table(); }
@@ -1357,10 +1201,14 @@
         }
 
         // ==========================================
-        // MODÜL 4: ETİKET YAZDIRMA (PLAKA FİLTRESİ)
+        // MODÜL 4: ETİKET YAZDIRMA (PLAKA FİLTRESİ & A4 LİSTE DÖKÜMÜ)
         // ==========================================
         let app4Customers = [];
         let uniquePlates = new Set();
+        let app4RawSheetMatrix = [];
+        let app4HeaderRowIndex = 0;
+        let app4KapColIndex = -1;
+        let app4RowItems = [];
 
         function handleDrop4(e, el) { e.preventDefault(); el.classList.remove('drag-active'); if(e.dataTransfer.files.length) processFile4(e.dataTransfer.files[0]); }
         function handleFileInput4(e) { if(e.target.files.length) processFile4(e.target.files[0]); }
@@ -1371,8 +1219,48 @@
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, {type: 'array'});
                 const firstSheetName = workbook.SheetNames[0]; const worksheet = workbook.Sheets[firstSheetName];
-                const json = XLSX.utils.sheet_to_json(worksheet, {defval: ''});
+                const json = getVisibleRows(worksheet);
                 
+                let rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '', raw: false });
+                app4RawSheetMatrix = rawData;
+                app4HeaderRowIndex = 0;
+                app4KapColIndex = -1;
+                let plakaColIdx = -1, bayiColIdx = -1, sehirColIdx = -1;
+
+                for (let r = 0; r < Math.min(10, rawData.length); r++) {
+                    const rowArr = rawData[r] || [];
+                    const rowStr = rowArr.map(x => normalizeHeaderName(String(x))).join('|');
+                    if (rowStr.includes('delivery') || rowStr.includes('shiptoname') || rowStr.includes('kap') || rowStr.includes('musteri')) {
+                        app4HeaderRowIndex = r;
+                        for (let c = 0; c < rowArr.length; c++) {
+                            const hNorm = normalizeHeaderName(String(rowArr[c]));
+                            if (app4KapColIndex === -1 && (hNorm === 'kap' || hNorm.includes('package') || hNorm === 'koli' || hNorm === 'paket')) app4KapColIndex = c;
+                            if (plakaColIdx === -1 && (hNorm.includes('aracbilgisi') || hNorm.includes('plaka'))) plakaColIdx = c;
+                            if (bayiColIdx === -1 && (hNorm.includes('shiptoname') || hNorm.includes('bayi') || hNorm.includes('musteri') || hNorm.includes('alici'))) bayiColIdx = c;
+                            if (sehirColIdx === -1 && (hNorm === 'sehir' || hNorm === 'il' || hNorm === 'city' || hNorm.includes('teslimatili'))) sehirColIdx = c;
+                        }
+                        break;
+                    }
+                }
+                if (plakaColIdx === -1) plakaColIdx = 8;
+
+                let rowsMeta = worksheet['!rows'] || [];
+                app4RowItems = [];
+                for (let r = app4HeaderRowIndex + 1; r < rawData.length; r++) {
+                    if (rowsMeta[r] && (rowsMeta[r].hidden === true || rowsMeta[r].hpx === 0 || rowsMeta[r].hpt === 0)) continue;
+                    const rowArr = rawData[r] || [];
+                    if (!rowArr.some(cell => String(cell).trim() !== '')) continue;
+                    const pVal = String(rowArr[plakaColIdx] ?? rowArr[8] ?? '').trim();
+                    const bVal = bayiColIdx !== -1 ? String(rowArr[bayiColIdx] ?? '').trim() : '';
+                    const sVal = sehirColIdx !== -1 ? String(rowArr[sehirColIdx] ?? '').trim() : '';
+                    app4RowItems.push({
+                        originalRowIndex: r,
+                        plaka: pVal,
+                        bayi: bVal,
+                        sehir: sVal
+                    });
+                }
+
                 app4Customers = []; 
                 uniquePlates.clear();
                 
@@ -1395,7 +1283,7 @@
                 
                 const plateSelect = document.getElementById('app4-plateSelect');
                 plateSelect.innerHTML = '<option value="">Tüm Plakalar</option>';
-                Array.from(uniquePlates).sort().forEach(p => {
+                Array.from(uniquePlates).sort((a, b) => a.localeCompare(b, 'tr-TR')).forEach(p => {
                     const opt = document.createElement('option');
                     opt.value = p; opt.textContent = p;
                     plateSelect.appendChild(opt);
@@ -1403,7 +1291,161 @@
 
                 app4Customers.sort((a, b) => a.name.localeCompare(b.name, 'tr-TR'));
                 filterApp4Customers();
+                refreshApp4PrintPlateOptions();
             }; reader.readAsArrayBuffer(file);
+        }
+
+        function refreshApp4PrintPlateOptions() {
+            const container = document.getElementById('app4-plateCheckboxList');
+            const plateCounts = new Map();
+            app4RowItems.forEach(item => {
+                const p = (item.plaka || '').trim();
+                if (p) plateCounts.set(p, (plateCounts.get(p) || 0) + 1);
+            });
+
+            if (plateCounts.size === 0) {
+                container.innerHTML = '<span class="text-xs text-slate-400">Dosyada plaka bilgisi bulunamadı.</span>';
+                return;
+            }
+
+            const sortedPlates = Array.from(plateCounts.keys()).sort((a, b) => a.localeCompare(b, 'tr-TR'));
+            container.innerHTML = sortedPlates.map(plate => {
+                const count = plateCounts.get(plate);
+                return `
+                    <label class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-300 hover:border-emerald-500 rounded-lg cursor-pointer select-none text-xs font-bold text-slate-700 shadow-xs transition">
+                        <input type="checkbox" value="${escapeHtmlApp3(plate)}" class="w-4 h-4 accent-emerald-600 rounded">
+                        <span>${escapeHtmlApp3(plate)}</span>
+                        <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px]">${count} satır</span>
+                    </label>
+                `;
+            }).join('');
+        }
+
+        function toggleAllApp4PrintPlates(selectAll) {
+            document.querySelectorAll('#app4-plateCheckboxList input[type="checkbox"]').forEach(cb => {
+                cb.checked = selectAll;
+            });
+        }
+
+        function buildApp4SubtotalRowHtml(label, totalKap) {
+            const kapIdx = app4KapColIndex;
+            if (kapIdx >= 0 && kapIdx < 8) {
+                let html = '<tr class="app3-subtotal-row">';
+                if (kapIdx > 0) {
+                    html += `<td colspan="${kapIdx}" style="text-align:right;">${escapeHtmlApp3(label)} TOPLAM:</td>`;
+                }
+                html += `<td style="text-align:center;">${kapIdx === 0 ? `${escapeHtmlApp3(label)} TOPLAM: ${totalKap}` : totalKap}</td>`;
+                if (kapIdx < 7) {
+                    html += `<td colspan="${8 - kapIdx - 1}"></td>`;
+                }
+                html += '</tr>';
+                return html;
+            }
+            return `<tr class="app3-subtotal-row"><td colspan="8" style="text-align:right;">${escapeHtmlApp3(label)} TOPLAM KAP: ${totalKap}</td></tr>`;
+        }
+
+        function printSelectedApp4Plates() {
+            const selectedPlates = Array.from(document.querySelectorAll('#app4-plateCheckboxList input[type="checkbox"]:checked')).map(cb => cb.value);
+            if (selectedPlates.length === 0) {
+                alert('Lütfen yazdırmak için en az bir plaka seçin!');
+                return;
+            }
+            if (!app4RawSheetMatrix || app4RawSheetMatrix.length === 0) {
+                alert('Excel tablo verisi bulunamadı!');
+                return;
+            }
+            if (!consumeUse()) return;
+
+            const includeSubtotals = document.getElementById('app4-includeSummaryToggle').checked;
+            const now = new Date();
+            const printDateStr = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}.${now.getFullYear()}`;
+
+            const headerRow = app4RawSheetMatrix[app4HeaderRowIndex] || [];
+            const headersAH = [];
+            for (let c = 0; c < 8; c++) {
+                headersAH.push(String(headerRow[c] ?? '').trim());
+            }
+
+            const printArea = document.getElementById('app3-print-area');
+            let pagesHtml = '';
+
+            selectedPlates.forEach(plate => {
+                const plateItems = app4RowItems.filter(item => (item.plaka || '').trim() === plate);
+                if (plateItems.length === 0) return;
+
+                let bodyBlocksHtml = '';
+
+                if (includeSubtotals) {
+                    const groups = new Map();
+                    plateItems.forEach(item => {
+                        const bayiKey = (item.bayi || '').trim();
+                        const sehirKey = (item.sehir || '').trim();
+                        const label = sehirKey ? `${bayiKey} - ${sehirKey}` : (bayiKey || '-');
+                        const normKey = label.toLocaleLowerCase('tr-TR');
+
+                        if (!groups.has(normKey)) {
+                            groups.set(normKey, { label: label, items: [], kap: 0 });
+                        }
+                        const grp = groups.get(normKey);
+                        grp.items.push(item);
+
+                        const rawRow = app4RawSheetMatrix[item.originalRowIndex] || [];
+                        const rawKap = app4KapColIndex !== -1 ? String(rawRow[app4KapColIndex] ?? '').replace(/[^\d.-]/g, '') : '';
+                        grp.kap += parseInt(rawKap, 10) || 0;
+                    });
+
+                    groups.forEach(grp => {
+                        let groupRowsHtml = '';
+                        grp.items.forEach(item => {
+                            const rawRow = app4RawSheetMatrix[item.originalRowIndex] || [];
+                            let cellsHtml = '';
+                            for (let c = 0; c < 8; c++) {
+                                cellsHtml += `<td>${escapeHtmlApp3(String(rawRow[c] ?? ''))}</td>`;
+                            }
+                            groupRowsHtml += `<tr>${cellsHtml}</tr>`;
+                        });
+                        groupRowsHtml += buildApp4SubtotalRowHtml(grp.label, grp.kap);
+                        bodyBlocksHtml += `<tbody class="app3-group-block">${groupRowsHtml}</tbody>`;
+                    });
+                } else {
+                    let rowsHtml = '';
+                    plateItems.forEach(item => {
+                        const rawRow = app4RawSheetMatrix[item.originalRowIndex] || [];
+                        let cellsHtml = '';
+                        for (let c = 0; c < 8; c++) {
+                            cellsHtml += `<td>${escapeHtmlApp3(String(rawRow[c] ?? ''))}</td>`;
+                        }
+                        rowsHtml += `<tr>${cellsHtml}</tr>`;
+                    });
+                    bodyBlocksHtml = `<tbody>${rowsHtml}</tbody>`;
+                }
+
+                const tableBlock = `
+                    <div class="app3-print-header">
+                        <span>PLAKA: ${escapeHtmlApp3(plate)}</span>
+                        <span>${printDateStr}</span>
+                    </div>
+                    <table class="app3-print-table">
+                        <thead>
+                            <tr>${headersAH.map(h => `<th>${escapeHtmlApp3(h)}</th>`).join('')}</tr>
+                        </thead>
+                        ${bodyBlocksHtml}
+                    </table>
+                `;
+
+                pagesHtml += `<div class="app3-print-page">${tableBlock}</div>`;
+                pagesHtml += `<div class="app3-print-page">${tableBlock}</div>`;
+            });
+
+            printArea.innerHTML = pagesHtml;
+
+            const dynStyle = document.getElementById('dynamic-print-page-style');
+            dynStyle.textContent = `@media print { @page { size: A4 landscape; margin: 6mm; } }`;
+
+            document.body.classList.add('printing-app3');
+            window.print();
+            document.body.classList.remove('printing-app3');
+            dynStyle.textContent = '';
         }
 
         function filterApp4Customers() {
