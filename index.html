@@ -694,7 +694,10 @@
                         <span class="text-xs font-extrabold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                             <i data-lucide="eye" class="w-4 h-4 text-orange-500"></i> Canlı Etiket Önizleme
                         </span>
-                        <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">80 x 100 mm</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">80 x 100 mm</span>
+                            <button type="button" onclick="document.getElementById('app4-generateBtn').click()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold text-white shadow-xs transition bg-orange-600 hover:bg-orange-700"><i data-lucide="printer" class="w-3.5 h-3.5"></i> Yazdır</button>
+                        </div>
                     </div>
 
                     <div class="w-full bg-slate-100/80 rounded-2xl p-6 flex items-center justify-center border border-slate-200/70">
@@ -747,7 +750,10 @@
                         <span class="text-xs font-extrabold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
                             <i data-lucide="eye" class="w-4 h-4 text-emerald-600"></i> Canlı A4 Yatay Liste Önizleme
                         </span>
-                        <span id="app4-a4PreviewBadge" class="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Plaka seçilmedi</span>
+                        <div class="flex items-center gap-2">
+                            <span id="app4-a4PreviewBadge" class="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Plaka seçilmedi</span>
+                            <button type="button" onclick="printSelectedApp4Plates()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold text-white shadow-xs transition bg-emerald-600 hover:bg-emerald-700"><i data-lucide="printer" class="w-3.5 h-3.5"></i> Yazdır</button>
+                        </div>
                     </div>
 
                     <div id="app4-a4PreviewContainer" class="bg-slate-200/70 rounded-2xl p-4 md:p-6 border border-slate-300/80 max-h-[540px] overflow-auto custom-scroll space-y-6">
@@ -813,6 +819,7 @@
                     <div class="flex items-center justify-between px-2 text-xs text-slate-200">
                         <span class="font-bold flex items-center gap-1.5"><i data-lucide="file-check" class="w-4 h-4 text-amber-400"></i> <span id="app4-pdfPreviewTitle">Birleşik İrsaliye PDF Önizleme</span></span>
                         <div class="flex items-center gap-2">
+                            <button type="button" onclick="printApp4PreviewPdf()" class="inline-flex items-center gap-1 px-2.5 py-1 bg-rose-600 hover:bg-rose-700 rounded-lg text-[11px] font-bold text-white"><i data-lucide="printer" class="w-3.5 h-3.5"></i> Yazdır</button>
                             <button type="button" onclick="openApp4PdfPreviewInNewTab()" class="px-2.5 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-[11px] font-semibold">Yeni Sekmede Aç</button>
                             <button type="button" onclick="closeApp4PdfPreview()" class="px-2.5 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-[11px] font-semibold">Önizlemeyi Kapat</button>
                         </div>
@@ -1233,7 +1240,17 @@
         }
         function updatePreviewPlaka() { document.getElementById('previewPlakaLabel').innerText = document.getElementById('inputPlaka').value.trim() || '-'; }
         async function downloadFinalExcel() {
-            if (!matchedData.length) return; if (!consumeUse()) return; const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Sayfa1');
+            if (!matchedData.length) return; if (!consumeUse()) return; const wb = new ExcelJS.Workbook();
+            // Yazdırma varsayılanı: A4 yatay, tüm sütunlar tek sayfa genişliğinde (satırlar gerektiği kadar sayfaya akar)
+            const ws = wb.addWorksheet('Sayfa1', {
+                pageSetup: {
+                    paperSize: 9, orientation: 'landscape',
+                    fitToPage: true, fitToWidth: 1, fitToHeight: 0,
+                    horizontalCentered: true,
+                    margins: { left: 0.25, right: 0.25, top: 0.4, bottom: 0.4, header: 0.2, footer: 0.2 }
+                }
+            });
+            ws.pageSetup.printTitlesRow = '1:2'; // Plaka ve başlık satırı her sayfada tekrar eder
             const fontStyle = { name: 'Tahoma', size: 14, bold: true }; const alignStyle = { vertical: 'middle', horizontal: 'center' }; const borderStyle = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
             const finalPlaka = document.getElementById('inputPlaka').value.trim() || 'PLAKA'; const finalTransport = document.getElementById('inputTransport').value.trim() || 'TRANSPORT';
             const r1 = ws.addRow([finalPlaka]); r1.height = 37.5; ws.mergeCells('A1:H1'); const r2 = ws.addRow(['Delivery', 'Shipment', 'Bill.Doc.', 'Ship-To', '# packages', 'Gross Weight', 'an', 'Lokasyon']); r2.height = 37.5;
@@ -2017,6 +2034,7 @@
 
         // ---------- CANLI PDF ÖNİZLEME (pdf.js ile sayfa sayfa çizim) ----------
         let app4LastPdfPreviewUrl = null;
+        let app4LastPdfPreviewBlob = null;
         let app4PdfPreviewActive = false;
         let app4PdfPreviewDismissed = false;
         let app4PreviewGen = 0;
@@ -2056,7 +2074,14 @@
             const pages = document.getElementById('app4-pdfPreviewPages');
             if (box) box.classList.add('hidden');
             if (pages) pages.innerHTML = '';
-            if (app4LastPdfPreviewUrl) { URL.revokeObjectURL(app4LastPdfPreviewUrl); app4LastPdfPreviewUrl = null; }
+            if (app4LastPdfPreviewUrl) { URL.revokeObjectURL(app4LastPdfPreviewUrl); app4LastPdfPreviewUrl = null; app4LastPdfPreviewBlob = null; }
+        }
+
+        // Önizlemede görünen PDF'i yeniden birleştirmeden doğrudan yazdırır
+        function printApp4PreviewPdf() {
+            if (!app4LastPdfPreviewUrl || !app4LastPdfPreviewBlob) { outputMatchedApp4Pdfs('print'); return; }
+            if (!consumeUse()) return;
+            printApp4PdfBlob(app4LastPdfPreviewBlob, getApp4PdfFileName());
         }
 
         function openApp4PdfPreviewInNewTab() {
@@ -2162,7 +2187,7 @@
                 if (!silent) { alert(msg); return; }
                 if (app4PdfPreviewActive) {
                     releaseApp4PreviewRender();
-                    if (app4LastPdfPreviewUrl) { URL.revokeObjectURL(app4LastPdfPreviewUrl); app4LastPdfPreviewUrl = null; }
+                    if (app4LastPdfPreviewUrl) { URL.revokeObjectURL(app4LastPdfPreviewUrl); app4LastPdfPreviewUrl = null; app4LastPdfPreviewBlob = null; }
                     if (title) title.textContent = 'Seçili plaka veya filtreye ait PDF bulunamadı';
                     setApp4PreviewMessage(msg, true);
                 }
@@ -2180,7 +2205,8 @@
                 if (gen !== app4PreviewGen) return; // bu arada yeni bir önizleme istendi
 
                 if (app4LastPdfPreviewUrl) URL.revokeObjectURL(app4LastPdfPreviewUrl);
-                app4LastPdfPreviewUrl = URL.createObjectURL(new Blob([result.bytes], { type: 'application/pdf' }));
+                app4LastPdfPreviewBlob = new Blob([result.bytes], { type: 'application/pdf' });
+                app4LastPdfPreviewUrl = URL.createObjectURL(app4LastPdfPreviewBlob);
 
                 const selectedPlate = document.getElementById('app4-plateSelect').value;
                 const platePrefix = selectedPlate ? `[${selectedPlate}] ` : '';
