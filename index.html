@@ -1275,6 +1275,7 @@
                 }
             });
             ws.pageSetup.printTitlesRow = '1:2'; // Plaka ve başlık satırı her sayfada tekrar eder
+            ws.headerFooter = { oddFooter: '&C&"Calibri,Bold"&12Sayfa &P / &N', evenFooter: '&C&"Calibri,Bold"&12Sayfa &P / &N' }; // Alt bilgi: Sayfa 1 / 3
             const fontStyle = { name: 'Tahoma', size: 14, bold: true }; const alignStyle = { vertical: 'middle', horizontal: 'center' }; const borderStyle = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
             const finalPlaka = document.getElementById('inputPlaka').value.trim() || 'PLAKA'; const finalTransport = document.getElementById('inputTransport').value.trim() || 'TRANSPORT';
             const r1 = ws.addRow([finalPlaka]); r1.height = 37.5; ws.mergeCells('A1:H1'); const r2 = ws.addRow(['Delivery', 'Shipment', 'Bill.Doc.', 'Ship-To', '# packages', 'Gross Weight', 'an', 'Lokasyon']); r2.height = 37.5;
@@ -1372,7 +1373,7 @@
         document.getElementById('searchInput').addEventListener('input', () => renderTable(getApp2SearchFiltered()));
         document.getElementById('downloadExcelBtn').addEventListener('click', async () => {
             if (!finalResult.length || !consumeUse()) return;
-            const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Sayfa1', {views:[{showGridLines:true}]});
+            const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Sayfa1', {views:[{showGridLines:true}], headerFooter: { oddFooter: '&C&"Calibri,Bold"&12Sayfa &P / &N', evenFooter: '&C&"Calibri,Bold"&12Sayfa &P / &N' } });
             ws.columns = [ {header:'AN', key:'AN', width:28}, {header:'LOK', key:'LOK', width:14}, {header:'Delivery', key:'Delivery', width:15}, {header:'# packages', key:'packages', width:16}, {header:'Ship-To', key:'ShipTo', width:15}, {header:'Ship to Name', key:'ShipToName', width:48}, {header:'City', key:'City', width:16}, {header:'Gross Weight', key:'GrossWeight', width:18}, {header:'', key:'e1', width:10}, {header:'', key:'e2', width:10}, {header:'', key:'e3', width:10}, {header:'IM', key:'IM', width:20}, {header:'IM TARİHİ', key:'IM_TARIHI', width:15} ];
             const head = ws.getRow(1); head.height = 50; head.eachCell(c => { c.font={name:'Calibri',size:14,bold:true}; c.alignment={vertical:'middle',horizontal:'center'}; c.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}}; });
             finalResult.forEach(i => { const r = ws.addRow({ AN: i.AN, LOK: i.LOK, Delivery: isNaN(i.Delivery)?i.Delivery:Number(i.Delivery), packages: Number(i['# packages']), ShipTo: i['Ship-To'], ShipToName: i['Ship to Name'], City: i.City, GrossWeight: Number(i['Gross Weight']), IM: i.IM, IM_TARIHI: i.IM_TARIHI }); r.height = 50; r.eachCell((c, col) => { c.font={name:'Calibri',size:14,bold:true}; c.alignment={vertical:'middle',horizontal:'center'}; c.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}}; if(col===4) c.numFmt='#,##0'; else if(col===8) c.numFmt='#,##0.000'; });
@@ -1626,6 +1627,8 @@
             }
             const ws = wb.worksheets[0];
             if (!ws) { alert('Excel içinde sayfa bulunamadı!'); return; }
+            if (!ws.headerFooter) ws.headerFooter = {};
+            if (!ws.headerFooter.oddFooter) { ws.headerFooter.oddFooter = '&C&"Calibri,Bold"&12Sayfa &P / &N'; ws.headerFooter.evenFooter = '&C&"Calibri,Bold"&12Sayfa &P / &N'; }
             if (!consumeUse()) return;
             let plakaColIdx = 9;
             let tasimaIrsColIdx = 14;
