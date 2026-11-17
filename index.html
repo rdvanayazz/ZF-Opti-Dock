@@ -354,11 +354,12 @@
                 <div class="bg-white rounded-2xl p-4 shadow-sm border flex flex-col"><div class="flex justify-between mb-2"><span class="px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 rounded-full border border-emerald-100">3. Dosya (Stok)</span><span id="status-3" class="text-xs text-slate-400">Bekleniyor</span></div><h3 class="font-bold text-sm mb-3">ZF Stok (S1)</h3><div id="drop-3" class="border border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer hover:border-emerald-500 transition"><input type="file" id="file-3" class="hidden"><p id="name-3" class="text-[11px] text-slate-600">Buraya Bırakın</p></div></div>
             </div>
             <div class="bg-white rounded-2xl p-5 shadow-sm border mb-6 flex flex-col lg:flex-row justify-between gap-5">
-                <div class="grid grid-cols-4 gap-3 w-full lg:w-auto text-center">
+                <div class="grid grid-cols-5 gap-3 w-full lg:w-auto text-center">
                     <div class="bg-slate-50 border p-2.5 rounded-xl"><span class="text-[11px] font-semibold text-slate-400">Kayıt</span><br><span id="kpiTotalRows" class="text-lg font-bold text-slate-800">0</span></div>
                     <div class="bg-emerald-50 border p-2.5 rounded-xl"><span class="text-[11px] font-semibold text-emerald-600">Eşleşen</span><br><span id="kpiMatchedRows" class="text-lg font-bold text-emerald-700">0</span></div>
                     <div class="bg-blue-50 border p-2.5 rounded-xl"><span class="text-[11px] font-semibold text-blue-600">Paket</span><br><span id="kpiTotalPackages" class="text-lg font-bold text-blue-700">0</span></div>
                     <div class="bg-purple-50 border p-2.5 rounded-xl"><span class="text-[11px] font-semibold text-purple-600">Kilo</span><br><span id="kpiTotalWeight" class="text-lg font-bold text-purple-700">0</span></div>
+                    <div class="bg-orange-50 border p-2.5 rounded-xl"><span class="text-[11px] font-semibold text-orange-600">Kap Farkı</span><br><span id="kpiKapFark" class="text-lg font-bold text-orange-700">0</span></div>
                 </div>
                 <div class="flex flex-wrap gap-3">
                     <button id="processBtn" disabled class="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-xl text-xs disabled:opacity-50">Eşleştir</button>
@@ -1036,8 +1037,8 @@
         function getColValue(row, possibleNames) {
             const keys = Object.keys(row);
             for (let name of possibleNames) {
-                const clean = name.toLowerCase().replace(/[\s._-]/g, '');
-                const mk = keys.find(k => k.toLowerCase().replace(/[\s._-]/g, '') === clean);
+                const clean = normalizeHeaderName(name);
+                const mk = keys.find(k => normalizeHeaderName(k) === clean);
                 if (mk && row[mk] !== undefined) return row[mk];
             }
             return '';
@@ -1307,14 +1308,14 @@
         function getApp2SearchFiltered() {
             const t = document.getElementById('searchInput').value.toLocaleLowerCase('tr-TR');
             if (!t) return finalResult;
-            return finalResult.filter(r => [r.City, r['Ship to Name'], r.Delivery, r.AN, r.LOK].some(v => String(v ?? '').toLocaleLowerCase('tr-TR').includes(t)));
+            return finalResult.filter(r => [r.City, r['Ship to Name'], r.Delivery, r.AN, r.LOK, r.IM, r.KAP_FARK].some(v => String(v ?? '').toLocaleLowerCase('tr-TR').includes(t)));
         }
         document.getElementById('processBtn').addEventListener('click', () => {
             if (!rawData1 || !rawData2 || !rawData3) { alert('Lütfen önce 3 dosyayı da yükleyin!'); return; }
             const cikisEntries = [];
             rawData2.forEach(row => {
                 const d = String(getColValue(row, ['DELİVERY', 'Delivery', 'Teslimat', 'Teslimat No'])).trim(); const a = String(getColValue(row, ['AN NO', 'AN', 'Ant.Beyan No', 'Beyan No'])).trim();
-                const f = String(getColValue(row, ['Fatura No', 'Fatura', 'Bill.Doc.'])).trim(); const p = parseInt(getColValue(row, ['# packages', 'packages', 'Koli', 'Kap', 'KAP', 'Paket'])) || 0;
+                const f = String(getColValue(row, ['Fatura No', 'Fatura', 'Bill.Doc.'])).trim(); const p = parseInt(getColValue(row, ['# packages', 'packages', 'Koli', 'Kap', 'KAP', 'Paket', 'Kap Adedi', 'Koli Adedi', 'Paket Adedi'])) || 0;
                 const im = String(getColValue(row, ['IM NO', 'IM', 'IM_NO', 'İthalat No', 'IM No'])).trim(); let imTarihi = ''; const rawImTarih = getColValue(row, ['IM TARİHİ', 'IM TARİH', 'IM Tarihi', 'İthalat Tarihi', 'IM Date']);
                 if (rawImTarih) { let numVal = Number(rawImTarih); if (!isNaN(numVal) && numVal > 30000 && numVal < 100000) { const dt = new Date(Math.round((numVal - 25569) * 86400 * 1000)); imTarihi = `${String(dt.getUTCDate()).padStart(2, '0')}.${String(dt.getUTCMonth() + 1).padStart(2, '0')}.${dt.getUTCFullYear()}`; } else { imTarihi = String(rawImTarih).trim(); } }
                 if (d || f) cikisEntries.push({ d, a, f, p, im, imTarihi });
@@ -1326,28 +1327,45 @@
                 const pkg = parseInt(getColValue(row, ['# packages', 'packages', 'Koli', 'Kap'])) || 0; const gw = parseNumberLoose(getColValue(row, ['Gross Weight', 'KG', 'Brüt Kilo']));
                 let fAN = ''; let fIM = ''; let fImTarihi = ''; let matchedCikis = null;
                 for (let c of cikisEntries) { if (delivery && c.d && (c.d === delivery || c.d.includes(delivery) || delivery.includes(c.d))) { matchedCikis = c; break; } if (!matchedCikis && billDoc && c.f && (c.f === billDoc || c.f.includes(billDoc) || billDoc.includes(c.f))) { matchedCikis = c; } }
-                if (matchedCikis) { fAN = matchedCikis.a; if (matchedCikis.p === pkg && pkg > 0) { fIM = matchedCikis.im; fImTarihi = matchedCikis.imTarihi; } }
+                let fKapFark = '';
+                if (matchedCikis) {
+                    fAN = matchedCikis.a;
+                    fIM = matchedCikis.im; fImTarihi = matchedCikis.imTarihi;
+                    // Kaplar tutmuyorsa IM yine yazılır ama satır işaretlenir
+                    if (fIM && matchedCikis.p !== pkg) {
+                        fKapFark = `Liste: ${pkg || '?'} / Çıkış: ${matchedCikis.p || '?'}`;
+                    }
+                }
                 let fLOK = ''; if (fAN) { if (globalStokMap.has(fAN)) { fLOK = globalStokMap.get(fAN); } else { for (let [k,v] of globalStokMap.entries()) { if (k.includes(fAN) || fAN.includes(k)) { fLOK = v; break; } } } }
                 if (fAN) mCount++; tPkg += pkg; tWt += gw;
-                finalResult.push({ id: 'r_' + Math.random().toString(36).substring(2, 9), AN: fAN, LOK: fLOK, Delivery: delivery, '# packages': pkg, 'Ship-To': String(getColValue(row, ['Ship-To', 'Alıcı Kod']) ?? '').trim(), 'Ship to Name': String(getColValue(row, ['Ship to Name', 'Alıcı Adı', 'Müşteri']) ?? '').trim(), City: String(getColValue(row, ['City', 'Şehir', 'İl']) ?? '').trim(), 'Gross Weight': Number(gw.toFixed(3)), IM: fIM, IM_TARIHI: fImTarihi });
+                finalResult.push({ id: 'r_' + Math.random().toString(36).substring(2, 9), AN: fAN, LOK: fLOK, Delivery: delivery, '# packages': pkg, 'Ship-To': String(getColValue(row, ['Ship-To', 'Alıcı Kod']) ?? '').trim(), 'Ship to Name': String(getColValue(row, ['Ship to Name', 'Alıcı Adı', 'Müşteri']) ?? '').trim(), City: String(getColValue(row, ['City', 'Şehir', 'İl']) ?? '').trim(), 'Gross Weight': Number(gw.toFixed(3)), IM: fIM, IM_TARIHI: fImTarihi, KAP_FARK: fKapFark });
             });
             finalResult.sort((a,b) => a.City.localeCompare(b.City, 'tr-TR') || a['Ship to Name'].localeCompare(b['Ship to Name'], 'tr-TR') || String(a.Delivery).localeCompare(String(b.Delivery)));
             updateKPIs(); document.getElementById('downloadExcelBtn').disabled = false; renderTable(getApp2SearchFiltered());
         });
-        function updateKPIs() { let matched = finalResult.filter(r => r.AN).length; document.getElementById('kpiTotalRows').innerText = finalResult.length; document.getElementById('kpiMatchedRows').innerText = `${matched} / ${finalResult.length}`; document.getElementById('kpiTotalPackages').innerText = finalResult.reduce((sum, r) => sum + r['# packages'], 0); document.getElementById('kpiTotalWeight').innerText = finalResult.reduce((sum, r) => sum + r['Gross Weight'], 0).toLocaleString('tr-TR'); }
+        function updateKPIs() { let matched = finalResult.filter(r => r.AN).length; document.getElementById('kpiTotalRows').innerText = finalResult.length; document.getElementById('kpiMatchedRows').innerText = `${matched} / ${finalResult.length}`; document.getElementById('kpiTotalPackages').innerText = finalResult.reduce((sum, r) => sum + r['# packages'], 0); document.getElementById('kpiTotalWeight').innerText = finalResult.reduce((sum, r) => sum + r['Gross Weight'], 0).toLocaleString('tr-TR'); document.getElementById('kpiKapFark').innerText = finalResult.filter(r => r.KAP_FARK).length; }
         function updateManualAN(id, newAN) {
             const item = finalResult.find(x => x.id === id); if (!item) return; newAN = newAN.trim(); item.AN = newAN;
             if (!newAN) { item.LOK = ''; } else { let fLOK = ''; if (globalStokMap.has(newAN)) { fLOK = globalStokMap.get(newAN); } else { for (let [k,v] of globalStokMap.entries()) { if (k.includes(newAN) || newAN.includes(k)) { fLOK = v; break; } } } item.LOK = fLOK; }
             updateKPIs(); renderTable(getApp2SearchFiltered());
         }
-        function renderTable(data) { document.getElementById('tableBody').innerHTML = data.map((r,i) => ` <tr class="h-[50px] border-b border-slate-200 ${i%2===0?'bg-white':'bg-slate-50'} hover:bg-blue-50"> <td class="p-1"><input type="text" value="${escapeHtml(r.AN || '')}" onchange="updateManualAN('${r.id}', this.value)" class="w-full text-center bg-transparent focus:bg-white rounded py-1 outline-none font-bold ${r.AN ? 'text-slate-800' : 'text-red-500'}"></td> <td class="text-blue-700 font-semibold" id="lok-${r.id}">${escapeHtml(r.LOK||'-')}</td><td>${escapeHtml(r.Delivery)}</td><td>${r['# packages']}</td> <td>${escapeHtml(r['Ship-To'])}</td><td class="text-left pl-4">${escapeHtml(r['Ship to Name'])}</td><td>${escapeHtml(r.City)}</td><td>${r['Gross Weight'].toFixed(3)}</td> <td colspan="3" class="bg-slate-50/50"></td><td class="text-indigo-600 font-mono font-semibold">${escapeHtml(r.IM || '-')}</td><td class="text-slate-600 font-mono font-semibold">${escapeHtml(r.IM_TARIHI || '-')}</td> </tr> `).join(''); }
+        function renderTable(data) { document.getElementById('tableBody').innerHTML = data.map((r,i) => ` <tr class="h-[50px] border-b border-slate-200 ${i%2===0?'bg-white':'bg-slate-50'} hover:bg-blue-50"> <td class="p-1"><input type="text" value="${escapeHtml(r.AN || '')}" onchange="updateManualAN('${r.id}', this.value)" class="w-full text-center bg-transparent focus:bg-white rounded py-1 outline-none font-bold ${r.AN ? 'text-slate-800' : 'text-red-500'}"></td> <td class="text-blue-700 font-semibold" id="lok-${r.id}">${escapeHtml(r.LOK||'-')}</td><td>${escapeHtml(r.Delivery)}</td><td>${r['# packages']}</td> <td>${escapeHtml(r['Ship-To'])}</td><td class="text-left pl-4">${escapeHtml(r['Ship to Name'])}</td><td>${escapeHtml(r.City)}</td><td>${r['Gross Weight'].toFixed(3)}</td> <td colspan="3" class="bg-slate-50/50"></td><td class="font-mono font-semibold ${r.KAP_FARK ? 'bg-orange-100 text-orange-800' : 'text-indigo-600'}" title="${escapeHtml(r.KAP_FARK || '')}">${escapeHtml(r.IM || '-')}${r.KAP_FARK ? `<div class="text-[10px] font-sans font-bold text-orange-700 leading-tight">${escapeHtml(r.KAP_FARK)}</div>` : ''}</td><td class="font-mono font-semibold ${r.KAP_FARK ? 'bg-orange-100 text-orange-800' : 'text-slate-600'}">${escapeHtml(r.IM_TARIHI || '-')}</td> </tr> `).join(''); }
         document.getElementById('searchInput').addEventListener('input', () => renderTable(getApp2SearchFiltered()));
         document.getElementById('downloadExcelBtn').addEventListener('click', async () => {
             if (!finalResult.length || !consumeUse()) return;
             const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Sayfa1', {views:[{showGridLines:true}]});
             ws.columns = [ {header:'AN', key:'AN', width:28}, {header:'LOK', key:'LOK', width:14}, {header:'Delivery', key:'Delivery', width:15}, {header:'# packages', key:'packages', width:16}, {header:'Ship-To', key:'ShipTo', width:15}, {header:'Ship to Name', key:'ShipToName', width:48}, {header:'City', key:'City', width:16}, {header:'Gross Weight', key:'GrossWeight', width:18}, {header:'', key:'e1', width:10}, {header:'', key:'e2', width:10}, {header:'', key:'e3', width:10}, {header:'IM', key:'IM', width:20}, {header:'IM TARİHİ', key:'IM_TARIHI', width:15} ];
             const head = ws.getRow(1); head.height = 50; head.eachCell(c => { c.font={name:'Calibri',size:14,bold:true}; c.alignment={vertical:'middle',horizontal:'center'}; c.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}}; });
-            finalResult.forEach(i => { const r = ws.addRow({ AN: i.AN, LOK: i.LOK, Delivery: isNaN(i.Delivery)?i.Delivery:Number(i.Delivery), packages: Number(i['# packages']), ShipTo: i['Ship-To'], ShipToName: i['Ship to Name'], City: i.City, GrossWeight: Number(i['Gross Weight']), IM: i.IM, IM_TARIHI: i.IM_TARIHI }); r.height = 50; r.eachCell((c, col) => { c.font={name:'Calibri',size:14,bold:true}; c.alignment={vertical:'middle',horizontal:'center'}; c.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}}; if(col===4) c.numFmt='#,##0'; else if(col===8) c.numFmt='#,##0.000'; }); });
+            finalResult.forEach(i => { const r = ws.addRow({ AN: i.AN, LOK: i.LOK, Delivery: isNaN(i.Delivery)?i.Delivery:Number(i.Delivery), packages: Number(i['# packages']), ShipTo: i['Ship-To'], ShipToName: i['Ship to Name'], City: i.City, GrossWeight: Number(i['Gross Weight']), IM: i.IM, IM_TARIHI: i.IM_TARIHI }); r.height = 50; r.eachCell((c, col) => { c.font={name:'Calibri',size:14,bold:true}; c.alignment={vertical:'middle',horizontal:'center'}; c.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}}; if(col===4) c.numFmt='#,##0'; else if(col===8) c.numFmt='#,##0.000'; });
+                if (i.KAP_FARK) {
+                    // IM hücresine alt satıra "liste/çıkış" kap bilgisi yazılır
+                    const imCell = r.getCell(12);
+                    imCell.value = `${i.IM}\n${i.KAP_FARK}`;
+                    imCell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                    r.height = 66; // uzun bilgi satırı kaydırılırsa kesilmesin
+                    [12, 13].forEach(col => { r.getCell(col).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFED7AA' } }; });
+                }
+            });
             const d = new Date(); const buf = await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]), `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}. CD KESİLECEKLER.xlsx`);
         });
         document.getElementById('resetAllBtn').addEventListener('click', () => { location.reload(); });
