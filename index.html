@@ -777,6 +777,10 @@
                             <input type="checkbox" id="app4-kapStampToggle" checked onchange="onApp4KapStampToggle()" class="w-4 h-4 accent-rose-600 rounded">
                             <span>PDF'e KAP Damgası Bas</span>
                         </label>
+                        <label class="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-700" title="1: irsaliye tam basılır. 2 ve üzeri: her irsaliyenin önce yalnızca 1. sayfası, ardından kalan nüshalar tam basılır. Yazdırma penceresinde nüsha sayısını 1 bırakın.">
+                            <span>Nüsha</span>
+                            <input type="number" id="app4-copyCount" min="1" max="10" value="1" oninput="onApp4CopyCountChange()" class="w-14 px-2 py-1 border border-slate-300 rounded-lg text-center font-black text-rose-700 outline-none focus:border-rose-500">
+                        </label>
                         <button type="button" onclick="previewMatchedApp4Pdfs()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-xs transition">
                             <i data-lucide="eye" class="w-4 h-4"></i> PDF Önizle
                         </button>
@@ -1904,6 +1908,23 @@
             return !el || el.checked;
         }
 
+        function getApp4CopyCount() {
+            const el = document.getElementById('app4-copyCount');
+            return Math.min(10, Math.max(1, parseInt(el && el.value, 10) || 1));
+        }
+
+        function onApp4CopyCountChange() {
+            try { localStorage.setItem('zfOptiDockPdfCopies', String(getApp4CopyCount())); } catch (e) {}
+            scheduleApp4PdfPreviewRefresh();
+        }
+
+        (function restoreApp4CopyCount() {
+            try {
+                const v = parseInt(localStorage.getItem('zfOptiDockPdfCopies'), 10);
+                if (v >= 1 && v <= 10) document.getElementById('app4-copyCount').value = v;
+            } catch (e) {}
+        })();
+
         function collectApp4MatchedDocs() {
             const checkedBoxes = Array.from(document.querySelectorAll('#app4-waybillCheckboxList input[type="checkbox"]:checked'));
             const targetCodes = checkedBoxes.map(cb => cb.value);
@@ -1952,7 +1973,7 @@
             });
         }
 
-        async function buildApp4MergedPdf(matchedDocs, withKap) {
+        async function buildApp4MergedPdf(matchedDocs, withKap, copies = getApp4CopyCount()) {
             if (typeof PDFLib === 'undefined') throw new Error('PDF kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edip sayfayı yenileyin.');
             const mergedPdf = await PDFLib.PDFDocument.create();
             const font = withKap ? await mergedPdf.embedFont(PDFLib.StandardFonts.HelveticaBold) : null;
@@ -1961,11 +1982,16 @@
             for (let item of matchedDocs) {
                 try {
                     const srcPdf = await getApp4SourcePdf(item.doc);
-                    const copiedPages = await mergedPdf.copyPages(srcPdf, srcPdf.getPageIndices());
-                    copiedPages.forEach(page => {
-                        if (withKap) drawApp4KapStamp(page, font, item.kap);
-                        mergedPdf.addPage(page);
-                    });
+                    const allIdx = srcPdf.getPageIndices();
+                    // İrsaliye irsaliye: 1 nüsha → tam belge; 2+ nüsha → 1. nüsha yalnızca ilk sayfa, diğerleri tam belge
+                    const copyPlans = copies <= 1 ? [allIdx] : [[0], ...Array.from({ length: copies - 1 }, () => allIdx)];
+                    for (const idxList of copyPlans) {
+                        const copiedPages = await mergedPdf.copyPages(srcPdf, idxList);
+                        copiedPages.forEach(page => {
+                            if (withKap) drawApp4KapStamp(page, font, item.kap);
+                            mergedPdf.addPage(page);
+                        });
+                    }
                     okDocs++;
                 } catch (err) {
                     failed.push(item.doc.fileName);
@@ -2210,7 +2236,8 @@
 
                 const selectedPlate = document.getElementById('app4-plateSelect').value;
                 const platePrefix = selectedPlate ? `[${selectedPlate}] ` : '';
-                const kapInfo = withKap ? 'KAP damgalı' : 'KAP damgasız';
+                const copies = getApp4CopyCount();
+                const kapInfo = (withKap ? 'KAP damgalı' : 'KAP damgasız') + (copies > 1 ? `, ${copies} nüsha` : '');
                 const failInfo = result.failed.length ? ` — ${result.failed.length} PDF açılamadı` : '';
                 if (title) title.textContent = `${platePrefix}Birleşik İrsaliye Önizleme (${result.docCount} Belge / ${result.pageCount} Sayfa, ${kapInfo})${failInfo}`;
 
