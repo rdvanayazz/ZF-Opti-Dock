@@ -777,10 +777,6 @@
                             <input type="checkbox" id="app4-kapStampToggle" checked onchange="onApp4KapStampToggle()" class="w-4 h-4 accent-rose-600 rounded">
                             <span>PDF'e KAP Damgası Bas</span>
                         </label>
-                        <label class="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-700" title="1: irsaliye tam basılır. 2 ve üzeri: her irsaliyenin önce yalnızca 1. sayfası, ardından kalan nüshalar tam basılır. Yazdırma penceresinde nüsha sayısını 1 bırakın.">
-                            <span>Nüsha</span>
-                            <input type="number" id="app4-copyCount" min="1" max="10" value="1" oninput="onApp4CopyCountChange()" class="w-14 px-2 py-1 border border-slate-300 rounded-lg text-center font-black text-rose-700 outline-none focus:border-rose-500">
-                        </label>
                         <button type="button" onclick="previewMatchedApp4Pdfs()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-xs transition">
                             <i data-lucide="eye" class="w-4 h-4"></i> PDF Önizle
                         </button>
@@ -823,6 +819,10 @@
                     <div class="flex items-center justify-between px-2 text-xs text-slate-200">
                         <span class="font-bold flex items-center gap-1.5"><i data-lucide="file-check" class="w-4 h-4 text-amber-400"></i> <span id="app4-pdfPreviewTitle">Birleşik İrsaliye PDF Önizleme</span></span>
                         <div class="flex items-center gap-2">
+                            <label class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-white/10 rounded-lg text-[11px] font-semibold" title="1: irsaliye tam basılır. 2 ve üzeri: her irsaliyenin önce yalnızca 1. sayfası, ardından kalan nüshalar tam basılır. Yazdırma penceresinde kopya sayısını 1 bırakın.">
+                                <span>Nüsha</span>
+                                <input type="number" id="app4-copyCount" min="1" max="10" value="3" oninput="onApp4CopyCountChange()" class="w-12 px-1.5 py-0.5 rounded-md text-center font-black text-rose-700 bg-white outline-none focus:ring-2 focus:ring-rose-400">
+                            </label>
                             <button type="button" onclick="printApp4PreviewPdf()" class="inline-flex items-center gap-1 px-2.5 py-1 bg-rose-600 hover:bg-rose-700 rounded-lg text-[11px] font-bold text-white"><i data-lucide="printer" class="w-3.5 h-3.5"></i> Yazdır</button>
                             <button type="button" onclick="openApp4PdfPreviewInNewTab()" class="px-2.5 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-[11px] font-semibold">Yeni Sekmede Aç</button>
                             <button type="button" onclick="closeApp4PdfPreview()" class="px-2.5 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-[11px] font-semibold">Önizlemeyi Kapat</button>
@@ -1910,20 +1910,12 @@
 
         function getApp4CopyCount() {
             const el = document.getElementById('app4-copyCount');
-            return Math.min(10, Math.max(1, parseInt(el && el.value, 10) || 1));
+            return Math.min(10, Math.max(1, parseInt(el && el.value, 10) || 3));
         }
 
         function onApp4CopyCountChange() {
-            try { localStorage.setItem('zfOptiDockPdfCopies', String(getApp4CopyCount())); } catch (e) {}
             scheduleApp4PdfPreviewRefresh();
         }
-
-        (function restoreApp4CopyCount() {
-            try {
-                const v = parseInt(localStorage.getItem('zfOptiDockPdfCopies'), 10);
-                if (v >= 1 && v <= 10) document.getElementById('app4-copyCount').value = v;
-            } catch (e) {}
-        })();
 
         function collectApp4MatchedDocs() {
             const checkedBoxes = Array.from(document.querySelectorAll('#app4-waybillCheckboxList input[type="checkbox"]:checked'));
