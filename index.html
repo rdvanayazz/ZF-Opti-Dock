@@ -27,12 +27,9 @@
     
         /* === MODÜL 4 YAZDIRMA AYARLARI (TAŞMA VE KELİME BÖLÜNME ENGELİ) === */
         @media print {
-            body.printing-app4 { visibility: hidden; }
-            body.printing-app4 #app4Screen,
-            body.printing-app4 #app4Screen * { visibility: visible; }
-            body.printing-app4 .no-print { display: none !important; }
-            body.printing-app4 #print-area { display: block; position: absolute; left: 0; top: 0; width: 100%; }
-            body.printing-app4, body.printing-app4 html { margin: 0; padding: 0; background: #fff; width: 80mm; height: 100mm; }
+            body.printing-app4 > *:not(#print-area) { display: none !important; }
+            body.printing-app4 #print-area { display: block !important; width: 80mm; }
+            body.printing-app4, body.printing-app4 html { margin: 0 !important; padding: 0 !important; background: #fff !important; min-height: 0 !important; width: 80mm; }
             
             body.printing-app4 .label-page {
                 width: 80mm; height: 98mm; box-sizing: border-box; padding: 2mm; margin: 0;
@@ -56,6 +53,7 @@
                 padding: 0 !important;
                 background: #fff !important;
                 width: 100% !important;
+                min-height: 0 !important;
             }
             body.printing-app3 #app3-print-area {
                 display: block !important;
@@ -126,6 +124,16 @@
                 print-color-adjust: exact;
             }
         }
+
+        /* Yazdırma alanları ekranda hiçbir zaman görünmez */
+        @media screen {
+            #print-area, #app3-print-area { display: none !important; }
+        }
+
+        /* === MODÜL 4 PDF ÖNİZLEME (pdf.js canvas) === */
+        .app4-pdf-page { background: #fff; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,.35); margin: 0 auto; display: block; max-width: 100%; height: auto; }
+        .app4-pdf-page-wrap { position: relative; }
+        .app4-pdf-page-label { position: absolute; top: 6px; left: 8px; font-size: 10px; font-weight: 700; color: #475569; background: rgba(255,255,255,.85); padding: 1px 6px; border-radius: 6px; }
 
         /* === MODÜL 4 EKRAN İÇİ CANLI A4 ÖNİZLEME STİLLERİ === */
         .a4-preview-sheet .app3-print-header {
@@ -227,8 +235,8 @@
             </button>
             <button onclick="switchApp('app4Screen')" class="group text-left bg-white p-8 rounded-3xl shadow-sm border-2 border-transparent hover:border-orange-500 hover:shadow-xl transition-all flex flex-col h-full">
                 <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><i data-lucide="printer" class="w-8 h-8"></i></div>
-                <h2 class="text-xl font-bold text-slate-800 mb-2 leading-snug uppercase">ETİKET YAZDIRMA (80x100)</h2>
-                <p class="text-slate-500 text-sm flex-grow">Sevk güncel dosyasından müşteri listesi oluşturup dikey 8x10 cm formatında koli etiketleri yazdırır.</p>
+                <h2 class="text-xl font-bold text-slate-800 mb-2 leading-snug uppercase">SEVKİYAT EVRAK & ETİKET MERKEZİ</h2>
+                <p class="text-slate-500 text-sm flex-grow">Revize sevk dosyasından 80x100 koli etiketi, plaka bazlı A4 yükleme listesi ve KAP damgalı birleşik taşıma irsaliyesi PDF'i üretir.</p>
             </button>
         </div>
     </div>
@@ -340,7 +348,7 @@
                     <h3 class="text-base font-bold text-slate-800">3 Excel Dosyasını Buraya Birlikte Sürükleyip Bırakın</h3>
                 </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
                 <div class="bg-white rounded-2xl p-4 shadow-sm border flex flex-col"><div class="flex justify-between mb-2"><span class="px-2.5 py-0.5 text-[11px] font-semibold text-blue-700 bg-blue-50 rounded-full border border-blue-100">1. Dosya (Ana)</span><span id="status-1" class="text-xs text-slate-400">Bekleniyor</span></div><h3 class="font-bold text-sm mb-3">CD Kesilecekler</h3><div id="drop-1" class="border border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer hover:border-blue-500 transition"><input type="file" id="file-1" class="hidden"><p id="name-1" class="text-[11px] text-slate-600">Buraya Bırakın</p></div></div>
                 <div class="bg-white rounded-2xl p-4 shadow-sm border flex flex-col"><div class="flex justify-between mb-2"><span class="px-2.5 py-0.5 text-[11px] font-semibold text-amber-700 bg-amber-50 rounded-full border border-amber-100">2. Dosya (Çıkış)</span><span id="status-2" class="text-xs text-slate-400">Bekleniyor</span></div><h3 class="font-bold text-sm mb-3">Çıkış Excel (S2)</h3><div id="drop-2" class="border border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer hover:border-amber-500 transition"><input type="file" id="file-2" class="hidden"><p id="name-2" class="text-[11px] text-slate-600">Buraya Bırakın</p></div></div>
                 <div class="bg-white rounded-2xl p-4 shadow-sm border flex flex-col"><div class="flex justify-between mb-2"><span class="px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 rounded-full border border-emerald-100">3. Dosya (Stok)</span><span id="status-3" class="text-xs text-slate-400">Bekleniyor</span></div><h3 class="font-bold text-sm mb-3">ZF Stok (S1)</h3><div id="drop-3" class="border border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer hover:border-emerald-500 transition"><input type="file" id="file-3" class="hidden"><p id="name-3" class="text-[11px] text-slate-600">Buraya Bırakın</p></div></div>
@@ -561,7 +569,7 @@
     </div>
     
     <!-- ========================================== -->
-    <!-- MODÜL 4: ETİKET YAZDIRMA (KOKPİT & SEKMELİ TASARIM) -->
+    <!-- MODÜL 4: SEVKİYAT EVRAK & ETİKET MERKEZİ   -->
     <!-- ========================================== -->
     <div id="app4Screen" class="hidden min-h-screen bg-slate-100/90">
         <div class="max-w-7xl mx-auto p-4 md:p-6 space-y-5">
@@ -576,9 +584,9 @@
                         <div>
                             <h1 class="text-lg md:text-xl font-black tracking-tight flex items-center gap-2.5">
                                 <span class="w-2.5 h-2.5 rounded-full bg-orange-400 animate-pulse"></span>
-                                SEVKİYAT ÇIKTI & ETİKET MERKEZİ
+                                SEVKİYAT EVRAK & ETİKET MERKEZİ
                             </h1>
-                            <p class="text-[11px] text-slate-300">Tek merkezden koli etiketi, plaka A4 listesi ve taşıma irsaliyesi PDF dökümü yönetimi</p>
+                            <p class="text-[11px] text-slate-300">Koli etiketi, plaka bazlı A4 yükleme listesi ve KAP damgalı taşıma irsaliyesi PDF'leri tek ekranda</p>
                         </div>
                     </div>
                     <!-- CANLI KPI ÖZET KUTULARI -->
@@ -759,6 +767,10 @@
                         <p class="text-xs text-slate-500 mt-0.5">Revize Excel dosyasındaki N sütunu (Taşıma İrsaliye No) ile ZIP içindeki PDF belgeleri otomatik eşleşir.</p>
                     </div>
                     <div class="flex items-center gap-2.5 flex-wrap">
+                        <label class="inline-flex items-center gap-2 px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl cursor-pointer select-none text-xs font-bold text-rose-800 transition" title="Açıkken her irsaliye sayfasının üstüne kırmızı KAP adedi damgası basılır">
+                            <input type="checkbox" id="app4-kapStampToggle" checked onchange="onApp4KapStampToggle()" class="w-4 h-4 accent-rose-600 rounded">
+                            <span>PDF'e KAP Damgası Bas</span>
+                        </label>
                         <button type="button" onclick="previewMatchedApp4Pdfs()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-xs transition">
                             <i data-lucide="eye" class="w-4 h-4"></i> PDF Önizle
                         </button>
@@ -800,18 +812,22 @@
                 <div id="app4-pdfPreviewBox" class="hidden bg-slate-900 rounded-2xl p-3 space-y-2.5 border border-slate-700">
                     <div class="flex items-center justify-between px-2 text-xs text-slate-200">
                         <span class="font-bold flex items-center gap-1.5"><i data-lucide="file-check" class="w-4 h-4 text-amber-400"></i> <span id="app4-pdfPreviewTitle">Birleşik İrsaliye PDF Önizleme</span></span>
-                        <button type="button" onclick="closeApp4PdfPreview()" class="px-2.5 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-[11px] font-semibold">Önizlemeyi Kapat</button>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="openApp4PdfPreviewInNewTab()" class="px-2.5 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-[11px] font-semibold">Yeni Sekmede Aç</button>
+                            <button type="button" onclick="closeApp4PdfPreview()" class="px-2.5 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-[11px] font-semibold">Önizlemeyi Kapat</button>
+                        </div>
                     </div>
-                    <iframe id="app4-pdfPreviewFrame" class="w-full h-[540px] rounded-xl bg-white" title="PDF Önizleme"></iframe>
+                    <div id="app4-pdfPreviewPages" class="w-full h-[600px] overflow-auto custom-scroll rounded-xl bg-slate-700/60 p-4 space-y-4"></div>
                 </div>
             </div>
-            
-            <div id="print-area"></div>
         </div>
     </div>
 
+    <!-- MODÜL 4 ETİKET YAZDIRMA ALANI (SADECE YAZDIRMADA GÖRÜNÜR) -->
+    <div id="print-area"></div>
+
     <!-- MODÜL 3 YAZDIRMA ALANI (SADECE YAZDIRMADA GÖRÜNÜR) -->
-    <div id="app3-print-area" class="hidden"></div>
+    <div id="app3-print-area"></div>
 
     <!-- ========================================== -->
     <!-- JAVASCRIPT & UYGULAMA MANTIĞI              -->
@@ -941,7 +957,51 @@
 
         function normalizeHeaderName(str) {
             if (!str) return '';
-            return String(str).replace(/İ/g, 'i').replace(/I/g, 'i').replace(/ı/g, 'i').toLowerCase().replace(/[^a-z0-9]/g, ''); 
+            return String(str)
+                .replace(/[İIı]/g, 'i')
+                .replace(/[Şş]/g, 's').replace(/[Çç]/g, 'c').replace(/[Ğğ]/g, 'g')
+                .replace(/[Üü]/g, 'u').replace(/[Öö]/g, 'o')
+                .toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function parseNumberLoose(val) {
+            if (typeof val === 'number') return val;
+            let s = String(val ?? '').trim();
+            if (!s) return 0;
+            if (s.includes(',') && s.includes('.')) s = s.replace(/\./g, '').replace(',', '.');
+            else if (s.includes(',')) s = s.replace(',', '.');
+            const n = parseFloat(s.replace(/[^\d.-]/g, ''));
+            return isNaN(n) ? 0 : n;
+        }
+
+        function isRowHidden(rowsMeta, r) {
+            const m = rowsMeta[r];
+            return !!(m && (m.hidden === true || m.hpx === 0 || m.hpt === 0));
+        }
+
+        function runPrint(bodyClass, pageCss, areaId) {
+            const dynStyle = document.getElementById('dynamic-print-page-style');
+            dynStyle.textContent = `@media print { @page { ${pageCss} } }`;
+            document.body.classList.remove('printing-app3', 'printing-app4');
+            document.body.classList.add(bodyClass);
+            let cleaned = false;
+            const cleanup = () => {
+                if (cleaned) return; cleaned = true;
+                document.body.classList.remove(bodyClass);
+                dynStyle.textContent = '';
+                const area = document.getElementById(areaId);
+                if (area) area.innerHTML = '';
+                window.removeEventListener('afterprint', cleanup);
+            };
+            window.addEventListener('afterprint', cleanup);
+            // Tarayıcının yeni DOM'u çizmesine izin ver, sonra yazdır
+            setTimeout(() => { window.print(); }, 50);
         }
 
         function findKeyRobust(keys, keywords) {
@@ -988,7 +1048,7 @@
         }
 
         function parseRawArrayData(ws) {
-            let rawData = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+            let rawData = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', blankrows: true });
             let rowsMeta = ws['!rows'] || [];
             let delivCol = -1, plakaCol = -1, bayiCol = -1, sehirCol = -1, tasimaIrsCol = -1;
             
@@ -1060,8 +1120,11 @@
         });
         window.addEventListener('dragover', (e) => e.preventDefault()); 
         window.addEventListener('drop', (e) => { 
-            if (!document.getElementById('homeScreen').classList.contains('hidden')) return; 
-            e.preventDefault(); dragCounter = 0; overlay.classList.add('hidden'); 
+            if (!document.getElementById('homeScreen').classList.contains('hidden')) return;
+            dragCounter = 0; overlay.classList.add('hidden');
+            // Dosya zaten bir bırakma alanı tarafından işlendiyse tekrar işleme (çift yükleme engeli)
+            if (e.defaultPrevented) return;
+            e.preventDefault();
             if (e.dataTransfer.files.length > 0) {
                 const files = Array.from(e.dataTransfer.files);
                 if (!document.getElementById('app1Screen').classList.contains('hidden')) handleMultipleFilesApp1(files);
@@ -1101,17 +1164,19 @@
             return new Promise((resolve) => {
                 const n = file.name.toLowerCase();
                 if (n.includes('sap') || n.includes('sevk')) return resolve(1);
-                if (n.includes('antrepo') || n.includes('beyan') || n.includes('an')) return resolve(2);
+                if (n.includes('antrepo') || n.includes('beyan') || /(^|[^a-z])an([^a-z]|$)/.test(n)) return resolve(2);
                 
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     try {
                         const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-                        const h = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 })[0].map(x => String(x).toLowerCase().trim());
+                        const h = (XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 })[0] || []).map(x => String(x).toLowerCase().trim());
                         if (h.includes('shipment') || h.includes('bill.doc.')) resolve(1);
                         else resolve(2);
                     } catch(err) { resolve(1); }
-                }; reader.readAsArrayBuffer(file);
+                };
+                reader.onerror = () => resolve(1);
+                reader.readAsArrayBuffer(file);
             });
         }
 
@@ -1122,8 +1187,25 @@
         function handleFileInput1(e) { if(e.target.files.length) processFile1(e.target.files[0]); }
         function handleFileInput2(e) { if(e.target.files.length) processFile2(e.target.files[0]); }
 
-        function processFile1(file) { document.getElementById('file1Name').innerText = '✓ ' + file.name; const reader = new FileReader(); reader.onload = function(evt) { const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' }); rawList1 = getVisibleRows(wb.Sheets[wb.SheetNames[0]]); checkAndProcessApp1(); }; reader.readAsArrayBuffer(file); }
-        function processFile2(file) { document.getElementById('file2Name').innerText = '✓ ' + file.name; const reader = new FileReader(); reader.onload = function(evt) { const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' }); rawList2 = getVisibleRows(wb.Sheets[wb.SheetNames[0]]); checkAndProcessApp1(); }; reader.readAsArrayBuffer(file); }
+        function readExcelVisibleRows(file, labelId, onDone) {
+            const label = document.getElementById(labelId);
+            label.innerText = 'Okunuyor: ' + file.name + '...';
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
+                    onDone(getVisibleRows(wb.Sheets[wb.SheetNames[0]]));
+                    label.innerText = '✓ ' + file.name;
+                } catch (err) {
+                    label.innerText = '✗ Okunamadı: ' + file.name;
+                    alert('Excel dosyası okunamadı: ' + file.name + '\n' + (err.message || err));
+                }
+            };
+            reader.onerror = () => { label.innerText = '✗ Okunamadı: ' + file.name; };
+            reader.readAsArrayBuffer(file);
+        }
+        function processFile1(file) { readExcelVisibleRows(file, 'file1Name', rows => { rawList1 = rows; checkAndProcessApp1(); }); }
+        function processFile2(file) { readExcelVisibleRows(file, 'file2Name', rows => { rawList2 = rows; checkAndProcessApp1(); }); }
         
         function checkAndProcessApp1() {
             if (!rawList1 || !rawList2) return;
@@ -1147,7 +1229,7 @@
             document.getElementById('actionArea').classList.remove('hidden'); document.getElementById('previewArea').classList.remove('hidden');
             const tbody = document.getElementById('previewBody');
             tbody.innerHTML = matchedData.map(item => `
-                <tr class="hover:bg-blue-50/50 h-[50px]"><td class="p-3 border-r">${item.delivery}</td><td class="p-3 border-r">${item.shipment}</td><td class="p-3 border-r">${item.billDoc}</td><td class="p-3 border-r">${item.shipTo}</td><td class="p-3 border-r">${item.packages}</td><td class="p-3 border-r">${Number(item.grossWeight).toFixed(3)}</td><td class="p-3 border-r ${item.an ? 'text-blue-700 bg-blue-50/30' : 'text-amber-600'}">${item.an || 'Eşleşmedi'}</td><td class="p-3 bg-slate-50/50">${item.lokasyon || ''}</td></tr>`).join('');
+                <tr class="hover:bg-blue-50/50 h-[50px]"><td class="p-3 border-r">${escapeHtml(item.delivery)}</td><td class="p-3 border-r">${escapeHtml(item.shipment)}</td><td class="p-3 border-r">${escapeHtml(item.billDoc)}</td><td class="p-3 border-r">${escapeHtml(item.shipTo)}</td><td class="p-3 border-r">${escapeHtml(item.packages)}</td><td class="p-3 border-r">${parseNumberLoose(item.grossWeight).toFixed(3)}</td><td class="p-3 border-r ${item.an ? 'text-blue-700 bg-blue-50/30' : 'text-amber-600'}">${escapeHtml(item.an || 'Eşleşmedi')}</td><td class="p-3 bg-slate-50/50">${escapeHtml(item.lokasyon || '')}</td></tr>`).join('');
         }
         function updatePreviewPlaka() { document.getElementById('previewPlakaLabel').innerText = document.getElementById('inputPlaka').value.trim() || '-'; }
         async function downloadFinalExcel() {
@@ -1155,7 +1237,7 @@
             const fontStyle = { name: 'Tahoma', size: 14, bold: true }; const alignStyle = { vertical: 'middle', horizontal: 'center' }; const borderStyle = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
             const finalPlaka = document.getElementById('inputPlaka').value.trim() || 'PLAKA'; const finalTransport = document.getElementById('inputTransport').value.trim() || 'TRANSPORT';
             const r1 = ws.addRow([finalPlaka]); r1.height = 37.5; ws.mergeCells('A1:H1'); const r2 = ws.addRow(['Delivery', 'Shipment', 'Bill.Doc.', 'Ship-To', '# packages', 'Gross Weight', 'an', 'Lokasyon']); r2.height = 37.5;
-            matchedData.forEach(i => { const r = ws.addRow([ isNaN(Number(i.delivery)) ? i.delivery : Number(i.delivery), isNaN(Number(i.shipment)) ? i.shipment : Number(i.shipment), isNaN(Number(i.billDoc)) ? i.billDoc : Number(i.billDoc), i.shipTo, Number(i.packages)||0, Number(i.grossWeight)||0, i.an||'', i.lokasyon||'' ]); r.height = 37.5; });
+            matchedData.forEach(i => { const r = ws.addRow([ isNaN(Number(i.delivery)) ? i.delivery : Number(i.delivery), isNaN(Number(i.shipment)) ? i.shipment : Number(i.shipment), isNaN(Number(i.billDoc)) ? i.billDoc : Number(i.billDoc), i.shipTo, parseNumberLoose(i.packages), parseNumberLoose(i.grossWeight), i.an||'', i.lokasyon||'' ]); r.height = 37.5; });
             for (let c = 1; c <= 8; c++) { if (c === 7) ws.getColumn(c).width = 43.3; else if (c === 8) ws.getColumn(c).width = 25.7; else ws.getColumn(c).width = 20; }
             ws.eachRow({ includeEmpty: false }, row => { row.eachCell(cell => { cell.font = fontStyle; cell.alignment = alignStyle; cell.border = borderStyle; }); });
             const buf = await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]), `${finalTransport}-${finalPlaka} HAZIR.xlsx`);
@@ -1168,7 +1250,7 @@
         
         document.getElementById('masterDropArea').addEventListener('click', () => document.getElementById('masterFileInput').click()); 
         document.getElementById('masterFileInput').addEventListener('change', (e) => { if(e.target.files.length) handleMultipleFiles(Array.from(e.target.files)); });
-        [1,2,3].forEach(idx => { document.getElementById(`drop-${idx}`).addEventListener('click', () => document.getElementById(`file-${idx}`).click()); document.getElementById(`file-${idx}`).addEventListener('change', (e) => { if (e.target.files.length) processFileBySlot(idx, e.target.files[0]); }); });
+        [1,2,3].forEach(idx => { document.getElementById(`drop-${idx}`).addEventListener('click', () => document.getElementById(`file-${idx}`).click()); document.getElementById(`file-${idx}`).addEventListener('change', async (e) => { if (e.target.files.length) { await processFileBySlot(idx, e.target.files[0]); checkReadyApp2(); } }); });
 
         async function handleMultipleFiles(files) { for (let f of files) { const s = await identifyFileSlot(f); if (s) await processFileBySlot(s, f); } checkReadyApp2(); }
         function identifyFileSlot(file) {
@@ -1178,7 +1260,7 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     try {
-                        const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' }); const h = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 })[0].map(x => String(x).toLowerCase().trim());
+                        const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' }); const h = (XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 })[0] || []).map(x => String(x).toLowerCase().trim());
                         if (h.includes('delivery') && (h.includes('ship-to') || h.includes('ship to name'))) resolve(1); else if (h.includes('an no') || h.includes('plaka')) resolve(2); else if (h.includes('ant.beyan no') || h.includes('lokasyon')) resolve(3); else resolve(null);
                     } catch(err) { resolve(null); }
                 }; reader.readAsArrayBuffer(file);
@@ -1200,8 +1282,14 @@
                 }; reader.readAsArrayBuffer(file);
             });
         }
-        function checkReadyApp2() { if (rawData1 && rawData2 && rawData3) document.getElementById('processBtn').disabled = false; }
+        function checkReadyApp2() { document.getElementById('processBtn').disabled = !(rawData1 && rawData2 && rawData3); }
+        function getApp2SearchFiltered() {
+            const t = document.getElementById('searchInput').value.toLocaleLowerCase('tr-TR');
+            if (!t) return finalResult;
+            return finalResult.filter(r => [r.City, r['Ship to Name'], r.Delivery, r.AN, r.LOK].some(v => String(v ?? '').toLocaleLowerCase('tr-TR').includes(t)));
+        }
         document.getElementById('processBtn').addEventListener('click', () => {
+            if (!rawData1 || !rawData2 || !rawData3) { alert('Lütfen önce 3 dosyayı da yükleyin!'); return; }
             const cikisEntries = [];
             rawData2.forEach(row => {
                 const d = String(getColValue(row, ['DELİVERY', 'Delivery', 'Teslimat', 'Teslimat No'])).trim(); const a = String(getColValue(row, ['AN NO', 'AN', 'Ant.Beyan No', 'Beyan No'])).trim();
@@ -1214,25 +1302,25 @@
             let [mCount, tPkg, tWt] = [0, 0, 0]; finalResult = [];
             rawData1.forEach(row => {
                 const delivery = String(getColValue(row, ['Delivery', 'Teslimat No', 'DELİVERY'])).trim(); const billDoc = String(getColValue(row, ['Bill.Doc.', 'Fatura No', 'Fatura'])).trim();
-                const pkg = parseInt(getColValue(row, ['# packages', 'packages', 'Koli', 'Kap'])) || 0; const gw = parseFloat(getColValue(row, ['Gross Weight', 'KG', 'Brüt Kilo'])) || 0;
+                const pkg = parseInt(getColValue(row, ['# packages', 'packages', 'Koli', 'Kap'])) || 0; const gw = parseNumberLoose(getColValue(row, ['Gross Weight', 'KG', 'Brüt Kilo']));
                 let fAN = ''; let fIM = ''; let fImTarihi = ''; let matchedCikis = null;
                 for (let c of cikisEntries) { if (delivery && c.d && (c.d === delivery || c.d.includes(delivery) || delivery.includes(c.d))) { matchedCikis = c; break; } if (!matchedCikis && billDoc && c.f && (c.f === billDoc || c.f.includes(billDoc) || billDoc.includes(c.f))) { matchedCikis = c; } }
                 if (matchedCikis) { fAN = matchedCikis.a; if (matchedCikis.p === pkg && pkg > 0) { fIM = matchedCikis.im; fImTarihi = matchedCikis.imTarihi; } }
                 let fLOK = ''; if (fAN) { if (globalStokMap.has(fAN)) { fLOK = globalStokMap.get(fAN); } else { for (let [k,v] of globalStokMap.entries()) { if (k.includes(fAN) || fAN.includes(k)) { fLOK = v; break; } } } }
                 if (fAN) mCount++; tPkg += pkg; tWt += gw;
-                finalResult.push({ id: 'r_' + Math.random().toString(36).substring(2, 9), AN: fAN, LOK: fLOK, Delivery: delivery, '# packages': pkg, 'Ship-To': getColValue(row, ['Ship-To', 'Alıcı Kod']), 'Ship to Name': getColValue(row, ['Ship to Name', 'Alıcı Adı', 'Müşteri']), City: getColValue(row, ['City', 'Şehir', 'İl']), 'Gross Weight': Number(gw.toFixed(3)), IM: fIM, IM_TARIHI: fImTarihi });
+                finalResult.push({ id: 'r_' + Math.random().toString(36).substring(2, 9), AN: fAN, LOK: fLOK, Delivery: delivery, '# packages': pkg, 'Ship-To': String(getColValue(row, ['Ship-To', 'Alıcı Kod']) ?? '').trim(), 'Ship to Name': String(getColValue(row, ['Ship to Name', 'Alıcı Adı', 'Müşteri']) ?? '').trim(), City: String(getColValue(row, ['City', 'Şehir', 'İl']) ?? '').trim(), 'Gross Weight': Number(gw.toFixed(3)), IM: fIM, IM_TARIHI: fImTarihi });
             });
-            finalResult.sort((a,b) => a.City.localeCompare(b.City) || a['Ship to Name'].localeCompare(b['Ship to Name']) || String(a.Delivery).localeCompare(String(b.Delivery)));
-            updateKPIs(); document.getElementById('downloadExcelBtn').disabled = false; renderTable(finalResult);
+            finalResult.sort((a,b) => a.City.localeCompare(b.City, 'tr-TR') || a['Ship to Name'].localeCompare(b['Ship to Name'], 'tr-TR') || String(a.Delivery).localeCompare(String(b.Delivery)));
+            updateKPIs(); document.getElementById('downloadExcelBtn').disabled = false; renderTable(getApp2SearchFiltered());
         });
         function updateKPIs() { let matched = finalResult.filter(r => r.AN).length; document.getElementById('kpiTotalRows').innerText = finalResult.length; document.getElementById('kpiMatchedRows').innerText = `${matched} / ${finalResult.length}`; document.getElementById('kpiTotalPackages').innerText = finalResult.reduce((sum, r) => sum + r['# packages'], 0); document.getElementById('kpiTotalWeight').innerText = finalResult.reduce((sum, r) => sum + r['Gross Weight'], 0).toLocaleString('tr-TR'); }
         function updateManualAN(id, newAN) {
             const item = finalResult.find(x => x.id === id); if (!item) return; newAN = newAN.trim(); item.AN = newAN;
             if (!newAN) { item.LOK = ''; } else { let fLOK = ''; if (globalStokMap.has(newAN)) { fLOK = globalStokMap.get(newAN); } else { for (let [k,v] of globalStokMap.entries()) { if (k.includes(newAN) || newAN.includes(k)) { fLOK = v; break; } } } item.LOK = fLOK; }
-            updateKPIs(); const t = document.getElementById('searchInput').value.toLowerCase(); if(t) { renderTable(finalResult.filter(r => r.City.toLowerCase().includes(t) || r.Delivery.toLowerCase().includes(t) || r.AN.toLowerCase().includes(t))); } else { renderTable(finalResult); }
+            updateKPIs(); renderTable(getApp2SearchFiltered());
         }
-        function renderTable(data) { document.getElementById('tableBody').innerHTML = data.map((r,i) => ` <tr class="h-[50px] border-b border-slate-200 ${i%2===0?'bg-white':'bg-slate-50'} hover:bg-blue-50"> <td class="p-1"><input type="text" value="${r.AN || ''}" onchange="updateManualAN('${r.id}', this.value)" class="w-full text-center bg-transparent focus:bg-white rounded py-1 outline-none font-bold ${r.AN ? 'text-slate-800' : 'text-red-500'}"></td> <td class="text-blue-700 font-semibold" id="lok-${r.id}">${r.LOK||'-'}</td><td>${r.Delivery}</td><td>${r['# packages']}</td> <td>${r['Ship-To']}</td><td class="text-left pl-4">${r['Ship to Name']}</td><td>${r.City}</td><td>${r['Gross Weight'].toFixed(3)}</td> <td colspan="3" class="bg-slate-50/50"></td><td class="text-indigo-600 font-mono font-semibold">${r.IM || '-'}</td><td class="text-slate-600 font-mono font-semibold">${r.IM_TARIHI || '-'}</td> </tr> `).join(''); }
-        document.getElementById('searchInput').addEventListener('input', (e) => { const t = e.target.value.toLowerCase(); renderTable(finalResult.filter(r => r.City.toLowerCase().includes(t) || r['Ship to Name'].toLowerCase().includes(t) || r.Delivery.toLowerCase().includes(t) || r.AN.toLowerCase().includes(t))); });
+        function renderTable(data) { document.getElementById('tableBody').innerHTML = data.map((r,i) => ` <tr class="h-[50px] border-b border-slate-200 ${i%2===0?'bg-white':'bg-slate-50'} hover:bg-blue-50"> <td class="p-1"><input type="text" value="${escapeHtml(r.AN || '')}" onchange="updateManualAN('${r.id}', this.value)" class="w-full text-center bg-transparent focus:bg-white rounded py-1 outline-none font-bold ${r.AN ? 'text-slate-800' : 'text-red-500'}"></td> <td class="text-blue-700 font-semibold" id="lok-${r.id}">${escapeHtml(r.LOK||'-')}</td><td>${escapeHtml(r.Delivery)}</td><td>${r['# packages']}</td> <td>${escapeHtml(r['Ship-To'])}</td><td class="text-left pl-4">${escapeHtml(r['Ship to Name'])}</td><td>${escapeHtml(r.City)}</td><td>${r['Gross Weight'].toFixed(3)}</td> <td colspan="3" class="bg-slate-50/50"></td><td class="text-indigo-600 font-mono font-semibold">${escapeHtml(r.IM || '-')}</td><td class="text-slate-600 font-mono font-semibold">${escapeHtml(r.IM_TARIHI || '-')}</td> </tr> `).join(''); }
+        document.getElementById('searchInput').addEventListener('input', () => renderTable(getApp2SearchFiltered()));
         document.getElementById('downloadExcelBtn').addEventListener('click', async () => {
             if (!finalResult.length || !consumeUse()) return;
             const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Sayfa1', {views:[{showGridLines:true}]});
@@ -1252,6 +1340,7 @@
         let app3RawSheetMatrix = [];
         let app3HeaderRowIndex = 0;
         let app3KapColIndex = -1;
+        let app3ColMap = { delivCol: -1, bayiCol: -1, sehirCol: -1 };
 
         document.getElementById('app3-masterDropArea').addEventListener('click', () => document.getElementById('app3-masterFileInput').click());
         document.getElementById('app3-masterFileInput').addEventListener('change', (e) => { if(e.target.files.length) handleMultipleFilesApp3(Array.from(e.target.files)); });
@@ -1296,11 +1385,13 @@
             document.getElementById('app3-file1Name').innerText = '✓ ' + file.name; document.getElementById('app3-file1Info').innerText = 'Okunuyor...';
             const reader = new FileReader();
             reader.onload = function(evt) {
+              try {
                 originalFile3_1_Buffer = evt.target.result; 
                 const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
                 const ws = wb.Sheets[wb.SheetNames[0]];
                 let res = parseRawArrayData(ws);
-                let rawData = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
+                app3ColMap = { delivCol: res.delivCol, bayiCol: res.bayiCol, sehirCol: res.sehirCol };
+                let rawData = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false, blankrows: true });
                 app3RawSheetMatrix = rawData;
                 
                 app3HeaderRowIndex = 0;
@@ -1328,6 +1419,10 @@
                 rawList3_1 = res.dataList;
                 document.getElementById('app3-file1Info').innerHTML = `<span class="text-violet-600 font-bold">Hazır (${rawList3_1.length} satır)</span>`;
                 checkAndProcessApp3();
+              } catch (err) {
+                document.getElementById('app3-file1Info').innerHTML = '<span class="text-red-500 font-bold">Okunamadı!</span>';
+                alert('Sevk güncel dosyası okunamadı: ' + (err.message || err));
+              }
             }; reader.readAsArrayBuffer(file);
         }
 
@@ -1335,11 +1430,16 @@
             document.getElementById('app3-file2Name').innerText = '✓ ' + file.name; document.getElementById('app3-file2Info').innerText = 'Okunuyor...';
             const reader = new FileReader();
             reader.onload = function(evt) {
+              try {
                 const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
                 let res = parseRawArrayData(wb.Sheets[wb.SheetNames[0]]);
                 rawList3_2 = res.dataList;
                 document.getElementById('app3-file2Info').innerHTML = `<span class="text-violet-600 font-bold">Hazır (${rawList3_2.length} satır)</span>`;
                 checkAndProcessApp3();
+              } catch (err) {
+                document.getElementById('app3-file2Info').innerHTML = '<span class="text-red-500 font-bold">Okunamadı!</span>';
+                alert('Sipariş takip dosyası okunamadı: ' + (err.message || err));
+              }
             }; reader.readAsArrayBuffer(file);
         }
 
@@ -1399,6 +1499,7 @@
                     delivery: deliveryOriginal,
                     plaka: finalPlaka,
                     tasimaIrs: finalTasimaIrs,
+                    orig: { bayi: bayiAdi, sehir: sehirAdi, delivery: deliveryOriginal },
                     status: isMatched ? 'Eşleşti (Güncellendi)' : (existingPlaka || existingTasimaIrs ? 'Eski Bilgi Korundu' : 'Bulunamadı')
                 });
             });
@@ -1407,14 +1508,7 @@
             filterApp3Table();
         }
 
-        function escapeHtmlApp3(str) {
-            return String(str ?? '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
+        const escapeHtmlApp3 = escapeHtml;
 
         function updateApp3Field(id, field, value) { 
             const item = matchedData3.find(x => x.id === id); 
@@ -1459,14 +1553,22 @@
                     <td class="p-0 border-r border-slate-200 bg-white group hover:bg-blue-50/30 transition font-mono text-sm"><input type="text" value="${escapeHtmlApp3(item.delivery || '')}" onchange="updateApp3Field('${item.id}', 'delivery', this.value)" class="w-full h-[48px] px-3 bg-transparent outline-none text-slate-800"></td>
                     <td class="p-1 border-r border-slate-200 bg-violet-50/30 group hover:bg-white transition"><input type="text" value="${escapeHtmlApp3(item.plaka)}" placeholder="Plaka girin" onchange="updateApp3Field('${item.id}', 'plaka', this.value)" class="w-full h-full px-3 py-2 bg-transparent border border-transparent hover:border-slate-300 focus:bg-white focus:border-violet-500 rounded outline-none transition-colors font-bold ${item.plaka ? 'text-violet-800' : 'text-red-400'}"></td>
                     <td class="p-1 border-r border-slate-200 bg-amber-50/30 group hover:bg-white transition"><input type="text" value="${escapeHtmlApp3(item.tasimaIrs || '')}" placeholder="İrsaliye No (N)" onchange="updateApp3Field('${item.id}', 'tasimaIrs', this.value)" class="w-full h-full px-3 py-2 bg-transparent border border-transparent hover:border-slate-300 focus:bg-white focus:border-amber-500 rounded outline-none transition-colors font-mono text-xs font-bold ${item.tasimaIrs ? 'text-amber-800' : 'text-slate-400'}"></td>
-                    <td class="p-3 text-xs font-semibold ${item.status.includes('Eşleşti') ? 'text-emerald-600' : (item.status.includes('Bulunamadı') ? 'text-red-500' : 'text-slate-500')}">${item.status}</td>
+                    <td class="p-3 text-xs font-semibold ${item.status.includes('Eşleşti') ? 'text-emerald-600' : (item.status.includes('Bulunamadı') ? 'text-red-500' : 'text-slate-500')}">${escapeHtml(item.status)}</td>
                 </tr>
             `).join(''); lucide.createIcons();
         }
         async function downloadApp3Excel() {
             if (!originalFile3_1_Buffer) return;
+            const wb = new ExcelJS.Workbook();
+            try {
+                await wb.xlsx.load(originalFile3_1_Buffer);
+            } catch (err) {
+                alert('Revize dosyası oluşturulamadı. Sevk güncel dosyası .xlsx formatında olmalıdır (eski .xls desteklenmez). Dosyayı Excel\'de "Farklı Kaydet > .xlsx" yapıp tekrar yükleyin.');
+                return;
+            }
+            const ws = wb.worksheets[0];
+            if (!ws) { alert('Excel içinde sayfa bulunamadı!'); return; }
             if (!consumeUse()) return;
-            const wb = new ExcelJS.Workbook(); await wb.xlsx.load(originalFile3_1_Buffer); const ws = wb.worksheets[0]; 
             let plakaColIdx = 9;
             let tasimaIrsColIdx = 14;
             let headerRow = ws.getRow(app3HeaderRowIndex + 1);
@@ -1474,15 +1576,22 @@
             if (!headerRow.getCell(tasimaIrsColIdx).value) { headerRow.getCell(tasimaIrsColIdx).value = 'Taşıma İrsaliye No'; headerRow.getCell(tasimaIrsColIdx).font = { bold: true }; }
             matchedData3.forEach(item => {
                 let targetRow = ws.getRow(item.originalRowIndex + 1);
-                if (item.plaka) { targetRow.getCell(plakaColIdx).value = item.plaka; }
-                if (item.tasimaIrs) { targetRow.getCell(tasimaIrsColIdx).value = item.tasimaIrs; }
+                // Boş bırakılan değer hücreyi temizler (kullanıcı elle silmiş olabilir)
+                targetRow.getCell(plakaColIdx).value = item.plaka ? item.plaka : null;
+                targetRow.getCell(tasimaIrsColIdx).value = item.tasimaIrs ? item.tasimaIrs : null;
+                // Ekranda elle düzeltilen Bayi / Şehir / Delivery alanlarını da dosyaya yaz
+                const o = item.orig || {};
+                if (app3ColMap.bayiCol !== -1 && item.bayi !== o.bayi) targetRow.getCell(app3ColMap.bayiCol + 1).value = item.bayi;
+                if (app3ColMap.sehirCol !== -1 && item.sehir !== o.sehir) targetRow.getCell(app3ColMap.sehirCol + 1).value = item.sehir;
+                if (app3ColMap.delivCol !== -1 && item.delivery !== o.delivery) targetRow.getCell(app3ColMap.delivCol + 1).value = item.delivery;
             });
             const d = new Date(); const dateStr = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
             const buf = await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]), `${dateStr}_REVIZE_SEVK_GUNCEL.xlsx`);
         }
 
         // ==========================================
-        // MODÜL 4: ETİKET YAZDIRMA (PLAKA FİLTRESİ & A4 LİSTE DÖKÜMÜ)
+        // MODÜL 4: SEVKİYAT EVRAK & ETİKET MERKEZİ
+        // (Koli Etiketi + Plaka A4 Listesi + KAP Damgalı İrsaliye PDF)
         // ==========================================
         let app4Customers = [];
         let uniquePlates = new Set();
@@ -1492,11 +1601,12 @@
         let app4RowItems = [];
         let app4DeselectedWaybills = new Set();
 
-        function handleDrop4(e, el) { e.preventDefault(); el.classList.remove('drag-active'); if(e.dataTransfer.files.length) processFile4(e.dataTransfer.files[0]); }
-        function handleFileInput4(e) { if(e.target.files.length) processFile4(e.target.files[0]); }
-
         let app4ZipPdfDocs = [];
         let app4WaybillToPdfMap = new Map();
+        let app4ZipLoadToken = 0;
+
+        function handleDrop4(e, el) { e.preventDefault(); el.classList.remove('drag-active'); if (e.dataTransfer.files.length) processFile4(e.dataTransfer.files[0]); }
+        function handleFileInput4(e) { if (e.target.files.length) processFile4(e.target.files[0]); e.target.value = ''; }
 
         function handleDrop4Zip(e, el) {
             e.preventDefault();
@@ -1505,6 +1615,7 @@
         }
         function handleFileInput4Zip(e) {
             if (e.target.files.length) processFile4Zip(e.target.files[0]);
+            e.target.value = '';
         }
 
         function readFileAsArrayBuffer(file) {
@@ -1530,23 +1641,22 @@
 
         async function extractTextFromPdfBytes(uint8Arr) {
             if (!window.pdfjsLib) return '';
+            let loadingTask = null;
             try {
-                const loadingTask = pdfjsLib.getDocument({
-                    data: uint8Arr.slice(),
-                    disableWorker: true,
-                    useWorkerFetch: false,
-                    isEvalSupported: false
-                });
+                loadingTask = pdfjsLib.getDocument({ data: uint8Arr.slice(), isEvalSupported: false });
                 const pdf = await loadingTask.promise;
                 let fullText = '';
                 for (let p = 1; p <= pdf.numPages; p++) {
                     const page = await pdf.getPage(p);
                     const content = await page.getTextContent();
                     fullText += ' ' + content.items.map(it => it.str).join(' ');
+                    page.cleanup();
                 }
                 return fullText.toUpperCase();
             } catch (err) {
                 return '';
+            } finally {
+                if (loadingTask) { try { loadingTask.destroy(); } catch (e) {} }
             }
         }
 
@@ -1559,25 +1669,29 @@
                 alert('ZIP kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edip sayfayı yenileyin.');
                 return;
             }
+            const myToken = ++app4ZipLoadToken;
+            closeApp4PdfPreview(true);
             document.getElementById('app4-zipFileName').innerText = 'Okunuyor: ' + file.name + '...';
             document.getElementById('app4-zipSubInfo').innerText = 'ZIP açılıyor ve PDF içerikleri taranıyor, lütfen bekleyin...';
 
             try {
                 const arrayBuf = await readFileAsArrayBuffer(file);
                 const zip = await JSZip.loadAsync(arrayBuf, { decodeFileName: decodeZipEntryName });
-                app4ZipPdfDocs = [];
-                app4WaybillToPdfMap.clear();
 
                 const pdfEntries = [];
                 zip.forEach((relPath, zipEntry) => {
                     if (zipEntry.dir) return;
                     if (relPath.startsWith('__MACOSX/') || relPath.split('/').pop().startsWith('.')) return;
-                    if (relPath.toLowerCase().endsWith('.pdf')) {
-                        pdfEntries.push(zipEntry);
-                    }
+                    if (relPath.toLowerCase().endsWith('.pdf')) pdfEntries.push(zipEntry);
                 });
 
+                const newDocs = [];
+                const newMap = new Map();
+                let idx = 0;
                 for (let entry of pdfEntries) {
+                    idx++;
+                    if (myToken !== app4ZipLoadToken) return; // daha yeni bir ZIP yüklendi
+                    document.getElementById('app4-zipSubInfo').innerText = `PDF taranıyor: ${idx} / ${pdfEntries.length}`;
                     const bytes = await entry.async('uint8array');
                     const baseName = entry.name.split('/').pop().replace(/\.pdf$/i, '').toUpperCase();
                     const cleanNameCode = baseName.replace(/[^A-Z0-9]/g, '');
@@ -1589,36 +1703,61 @@
                         baseName: baseName,
                         cleanNameCode: cleanNameCode,
                         cleanPdfText: cleanPdfText,
-                        bytes: bytes
+                        bytes: bytes,
+                        _pdfLibPromise: null
                     };
-                    app4ZipPdfDocs.push(docObj);
+                    newDocs.push(docObj);
 
-                    // Index any waybill-like codes from filename and PDF text
                     const nameMatches = baseName.match(/[A-Z]{2,4}20\d{10,14}/g) || [];
                     const textMatches = pdfText.match(/[A-Z]{2,4}20\d{10,14}/g) || [];
                     const allCodes = new Set([...nameMatches, ...textMatches]);
                     if (cleanNameCode.length >= 8) allCodes.add(cleanNameCode);
-
-                    allCodes.forEach(code => {
-                        if (!app4WaybillToPdfMap.has(code)) {
-                            app4WaybillToPdfMap.set(code, docObj);
-                        }
-                    });
+                    allCodes.forEach(code => { if (!newMap.has(code)) newMap.set(code, docObj); });
                 }
+                if (myToken !== app4ZipLoadToken) return;
+
+                app4ZipPdfDocs = newDocs;
+                app4WaybillToPdfMap = newMap;
+                app4PdfPreviewDismissed = false;
 
                 document.getElementById('app4-zipFileName').innerText = '✓ ' + file.name + ` (${app4ZipPdfDocs.length} PDF yüklendi)`;
-                document.getElementById('app4-zipSubInfo').innerText = "PDF eşleştirme hazır. Filtre seçip PDF'leri Dök butonuna basabilirsiniz.";
+                document.getElementById('app4-zipSubInfo').innerText = app4ZipPdfDocs.length
+                    ? "PDF eşleştirme hazır. Filtre seçip önizleyebilir, yazdırabilir veya indirebilirsiniz."
+                    : 'Uyarı: ZIP içinde PDF dosyası bulunamadı!';
                 updateApp4PdfMatchStats();
             } catch (err) {
+                if (myToken !== app4ZipLoadToken) return;
                 document.getElementById('app4-zipFileName').innerText = 'Hata: ZIP dosyası okunamadı!';
                 document.getElementById('app4-zipSubInfo').innerText = String(err.message || err);
             }
+        }
+
+        // Bir satırın KAP adedini bulur (KAP sütunu yoksa 0 döner)
+        function getApp4RowKap(item) {
+            if (app4KapColIndex === -1) return 0;
+            const rowArr = app4RawSheetMatrix[item.originalRowIndex] || [];
+            return parseInt(String(rowArr[app4KapColIndex] ?? '').replace(/[^\d]/g, ''), 10) || 0;
+        }
+
+        // Bir PDF'e bağlı tüm irsaliye kodlarının satırlarındaki KAP toplamı (her satır 1 kez sayılır)
+        function getKapForWaybillCodes(codes) {
+            const codeSet = new Set(codes);
+            let totalKap = 0;
+            for (let item of app4RowItems) {
+                if ((item.tasimaIrsList || []).some(c => codeSet.has(c))) {
+                    const k = getApp4RowKap(item);
+                    totalKap += (k > 0 ? k : 1);
+                }
+            }
+            return totalKap > 0 ? totalKap : 1;
         }
 
         function findPdfForWaybill(wbCode) {
             const norm = String(wbCode || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
             if (!norm) return null;
             if (app4WaybillToPdfMap.has(norm)) return app4WaybillToPdfMap.get(norm);
+            // Çok kısa kodlarla içerik araması yanlış eşleşme üretir
+            if (norm.length < 6) return null;
             for (let doc of app4ZipPdfDocs) {
                 if (doc.cleanNameCode.includes(norm) || doc.cleanPdfText.includes(norm)) {
                     app4WaybillToPdfMap.set(norm, doc);
@@ -1647,12 +1786,7 @@
                     (item.tasimaIrsList || []).forEach(code => {
                         if (!seenCodes.has(code)) {
                             seenCodes.add(code);
-                            orderedEntries.push({
-                                code: code,
-                                bayi: item.bayi || '',
-                                sehir: item.sehir || '',
-                                plaka: item.plaka || ''
-                            });
+                            orderedEntries.push({ code: code, bayi: item.bayi || '', sehir: item.sehir || '', plaka: item.plaka || '' });
                         }
                     });
                 }
@@ -1664,23 +1798,17 @@
             if (isChecked) app4DeselectedWaybills.delete(code);
             else app4DeselectedWaybills.add(code);
             updateApp4WaybillCounterText();
-            if (app4ZipPdfDocs.length > 0 && app4RowItems.length > 0) {
-                previewMatchedApp4Pdfs(true);
-            }
+            scheduleApp4PdfPreviewRefresh();
         }
 
         function toggleAllApp4Waybills(selectAll) {
-            const checkboxes = document.querySelectorAll('#app4-waybillCheckboxList input[type="checkbox"]');
-            checkboxes.forEach(cb => {
+            document.querySelectorAll('#app4-waybillCheckboxList input[type="checkbox"]').forEach(cb => {
                 cb.checked = selectAll;
-                const code = cb.value;
-                if (selectAll) app4DeselectedWaybills.delete(code);
-                else app4DeselectedWaybills.add(code);
+                if (selectAll) app4DeselectedWaybills.delete(cb.value);
+                else app4DeselectedWaybills.add(cb.value);
             });
             updateApp4WaybillCounterText();
-            if (app4ZipPdfDocs.length > 0 && app4RowItems.length > 0) {
-                previewMatchedApp4Pdfs(true);
-            }
+            scheduleApp4PdfPreviewRefresh();
         }
 
         function updateApp4WaybillCounterText() {
@@ -1688,7 +1816,7 @@
             const checkedCbs = allCbs.filter(cb => cb.checked);
             const matchedChecked = checkedCbs.filter(cb => cb.getAttribute('data-has-pdf') === '1').length;
             const kpiPdfEl = document.getElementById('app4-kpiPdfCount');
-            if (kpiPdfEl) kpiPdfEl.textContent = app4ZipPdfDocs.length > 0 ? matchedChecked : allCbs.length;
+            if (kpiPdfEl) kpiPdfEl.textContent = app4ZipPdfDocs.length > 0 ? matchedChecked : 0;
             if (app4ZipPdfDocs.length > 0) {
                 document.getElementById('app4-pdfFilterMatchStats').innerText = `Seçili: ${checkedCbs.length} / ${allCbs.length} İrsaliye (${matchedChecked} PDF Hazır)`;
             } else {
@@ -1703,6 +1831,7 @@
 
             if (app4ZipPdfDocs.length === 0 && targetEntries.length === 0) {
                 statusBox.classList.add('hidden');
+                updateApp4WaybillCounterText();
                 return;
             }
             statusBox.classList.remove('hidden');
@@ -1728,10 +1857,10 @@
 
                     const subLabel = entry.bayi ? ` (${entry.bayi})` : '';
                     return `
-                        <label title="${escapeHtmlApp3(entry.bayi + (entry.sehir ? ' - ' + entry.sehir : ''))}" class="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50 border ${hasPdf || app4ZipPdfDocs.length === 0 ? 'border-slate-300 hover:border-rose-400' : 'border-amber-300 bg-amber-50/40'} rounded-lg cursor-pointer select-none text-xs font-semibold text-slate-700 transition">
-                            <input type="checkbox" value="${escapeHtmlApp3(entry.code)}" data-has-pdf="${hasPdf ? '1' : '0'}" ${isChecked ? 'checked' : ''} onchange="onApp4WaybillCheckChange(this.value, this.checked)" class="w-4 h-4 accent-rose-600 rounded">
-                            <span class="font-mono font-bold text-slate-800">${escapeHtmlApp3(entry.code)}</span>
-                            <span class="text-[11px] text-slate-500 max-w-[160px] truncate">${escapeHtmlApp3(subLabel)}</span>
+                        <label title="${escapeHtml(entry.bayi + (entry.sehir ? ' - ' + entry.sehir : ''))}" class="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50 border ${hasPdf || app4ZipPdfDocs.length === 0 ? 'border-slate-300 hover:border-rose-400' : 'border-amber-300 bg-amber-50/40'} rounded-lg cursor-pointer select-none text-xs font-semibold text-slate-700 transition">
+                            <input type="checkbox" value="${escapeHtml(entry.code)}" data-has-pdf="${hasPdf ? '1' : '0'}" ${isChecked ? 'checked' : ''} onchange="onApp4WaybillCheckChange(this.value, this.checked)" class="w-4 h-4 accent-rose-600 rounded">
+                            <span class="font-mono font-bold text-slate-800">${escapeHtml(entry.code)}</span>
+                            <span class="text-[11px] text-slate-500 max-w-[160px] truncate">${escapeHtml(subLabel)}</span>
                             ${badgeHtml}
                         </label>
                     `;
@@ -1749,86 +1878,336 @@
                 missingEl.innerText = '';
             }
 
-            if (app4ZipPdfDocs.length > 0 && app4RowItems.length > 0) {
-                previewMatchedApp4Pdfs(true);
+            scheduleApp4PdfPreviewRefresh();
+        }
+
+        // ---------- PDF BİRLEŞTİRME (önizleme, yazdırma ve indirme ortak) ----------
+        function isApp4KapStampEnabled() {
+            const el = document.getElementById('app4-kapStampToggle');
+            return !el || el.checked;
+        }
+
+        function collectApp4MatchedDocs() {
+            const checkedBoxes = Array.from(document.querySelectorAll('#app4-waybillCheckboxList input[type="checkbox"]:checked'));
+            const targetCodes = checkedBoxes.map(cb => cb.value);
+            const docCodes = new Map();
+            const order = [];
+            targetCodes.forEach(code => {
+                const doc = findPdfForWaybill(code);
+                if (!doc) return;
+                if (!docCodes.has(doc)) { docCodes.set(doc, []); order.push(doc); }
+                docCodes.get(doc).push(code);
+            });
+            const matchedDocs = order.map(doc => ({ doc, codes: docCodes.get(doc), kap: getKapForWaybillCodes(docCodes.get(doc)) }));
+            return { targetCodes, matchedDocs };
+        }
+
+        function getApp4SourcePdf(doc) {
+            if (!doc._pdfLibPromise) {
+                doc._pdfLibPromise = PDFLib.PDFDocument.load(doc.bytes, { ignoreEncryption: true, updateMetadata: false })
+                    .catch(err => { doc._pdfLibPromise = null; throw err; });
             }
+            return doc._pdfLibPromise;
+        }
+
+        function drawApp4KapStamp(page, font, kap) {
+            let box;
+            try { box = page.getCropBox(); } catch (e) { const s = page.getSize(); box = { x: 0, y: 0, width: s.width, height: s.height }; }
+            const text = `KAP: ${kap}`;
+            const fontSize = 12;
+            const textWidth = font.widthOfTextAtSize(text, fontSize);
+            const boxW = textWidth + 24;
+            const boxH = 24;
+            // Sağ üstte, barkod / QR alanının solunda; dar sayfalarda sayfa içinde kalacak şekilde sınırlandırılır
+            let x = box.x + box.width - boxW - 186;
+            x = Math.max(box.x + 10, Math.min(x, box.x + box.width - boxW - 10));
+            const y = box.y + box.height - 36;
+
+            page.drawRectangle({
+                x, y, width: boxW, height: boxH,
+                color: PDFLib.rgb(1, 1, 1),
+                borderColor: PDFLib.rgb(0.85, 0.1, 0.1),
+                borderWidth: 1.5,
+            });
+            page.drawText(text, {
+                x: x + 12, y: y + 8, size: fontSize, font: font,
+                color: PDFLib.rgb(0.85, 0.1, 0.1),
+            });
+        }
+
+        async function buildApp4MergedPdf(matchedDocs, withKap) {
+            if (typeof PDFLib === 'undefined') throw new Error('PDF kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edip sayfayı yenileyin.');
+            const mergedPdf = await PDFLib.PDFDocument.create();
+            const font = withKap ? await mergedPdf.embedFont(PDFLib.StandardFonts.HelveticaBold) : null;
+            const failed = [];
+            let okDocs = 0;
+            for (let item of matchedDocs) {
+                try {
+                    const srcPdf = await getApp4SourcePdf(item.doc);
+                    const copiedPages = await mergedPdf.copyPages(srcPdf, srcPdf.getPageIndices());
+                    copiedPages.forEach(page => {
+                        if (withKap) drawApp4KapStamp(page, font, item.kap);
+                        mergedPdf.addPage(page);
+                    });
+                    okDocs++;
+                } catch (err) {
+                    failed.push(item.doc.fileName);
+                }
+            }
+            if (mergedPdf.getPageCount() === 0) {
+                throw new Error('Seçili PDF dosyalarının hiçbiri açılamadı' + (failed.length ? ': ' + failed.join(', ') : ''));
+            }
+            const bytes = await mergedPdf.save();
+            return { bytes, pageCount: mergedPdf.getPageCount(), docCount: okDocs, failed };
+        }
+
+        function getApp4PdfFileName() {
+            const selectedPlate = document.getElementById('app4-plateSelect').value;
+            const d = new Date();
+            const dateStr = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+            return `${selectedPlate ? selectedPlate.replace(/\s+/g, '_') + '_' : ''}${dateStr}_TASIMA_IRSALIYELERI.pdf`;
+        }
+
+        function printApp4PdfBlob(blob, fileName) {
+            const url = URL.createObjectURL(blob);
+            const old = document.getElementById('app4-printFrame');
+            if (old) { try { URL.revokeObjectURL(old.dataset.url); } catch (e) {} old.remove(); }
+            const iframe = document.createElement('iframe');
+            iframe.id = 'app4-printFrame';
+            iframe.dataset.url = url;
+            iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0;';
+            const fallback = () => {
+                const w = window.open(url, '_blank');
+                if (!w) saveAs(blob, fileName);
+            };
+            iframe.onload = () => {
+                setTimeout(() => {
+                    try { iframe.contentWindow.focus(); iframe.contentWindow.print(); }
+                    catch (e) { fallback(); }
+                }, 500);
+            };
+            iframe.onerror = fallback;
+            iframe.src = url;
+            document.body.appendChild(iframe);
         }
 
         async function outputMatchedApp4Pdfs(mode) {
-            if (app4RowItems.length === 0) {
-                alert('Lütfen önce Excel dosyasını yükleyin!');
-                return;
-            }
-            if (app4ZipPdfDocs.length === 0) {
-                alert('Lütfen önce PDF dosyalarını içeren ZIP arşivini yükleyin!');
-                return;
-            }
-            const checkedBoxes = Array.from(document.querySelectorAll('#app4-waybillCheckboxList input[type="checkbox"]:checked'));
-            const targetCodes = checkedBoxes.map(cb => cb.value);
-            if (targetCodes.length === 0) {
-                alert('Yazdırılacak en az bir irsaliye seçili olmalıdır!');
-                return;
-            }
+            if (app4RowItems.length === 0) { alert('Lütfen önce Excel dosyasını yükleyin!'); return; }
+            if (app4ZipPdfDocs.length === 0) { alert('Lütfen önce PDF dosyalarını içeren ZIP arşivini yükleyin!'); return; }
+            const { targetCodes, matchedDocs } = collectApp4MatchedDocs();
+            if (targetCodes.length === 0) { alert('Yazdırılacak en az bir irsaliye seçili olmalıdır!'); return; }
+            if (matchedDocs.length === 0) { alert('Seçili irsaliye numaralarıyla eşleşen PDF dosyası ZIP içinde bulunamadı!'); return; }
 
-            const matchedDocs = [];
-            const usedDocs = new Set();
-            targetCodes.forEach(code => {
-                const doc = findPdfForWaybill(code);
-                if (doc && !usedDocs.has(doc)) {
-                    usedDocs.add(doc);
-                    matchedDocs.push(doc);
-                }
-            });
-
-            if (matchedDocs.length === 0) {
-                alert('Seçili irsaliye numaralarıyla eşleşen PDF dosyası ZIP içinde bulunamadı!');
-                return;
-            }
-
-            if (!consumeUse()) return;
-
+            const btn = document.getElementById(mode === 'download' ? 'app4-downloadPdfsBtn' : 'app4-printPdfsBtn');
+            if (btn) btn.disabled = true;
             try {
-                const mergedPdf = await PDFLib.PDFDocument.create();
-                for (let doc of matchedDocs) {
-                    const srcPdf = await PDFLib.PDFDocument.load(doc.bytes);
-                    const copiedPages = await mergedPdf.copyPages(srcPdf, srcPdf.getPageIndices());
-                    copiedPages.forEach(page => mergedPdf.addPage(page));
-                }
-                const mergedBytes = await mergedPdf.save();
-                const blob = new Blob([mergedBytes], { type: 'application/pdf' });
-
-                const selectedPlate = document.getElementById('app4-plateSelect').value;
-                const d = new Date();
-                const dateStr = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
-                const fileName = `${selectedPlate ? selectedPlate.replace(/\s+/g, '_') + '_' : ''}${dateStr}_TASIMA_IRSALIYELERI.pdf`;
-
-                if (mode === 'download') {
-                    saveAs(blob, fileName);
-                } else {
-                    const blobUrl = URL.createObjectURL(blob);
-                    const printWin = window.open(blobUrl, '_blank');
-                    if (printWin) {
-                        printWin.onload = () => {
-                            try { printWin.focus(); printWin.print(); } catch (e) {}
-                        };
-                    } else {
-                        saveAs(blob, fileName);
-                    }
-                }
+                const result = await buildApp4MergedPdf(matchedDocs, isApp4KapStampEnabled());
+                if (!consumeUse()) return;
+                const blob = new Blob([result.bytes], { type: 'application/pdf' });
+                const fileName = getApp4PdfFileName();
+                if (mode === 'download') saveAs(blob, fileName);
+                else printApp4PdfBlob(blob, fileName);
+                if (result.failed.length) alert(`Uyarı: Şu PDF'ler açılamadığı için atlandı:\n${result.failed.join('\n')}`);
             } catch (err) {
                 alert('PDF birleştirme sırasında hata oluştu: ' + (err.message || err));
+            } finally {
+                if (btn) btn.disabled = false;
             }
         }
 
+        // ---------- CANLI PDF ÖNİZLEME (pdf.js ile sayfa sayfa çizim) ----------
+        let app4LastPdfPreviewUrl = null;
+        let app4PdfPreviewActive = false;
+        let app4PdfPreviewDismissed = false;
+        let app4PreviewGen = 0;
+        let app4PreviewTimer = null;
+        let app4PreviewPdfJsTask = null;
+        let app4PreviewObserver = null;
+
+        function isApp4PdfTabVisible() {
+            return !document.getElementById('app4Screen').classList.contains('hidden')
+                && !document.getElementById('app4-tabPanel-pdfs').classList.contains('hidden');
+        }
+
+        // Ardışık değişikliklerde tek bir önizleme üretilir (yarış durumu ve donma engeli)
+        function scheduleApp4PdfPreviewRefresh(immediate = false) {
+            if (app4ZipPdfDocs.length === 0 || app4RowItems.length === 0) return;
+            if (!app4PdfPreviewActive && (app4PdfPreviewDismissed || !isApp4PdfTabVisible())) return;
+            clearTimeout(app4PreviewTimer);
+            app4PreviewTimer = setTimeout(() => previewMatchedApp4Pdfs(true), immediate ? 0 : 400);
+        }
+
+        function onApp4KapStampToggle() {
+            scheduleApp4PdfPreviewRefresh(true);
+        }
+
+        function releaseApp4PreviewRender() {
+            if (app4PreviewObserver) { app4PreviewObserver.disconnect(); app4PreviewObserver = null; }
+            if (app4PreviewPdfJsTask) { try { app4PreviewPdfJsTask.destroy(); } catch (e) {} app4PreviewPdfJsTask = null; }
+        }
+
+        function closeApp4PdfPreview(isSystem = false) {
+            app4PreviewGen++;
+            clearTimeout(app4PreviewTimer);
+            app4PdfPreviewActive = false;
+            if (!isSystem) app4PdfPreviewDismissed = true;
+            releaseApp4PreviewRender();
+            const box = document.getElementById('app4-pdfPreviewBox');
+            const pages = document.getElementById('app4-pdfPreviewPages');
+            if (box) box.classList.add('hidden');
+            if (pages) pages.innerHTML = '';
+            if (app4LastPdfPreviewUrl) { URL.revokeObjectURL(app4LastPdfPreviewUrl); app4LastPdfPreviewUrl = null; }
+        }
+
+        function openApp4PdfPreviewInNewTab() {
+            if (!app4LastPdfPreviewUrl) return;
+            const w = window.open(app4LastPdfPreviewUrl, '_blank');
+            if (!w) saveAs(app4LastPdfPreviewUrl, getApp4PdfFileName());
+        }
+
+        function setApp4PreviewMessage(msg, isError = false) {
+            const pages = document.getElementById('app4-pdfPreviewPages');
+            if (pages) pages.innerHTML = `<div class="h-full flex items-center justify-center text-center text-sm font-semibold ${isError ? 'text-amber-300' : 'text-slate-200'} px-6">${escapeHtml(msg)}</div>`;
+        }
+
+        async function renderApp4PdfPages(bytes, gen) {
+            const container = document.getElementById('app4-pdfPreviewPages');
+            releaseApp4PreviewRender();
+
+            if (!window.pdfjsLib) {
+                // pdf.js yüklenemediyse tarayıcının kendi görüntüleyicisini kullan
+                container.innerHTML = `<iframe src="${app4LastPdfPreviewUrl}" class="w-full h-full rounded-lg bg-white" title="PDF Önizleme"></iframe>`;
+                return;
+            }
+
+            const task = pdfjsLib.getDocument({ data: bytes.slice(), isEvalSupported: false });
+            app4PreviewPdfJsTask = task;
+            const pdf = await task.promise;
+            if (gen !== app4PreviewGen) return;
+
+            container.innerHTML = '';
+            const availWidth = Math.max(300, (container.clientWidth || 800) - 40);
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const total = pdf.numPages;
+
+            const renderPage = async (wrap) => {
+                if (wrap.dataset.rendered === '1' || gen !== app4PreviewGen) return;
+                wrap.dataset.rendered = '1';
+                try {
+                    const page = await pdf.getPage(Number(wrap.dataset.page));
+                    if (gen !== app4PreviewGen) return;
+                    const base = page.getViewport({ scale: 1 });
+                    const scale = Math.min(availWidth / base.width, 1.6);
+                    const viewport = page.getViewport({ scale: scale * dpr });
+                    const canvas = document.createElement('canvas');
+                    canvas.className = 'app4-pdf-page';
+                    canvas.width = Math.floor(viewport.width);
+                    canvas.height = Math.floor(viewport.height);
+                    canvas.style.width = Math.floor(viewport.width / dpr) + 'px';
+                    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+                    if (gen !== app4PreviewGen) return;
+                    wrap.style.minHeight = '';
+                    wrap.querySelector('.app4-pdf-placeholder')?.remove();
+                    wrap.insertBefore(canvas, wrap.firstChild);
+                    page.cleanup();
+                } catch (err) {
+                    if (gen !== app4PreviewGen) return;
+                    const ph = wrap.querySelector('.app4-pdf-placeholder');
+                    if (ph) ph.textContent = 'Bu sayfa çizilemedi. "Yeni Sekmede Aç" ile görüntüleyebilirsiniz.';
+                }
+            };
+
+            const wraps = [];
+            for (let p = 1; p <= total; p++) {
+                const wrap = document.createElement('div');
+                wrap.className = 'app4-pdf-page-wrap';
+                wrap.dataset.page = String(p);
+                wrap.style.minHeight = Math.round(Math.min(availWidth, 1.6 * 595) * 1.414) + 'px';
+                wrap.innerHTML = `<div class="app4-pdf-placeholder mx-auto bg-white/90 rounded-md flex items-center justify-center text-xs font-semibold text-slate-500" style="width:${Math.min(availWidth, 952)}px;height:${Math.round(Math.min(availWidth, 952) * 1.414)}px;">Sayfa ${p} yükleniyor...</div><span class="app4-pdf-page-label">Sayfa ${p} / ${total}</span>`;
+                container.appendChild(wrap);
+                wraps.push(wrap);
+            }
+
+            if ('IntersectionObserver' in window) {
+                app4PreviewObserver = new IntersectionObserver(entries => {
+                    entries.forEach(en => {
+                        if (en.isIntersecting) {
+                            app4PreviewObserver && app4PreviewObserver.unobserve(en.target);
+                            renderPage(en.target);
+                        }
+                    });
+                }, { root: container, rootMargin: '600px 0px' });
+                wraps.forEach(w => app4PreviewObserver.observe(w));
+            } else {
+                for (let w of wraps) { if (gen !== app4PreviewGen) return; await renderPage(w); }
+            }
+        }
+
+        async function previewMatchedApp4Pdfs(silent = false) {
+            if (app4RowItems.length === 0) { if (!silent) alert('Lütfen önce Excel dosyasını yükleyin!'); return; }
+            if (app4ZipPdfDocs.length === 0) { if (!silent) alert('Lütfen önce PDF dosyalarını içeren ZIP arşivini yükleyin!'); return; }
+            if (!silent) app4PdfPreviewDismissed = false;
+
+            const gen = ++app4PreviewGen;
+            clearTimeout(app4PreviewTimer);
+
+            const box = document.getElementById('app4-pdfPreviewBox');
+            const title = document.getElementById('app4-pdfPreviewTitle');
+            const { targetCodes, matchedDocs } = collectApp4MatchedDocs();
+
+            if (targetCodes.length === 0 || matchedDocs.length === 0) {
+                const msg = targetCodes.length === 0
+                    ? 'Önizlenecek en az bir irsaliye seçili olmalıdır!'
+                    : 'Seçili irsaliye numaralarıyla eşleşen PDF dosyası ZIP içinde bulunamadı!';
+                if (!silent) { alert(msg); return; }
+                if (app4PdfPreviewActive) {
+                    releaseApp4PreviewRender();
+                    if (app4LastPdfPreviewUrl) { URL.revokeObjectURL(app4LastPdfPreviewUrl); app4LastPdfPreviewUrl = null; }
+                    if (title) title.textContent = 'Seçili plaka veya filtreye ait PDF bulunamadı';
+                    setApp4PreviewMessage(msg, true);
+                }
+                return;
+            }
+
+            app4PdfPreviewActive = true;
+            if (box) box.classList.remove('hidden');
+            if (title) title.textContent = 'Önizleme hazırlanıyor...';
+            setApp4PreviewMessage(`${matchedDocs.length} belge birleştiriliyor, lütfen bekleyin...`);
+
+            try {
+                const withKap = isApp4KapStampEnabled();
+                const result = await buildApp4MergedPdf(matchedDocs, withKap);
+                if (gen !== app4PreviewGen) return; // bu arada yeni bir önizleme istendi
+
+                if (app4LastPdfPreviewUrl) URL.revokeObjectURL(app4LastPdfPreviewUrl);
+                app4LastPdfPreviewUrl = URL.createObjectURL(new Blob([result.bytes], { type: 'application/pdf' }));
+
+                const selectedPlate = document.getElementById('app4-plateSelect').value;
+                const platePrefix = selectedPlate ? `[${selectedPlate}] ` : '';
+                const kapInfo = withKap ? 'KAP damgalı' : 'KAP damgasız';
+                const failInfo = result.failed.length ? ` — ${result.failed.length} PDF açılamadı` : '';
+                if (title) title.textContent = `${platePrefix}Birleşik İrsaliye Önizleme (${result.docCount} Belge / ${result.pageCount} Sayfa, ${kapInfo})${failInfo}`;
+
+                await renderApp4PdfPages(result.bytes, gen);
+            } catch (err) {
+                if (gen !== app4PreviewGen) return;
+                if (title) title.textContent = 'Önizleme oluşturulamadı';
+                setApp4PreviewMessage('PDF önizleme oluşturulamadı: ' + (err.message || err), true);
+            }
+        }
+
+        // ---------- EXCEL OKUMA ----------
         function processFile4(file) {
-            document.getElementById('app4-fileName').innerText = '✓ ' + file.name;
+            document.getElementById('app4-fileName').innerText = 'Okunuyor: ' + file.name + '...';
             const reader = new FileReader();
+            reader.onerror = () => { document.getElementById('app4-fileName').innerText = '✗ Okunamadı: ' + file.name; };
             reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, {type: 'array'});
-                const firstSheetName = workbook.SheetNames[0]; const worksheet = workbook.Sheets[firstSheetName];
-                const json = getVisibleRows(worksheet);
-                
-                let rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '', raw: false });
+              try {
+                const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                if (!worksheet) throw new Error('Excel içinde sayfa bulunamadı');
+
+                const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '', raw: false, blankrows: true });
                 app4RawSheetMatrix = rawData;
                 app4HeaderRowIndex = 0;
                 app4KapColIndex = -1;
@@ -1836,64 +2215,61 @@
 
                 for (let r = 0; r < Math.min(10, rawData.length); r++) {
                     const rowArr = rawData[r] || [];
-                    const rowStr = rowArr.map(x => normalizeHeaderName(String(x))).join('|');
+                    const norms = rowArr.map(x => normalizeHeaderName(String(x)));
+                    const rowStr = norms.join('|');
                     if (rowStr.includes('delivery') || rowStr.includes('shiptoname') || rowStr.includes('kap') || rowStr.includes('musteri')) {
                         app4HeaderRowIndex = r;
-                        for (let c = 0; c < rowArr.length; c++) {
-                            const hNorm = normalizeHeaderName(String(rowArr[c]));
-                            if (app4KapColIndex === -1 && (hNorm === 'kap' || hNorm.includes('package') || hNorm === 'koli' || hNorm === 'paket')) app4KapColIndex = c;
+                        // KAP sütunu: önce tam eşleşme, sonra kısmi
+                        app4KapColIndex = norms.findIndex(h => ['kap', 'koli', 'paket', 'packages', 'package', 'kapadedi', 'koliadedi'].includes(h));
+                        if (app4KapColIndex === -1) app4KapColIndex = norms.findIndex(h => h.includes('package') || h.startsWith('kap') || h.includes('koli') || h.includes('paket'));
+                        for (let c = 0; c < norms.length; c++) {
+                            const hNorm = norms[c];
+                            if (tasimaIrsColIdx === -1 && (hNorm.includes('tasima') || hNorm.includes('eirsaliye') || hNorm === 'irsaliyeno' || hNorm === 'irsaliyenumarasi')) { tasimaIrsColIdx = c; continue; }
                             if (plakaColIdx === -1 && (hNorm.includes('aracbilgisi') || hNorm.includes('plaka'))) plakaColIdx = c;
                             if (bayiColIdx === -1 && (hNorm.includes('shiptoname') || hNorm.includes('bayi') || hNorm.includes('musteri') || hNorm.includes('alici'))) bayiColIdx = c;
                             if (sehirColIdx === -1 && (hNorm === 'sehir' || hNorm === 'il' || hNorm === 'city' || hNorm.includes('teslimatili'))) sehirColIdx = c;
-                            if (tasimaIrsColIdx === -1 && (hNorm.includes('tasima') || hNorm.includes('eirsaliye') || hNorm === 'irsaliyeno' || hNorm === 'irsaliyenumarasi')) tasimaIrsColIdx = c;
                         }
                         break;
                     }
                 }
-                if (plakaColIdx === -1) plakaColIdx = 8;
-                if (tasimaIrsColIdx === -1) tasimaIrsColIdx = 13; // Column N
+                if (plakaColIdx === -1) plakaColIdx = 8;       // I sütunu (Modül 3 çıktısı)
+                if (tasimaIrsColIdx === -1) tasimaIrsColIdx = 13; // N sütunu (Modül 3 çıktısı)
 
-                let rowsMeta = worksheet['!rows'] || [];
+                const rowsMeta = worksheet['!rows'] || [];
                 app4RowItems = [];
                 app4DeselectedWaybills.clear();
                 for (let r = app4HeaderRowIndex + 1; r < rawData.length; r++) {
-                    if (rowsMeta[r] && (rowsMeta[r].hidden === true || rowsMeta[r].hpx === 0 || rowsMeta[r].hpt === 0)) continue;
+                    if (isRowHidden(rowsMeta, r)) continue;
                     const rowArr = rawData[r] || [];
                     if (!rowArr.some(cell => String(cell).trim() !== '')) continue;
-                    const pVal = String(rowArr[plakaColIdx] ?? rowArr[8] ?? '').trim();
-                    const bVal = bayiColIdx !== -1 ? String(rowArr[bayiColIdx] ?? '').trim() : '';
-                    const sVal = sehirColIdx !== -1 ? String(rowArr[sehirColIdx] ?? '').trim() : '';
-                    const tVal = String(rowArr[tasimaIrsColIdx] ?? rowArr[13] ?? '').trim();
+                    const tVal = String(rowArr[tasimaIrsColIdx] ?? '').trim();
                     app4RowItems.push({
                         originalRowIndex: r,
-                        plaka: pVal,
-                        bayi: bVal,
-                        sehir: sVal,
+                        plaka: String(rowArr[plakaColIdx] ?? '').trim(),
+                        bayi: bayiColIdx !== -1 ? String(rowArr[bayiColIdx] ?? '').trim() : '',
+                        sehir: sehirColIdx !== -1 ? String(rowArr[sehirColIdx] ?? '').trim() : '',
                         tasimaIrsRaw: tVal,
                         tasimaIrsList: expandTasimaIrsaliyeNumbers(tVal)
                     });
                 }
 
-                app4Customers = []; 
+                // Müşteri listesi: aynı satır verisinden (müşteri + şehir + plaka bazında KAP toplamı)
+                app4Customers = [];
                 uniquePlates.clear();
-                
-                json.forEach(row => {
-                    const musteriAdi = String(row['Ship to Name'] || row['Müşteri'] || '').trim();
-                    const sehir = String(row['şehir '] || row['şehir'] || row['City'] || '').trim();
-                    let kap = parseInt(row['kap'] || row['KAP'] || row['# packages'] || row['Packages']) || 0;
-                    
-                    let plaka = String(row['ARAÇ Bilgisi'] || row['Plaka'] || row['PLAKA'] || row['Araç Plaka'] || '').trim();
-                    if(plaka) { uniquePlates.add(plaka); }
-                    
-                    if(musteriAdi) {
-                        const existing = app4Customers.find(c => c.name === musteriAdi && c.city === sehir && c.plaka === plaka);
-                        if (!existing) { 
-                            app4Customers.push({name: musteriAdi, city: sehir, kap: kap > 0 ? kap : 1, plaka: plaka}); 
-                        } 
-                        else { existing.kap += kap; }
+                const custMap = new Map();
+                app4RowItems.forEach(item => {
+                    if (item.plaka) uniquePlates.add(item.plaka);
+                    if (!item.bayi) return;
+                    const key = `${item.bayi}\u0000${item.sehir}\u0000${item.plaka}`;
+                    if (!custMap.has(key)) {
+                        const c = { name: item.bayi, city: item.sehir, kap: 0, plaka: item.plaka };
+                        custMap.set(key, c);
+                        app4Customers.push(c);
                     }
+                    custMap.get(key).kap += getApp4RowKap(item);
                 });
-                
+                app4Customers.forEach(c => { if (c.kap <= 0) c.kap = 1; });
+
                 const plateSelect = document.getElementById('app4-plateSelect');
                 plateSelect.innerHTML = '<option value="">Tüm Plakalar</option>';
                 Array.from(uniquePlates).sort((a, b) => a.localeCompare(b, 'tr-TR')).forEach(p => {
@@ -1903,10 +2279,22 @@
                 });
 
                 app4Customers.sort((a, b) => a.name.localeCompare(b.name, 'tr-TR'));
+                document.getElementById('app4-fileName').innerText = '✓ ' + file.name;
+
+                const warnings = [];
+                if (bayiColIdx === -1) warnings.push('Müşteri / Ship to Name sütunu bulunamadı');
+                if (app4KapColIndex === -1) warnings.push('KAP sütunu bulunamadı (her satır 1 kap sayılacak)');
+                if (warnings.length) alert('Uyarı:\n- ' + warnings.join('\n- '));
+
                 filterApp4Customers();
                 refreshApp4PrintPlateOptions();
                 updateApp4PdfMatchStats();
-            }; reader.readAsArrayBuffer(file);
+              } catch (err) {
+                document.getElementById('app4-fileName').innerText = '✗ Okunamadı: ' + file.name;
+                alert('Excel dosyası okunamadı: ' + (err.message || err));
+              }
+            };
+            reader.readAsArrayBuffer(file);
         }
 
         function refreshApp4PrintPlateOptions() {
@@ -1930,8 +2318,8 @@
                 const isChecked = selectedTopPlate !== '' && plate === selectedTopPlate;
                 return `
                     <label class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-300 hover:border-emerald-500 rounded-lg cursor-pointer select-none text-xs font-bold text-slate-700 shadow-xs transition">
-                        <input type="checkbox" value="${escapeHtmlApp3(plate)}" ${isChecked ? 'checked' : ''} onchange="updateApp4A4Preview()" class="w-4 h-4 accent-emerald-600 rounded">
-                        <span>${escapeHtmlApp3(plate)}</span>
+                        <input type="checkbox" value="${escapeHtml(plate)}" ${isChecked ? 'checked' : ''} onchange="updateApp4A4Preview()" class="w-4 h-4 accent-emerald-600 rounded">
+                        <span>${escapeHtml(plate)}</span>
                         <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px]">${count} satır</span>
                     </label>
                 `;
@@ -1962,16 +2350,16 @@
             if (kapIdx >= 0 && kapIdx < 8) {
                 let html = '<tr class="app3-subtotal-row">';
                 if (kapIdx > 0) {
-                    html += `<td colspan="${kapIdx}" style="text-align:right;">${escapeHtmlApp3(label)} TOPLAM:</td>`;
+                    html += `<td colspan="${kapIdx}" style="text-align:right;">${escapeHtml(label)} TOPLAM:</td>`;
                 }
-                html += `<td style="text-align:center;">${kapIdx === 0 ? `${escapeHtmlApp3(label)} TOPLAM: ${totalKap}` : totalKap}</td>`;
+                html += `<td style="text-align:center;">${kapIdx === 0 ? `${escapeHtml(label)} TOPLAM: ${totalKap}` : totalKap}</td>`;
                 if (kapIdx < 7) {
                     html += `<td colspan="${8 - kapIdx - 1}"></td>`;
                 }
                 html += '</tr>';
                 return html;
             }
-            return `<tr class="app3-subtotal-row"><td colspan="8" style="text-align:right;">${escapeHtmlApp3(label)} TOPLAM KAP: ${totalKap}</td></tr>`;
+            return `<tr class="app3-subtotal-row"><td colspan="8" style="text-align:right;">${escapeHtml(label)} TOPLAM KAP: ${totalKap}</td></tr>`;
         }
 
         function buildApp4SinglePlateTableHtml(plate, includeSubtotals, printDateStr, headersAH) {
@@ -2005,7 +2393,7 @@
                         const rawRow = app4RawSheetMatrix[item.originalRowIndex] || [];
                         let cellsHtml = '';
                         for (let c = 0; c < 8; c++) {
-                            cellsHtml += `<td>${escapeHtmlApp3(String(rawRow[c] ?? ''))}</td>`;
+                            cellsHtml += `<td>${escapeHtml(String(rawRow[c] ?? ''))}</td>`;
                         }
                         groupRowsHtml += `<tr>${cellsHtml}</tr>`;
                     });
@@ -2018,7 +2406,7 @@
                     const rawRow = app4RawSheetMatrix[item.originalRowIndex] || [];
                     let cellsHtml = '';
                     for (let c = 0; c < 8; c++) {
-                        cellsHtml += `<td>${escapeHtmlApp3(String(rawRow[c] ?? ''))}</td>`;
+                        cellsHtml += `<td>${escapeHtml(String(rawRow[c] ?? ''))}</td>`;
                     }
                     rowsHtml += `<tr>${cellsHtml}</tr>`;
                 });
@@ -2027,12 +2415,12 @@
 
             return `
                 <div class="app3-print-header">
-                    <span>PLAKA: ${escapeHtmlApp3(plate)}</span>
+                    <span>PLAKA: ${escapeHtml(plate)}</span>
                     <span>${printDateStr}</span>
                 </div>
                 <table class="app3-print-table">
                     <thead>
-                        <tr>${headersAH.map(h => `<th>${escapeHtmlApp3(h)}</th>`).join('')}</tr>
+                        <tr>${headersAH.map(h => `<th>${escapeHtml(h)}</th>`).join('')}</tr>
                     </thead>
                     ${bodyBlocksHtml}
                 </table>
@@ -2076,7 +2464,7 @@
                 previewCardsHtml += `
                     <div class="bg-white rounded-xl shadow-md border border-slate-300 p-5 md:p-6 min-w-[760px] mx-auto space-y-2">
                         <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200 mb-2">
-                            <span>A4 Yatay Sayfa Önizlemesi — ${escapeHtmlApp3(plate)}</span>
+                            <span>A4 Yatay Sayfa Önizlemesi — ${escapeHtml(plate)}</span>
                             <span>Yazdırmada 2 Nüsha Basılır</span>
                         </div>
                         <div class="a4-preview-sheet">${tableBlock}</div>
@@ -2087,129 +2475,30 @@
             container.innerHTML = previewCardsHtml || '<div class="text-center py-10 text-xs font-semibold text-slate-500">Seçili plakaya ait satır bulunamadı.</div>';
         }
 
-        let app4LastPdfPreviewUrl = null;
-        let app4PdfPreviewActive = false;
-
-        function closeApp4PdfPreview() {
-            app4PdfPreviewActive = false;
-            const box = document.getElementById('app4-pdfPreviewBox');
-            const frame = document.getElementById('app4-pdfPreviewFrame');
-            if (box) box.classList.add('hidden');
-            if (frame) frame.src = 'about:blank';
-            if (app4LastPdfPreviewUrl) {
-                URL.revokeObjectURL(app4LastPdfPreviewUrl);
-                app4LastPdfPreviewUrl = null;
-            }
-        }
-
-        async function previewMatchedApp4Pdfs(silent = false) {
-            if (app4RowItems.length === 0) {
-                if (!silent) alert('Lütfen önce Excel dosyasını yükleyin!');
-                return;
-            }
-            if (app4ZipPdfDocs.length === 0) {
-                if (!silent) alert('Lütfen önce PDF dosyalarını içeren ZIP arşivini yükleyin!');
-                return;
-            }
-
-            const box = document.getElementById('app4-pdfPreviewBox');
-            const frame = document.getElementById('app4-pdfPreviewFrame');
-            const title = document.getElementById('app4-pdfPreviewTitle');
-
-            const checkedBoxes = Array.from(document.querySelectorAll('#app4-waybillCheckboxList input[type="checkbox"]:checked'));
-            const targetCodes = checkedBoxes.map(cb => cb.value);
-
-            const matchedDocs = [];
-            const usedDocs = new Set();
-            targetCodes.forEach(code => {
-                const doc = findPdfForWaybill(code);
-                if (doc && !usedDocs.has(doc)) {
-                    usedDocs.add(doc);
-                    matchedDocs.push(doc);
-                }
-            });
-
-            if (targetCodes.length === 0 || matchedDocs.length === 0) {
-                if (!silent) {
-                    alert(targetCodes.length === 0
-                        ? 'Önizlenecek en az bir irsaliye seçili olmalıdır!'
-                        : 'Seçili irsaliye numaralarıyla eşleşen PDF dosyası ZIP içinde bulunamadı!');
-                } else if (app4PdfPreviewActive && box && frame) {
-                    if (app4LastPdfPreviewUrl) {
-                        URL.revokeObjectURL(app4LastPdfPreviewUrl);
-                        app4LastPdfPreviewUrl = null;
-                    }
-                    frame.src = 'about:blank';
-                    if (title) title.textContent = 'Seçili plaka veya filtreye ait PDF bulunamadı';
-                }
-                return;
-            }
-
-            try {
-                const mergedPdf = await PDFLib.PDFDocument.create();
-                for (let doc of matchedDocs) {
-                    const srcPdf = await PDFLib.PDFDocument.load(doc.bytes);
-                    const copiedPages = await mergedPdf.copyPages(srcPdf, srcPdf.getPageIndices());
-                    copiedPages.forEach(page => mergedPdf.addPage(page));
-                }
-                const mergedBytes = await mergedPdf.save();
-                const blob = new Blob([mergedBytes], { type: 'application/pdf' });
-
-                if (app4LastPdfPreviewUrl) URL.revokeObjectURL(app4LastPdfPreviewUrl);
-                app4LastPdfPreviewUrl = URL.createObjectURL(blob);
-
-                app4PdfPreviewActive = true;
-                const selectedPlate = document.getElementById('app4-plateSelect') ? document.getElementById('app4-plateSelect').value : '';
-                const platePrefix = selectedPlate ? `[${selectedPlate}] ` : '';
-                if (title) title.textContent = `${platePrefix}Birleşik İrsaliye Önizleme (${matchedDocs.length} Belge / ${mergedPdf.getPageCount()} Sayfa)`;
-                if (frame) frame.src = app4LastPdfPreviewUrl;
-                if (box) box.classList.remove('hidden');
-            } catch (err) {
-                if (!silent) alert('PDF önizleme oluşturulurken hata oluştu: ' + (err.message || err));
-            }
-        }
-
         function printSelectedApp4Plates() {
             const selectedPlates = Array.from(document.querySelectorAll('#app4-plateCheckboxList input[type="checkbox"]:checked')).map(cb => cb.value);
-            if (selectedPlates.length === 0) {
-                alert('Lütfen yazdırmak için en az bir plaka seçin!');
-                return;
-            }
-            if (!app4RawSheetMatrix || app4RawSheetMatrix.length === 0) {
-                alert('Excel tablo verisi bulunamadı!');
-                return;
-            }
-            if (!consumeUse()) return;
+            if (selectedPlates.length === 0) { alert('Lütfen yazdırmak için en az bir plaka seçin!'); return; }
+            if (!app4RawSheetMatrix || app4RawSheetMatrix.length === 0) { alert('Excel tablo verisi bulunamadı!'); return; }
 
             const includeSubtotals = document.getElementById('app4-includeSummaryToggle').checked;
             const now = new Date();
             const printDateStr = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}.${now.getFullYear()}`;
-
             const headerRow = app4RawSheetMatrix[app4HeaderRowIndex] || [];
             const headersAH = [];
-            for (let c = 0; c < 8; c++) {
-                headersAH.push(String(headerRow[c] ?? '').trim());
-            }
+            for (let c = 0; c < 8; c++) headersAH.push(String(headerRow[c] ?? '').trim());
 
-            const printArea = document.getElementById('app3-print-area');
             let pagesHtml = '';
-
             selectedPlates.forEach(plate => {
                 const tableBlock = buildApp4SinglePlateTableHtml(plate, includeSubtotals, printDateStr, headersAH);
                 if (!tableBlock) return;
                 pagesHtml += `<div class="app3-print-page">${tableBlock}</div>`;
                 pagesHtml += `<div class="app3-print-page">${tableBlock}</div>`;
             });
+            if (!pagesHtml) { alert('Seçili plakalara ait satır bulunamadı!'); return; }
+            if (!consumeUse()) return;
 
-            printArea.innerHTML = pagesHtml;
-
-            const dynStyle = document.getElementById('dynamic-print-page-style');
-            dynStyle.textContent = `@media print { @page { size: A4 landscape; margin: 6mm; } }`;
-
-            document.body.classList.add('printing-app3');
-            window.print();
-            document.body.classList.remove('printing-app3');
-            dynStyle.textContent = '';
+            document.getElementById('app3-print-area').innerHTML = pagesHtml;
+            runPrint('printing-app3', 'size: A4 landscape; margin: 6mm;', 'app3-print-area');
         }
 
         function switchApp4Tab(tabName) {
@@ -2227,15 +2516,13 @@
                     panel.classList.remove('hidden');
                     btn.classList.remove('border-transparent', 'text-slate-500', 'font-bold');
                     btn.classList.add('font-extrabold', ...activeColors[t]);
-                    if (t === 'pdfs' && app4ZipPdfDocs.length > 0 && app4RowItems.length > 0) {
-                        previewMatchedApp4Pdfs(true);
-                    }
                 } else {
                     panel.classList.add('hidden');
                     btn.classList.remove('font-extrabold', 'border-orange-600', 'text-orange-600', 'border-rose-600', 'text-rose-600', 'border-emerald-600', 'text-emerald-600');
                     btn.classList.add('border-transparent', 'text-slate-500', 'font-bold');
                 }
             });
+            if (tabName === 'pdfs') scheduleApp4PdfPreviewRefresh(true);
         }
 
         function updateApp4LabelLivePreview() {
@@ -2284,124 +2571,71 @@
             if (list.length === 0) { selectElement.innerHTML = '<option value="">Sonuç bulunamadı</option>'; updateApp4LabelLivePreview(); return; }
             list.forEach((cust, index) => {
                 const option = document.createElement('option'); option.value = index; 
-                option.textContent = `${cust.name} (${cust.city}) - [${cust.kap} KAP] ${cust.plaka ? '- ' + cust.plaka : ''}`; 
+                option.textContent = `${cust.name}${cust.city ? ' (' + cust.city + ')' : ''} - [${cust.kap} KAP]${cust.plaka ? ' - ' + cust.plaka : ''}`; 
                 option.setAttribute('data-name', cust.name); option.setAttribute('data-city', cust.city); option.setAttribute('data-kap', cust.kap);
                 selectElement.appendChild(option);
             });
+            updateApp4LabelLivePreview();
         }
 
-        document.getElementById('app4-customerSearch').addEventListener('input', () => { filterApp4Customers(); updateApp4PdfMatchStats(); if(app4ZipPdfDocs.length > 0 && app4RowItems.length > 0) previewMatchedApp4Pdfs(true); });
-        document.getElementById('app4-plateSelect').addEventListener('change', () => { filterApp4Customers(); syncApp4TopPlateToA4Checkboxes(); updateApp4PdfMatchStats(); if(app4ZipPdfDocs.length > 0 && app4RowItems.length > 0) previewMatchedApp4Pdfs(true); });
+        document.getElementById('app4-customerSearch').addEventListener('input', () => { filterApp4Customers(); updateApp4PdfMatchStats(); });
+        document.getElementById('app4-plateSelect').addEventListener('change', () => { filterApp4Customers(); syncApp4TopPlateToA4Checkboxes(); updateApp4PdfMatchStats(); });
 
-        document.getElementById('app4-customerSelect').addEventListener('change', function(e) {
+        document.getElementById('app4-customerSelect').addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
             if (selectedOption && selectedOption.value !== '') {
                 const autoKap = selectedOption.getAttribute('data-kap');
-                if (autoKap) { document.getElementById('app4-kapCount').value = autoKap; }
+                if (autoKap) document.getElementById('app4-kapCount').value = autoKap;
             }
             updateApp4LabelLivePreview();
             updateApp4PdfMatchStats();
-            if(app4ZipPdfDocs.length > 0 && app4RowItems.length > 0) previewMatchedApp4Pdfs(true);
         });
+
+        function buildApp4LabelPages(customers) {
+            const printArea = document.getElementById('print-area');
+            printArea.innerHTML = '';
+            const frag = document.createDocumentFragment();
+            customers.forEach(cust => {
+                const kapCount = cust.kap > 0 ? cust.kap : 1;
+                for (let i = 1; i <= kapCount; i++) {
+                    const pageDiv = document.createElement('div'); pageDiv.className = 'label-page';
+                    const nameDiv = document.createElement('div'); nameDiv.className = 'customer-name'; nameDiv.textContent = cust.name;
+                    const cityDiv = document.createElement('div'); cityDiv.className = 'customer-city'; if (cust.city) cityDiv.textContent = `(${cust.city})`;
+                    const fractionDiv = document.createElement('div'); fractionDiv.className = 'fraction'; fractionDiv.textContent = `${i}/${kapCount}`;
+                    const kapTextDiv = document.createElement('div'); kapTextDiv.className = 'kap-text'; kapTextDiv.textContent = 'KAP';
+                    pageDiv.append(nameDiv, cityDiv, fractionDiv, kapTextDiv);
+                    frag.appendChild(pageDiv);
+                }
+            });
+            printArea.appendChild(frag);
+            runPrint('printing-app4', 'size: 80mm 100mm; margin: 0;', 'print-area');
+        }
 
         // TEKLİ YAZDIRMA
         document.getElementById('app4-generateBtn').addEventListener('click', function() {
             const selectElement = document.getElementById('app4-customerSelect');
-            const selectedOption = selectElement.options[selectElement.selectedIndex];
-            
+            const selectedOption = selectElement.selectedIndex >= 0 ? selectElement.options[selectElement.selectedIndex] : null;
             if (!selectedOption || selectedOption.value === '') { alert('Lütfen yazdırmadan önce listeden bir müşteri seçin!'); return; }
-            const kapCount = parseInt(document.getElementById('app4-kapCount').value);
+            const kapCount = parseInt(document.getElementById('app4-kapCount').value, 10);
             if (!kapCount || kapCount < 1) { alert('Lütfen en az 1 kap girin!'); return; }
+            if (kapCount > 500 && !confirm(`${kapCount} adet etiket basılacak. Emin misiniz?`)) return;
             if (!consumeUse()) return;
-
-            const musteriAdi = selectedOption.getAttribute('data-name');
-            const sehir = selectedOption.getAttribute('data-city');
-            const printArea = document.getElementById('print-area'); printArea.innerHTML = ''; 
-            
-            for (let i = 1; i <= kapCount; i++) {
-                const pageDiv = document.createElement('div'); pageDiv.className = 'label-page';
-                const nameDiv = document.createElement('div'); nameDiv.className = 'customer-name'; nameDiv.textContent = musteriAdi;
-                const cityDiv = document.createElement('div'); cityDiv.className = 'customer-city';
-                if(sehir) { cityDiv.textContent = `(${sehir})`; }
-                const fractionDiv = document.createElement('div'); fractionDiv.className = 'fraction'; fractionDiv.textContent = `${i}/${kapCount}`;
-                const kapTextDiv = document.createElement('div'); kapTextDiv.className = 'kap-text'; kapTextDiv.textContent = 'KAP';
-                
-                pageDiv.appendChild(nameDiv); pageDiv.appendChild(cityDiv); pageDiv.appendChild(fractionDiv); pageDiv.appendChild(kapTextDiv);
-                printArea.appendChild(pageDiv);
-            }
-            
-            const dynStyle = document.getElementById('dynamic-print-page-style');
-            dynStyle.textContent = `@media print { @page { size: 80mm 100mm; margin: 0 !important; } }`;
-
-            document.body.classList.add('printing-app4');
-            window.print();
-            document.body.classList.remove('printing-app4');
-            dynStyle.textContent = '';
+            buildApp4LabelPages([{ name: selectedOption.getAttribute('data-name'), city: selectedOption.getAttribute('data-city'), kap: kapCount }]);
         });
 
         // TOPLU YAZDIRMA (SEÇİLİ PLAKADAKİ TÜM MÜŞTERİLER)
         document.getElementById('app4-bulkGenerateBtn').addEventListener('click', function() {
             const selectedPlate = document.getElementById('app4-plateSelect').value;
-            if (!selectedPlate) {
-                alert('Lütfen toplu yazdırma için 2. adımdan bir plaka seçin!');
-                return;
-            }
+            if (!selectedPlate) { alert('Lütfen toplu yazdırma için üstteki "Araç Plakası" listesinden bir plaka seçin!'); return; }
 
             const term = document.getElementById('app4-customerSearch').value.toLocaleLowerCase('tr-TR');
             const targetCustomers = app4Customers.filter(c => {
                 const matchName = c.name.toLocaleLowerCase('tr-TR').includes(term) || c.city.toLocaleLowerCase('tr-TR').includes(term);
                 return matchName && c.plaka === selectedPlate;
             });
-
-            if (targetCustomers.length === 0) {
-                alert('Seçilen plaka ve filtreye uygun müşteri bulunamadı!');
-                return;
-            }
-
+            if (targetCustomers.length === 0) { alert('Seçilen plaka ve filtreye uygun müşteri bulunamadı!'); return; }
             if (!consumeUse()) return;
-
-            const printArea = document.getElementById('print-area');
-            printArea.innerHTML = '';
-
-            targetCustomers.forEach(cust => {
-                const kapCount = cust.kap > 0 ? cust.kap : 1;
-                for (let i = 1; i <= kapCount; i++) {
-                    const pageDiv = document.createElement('div');
-                    pageDiv.className = 'label-page';
-
-                    const nameDiv = document.createElement('div');
-                    nameDiv.className = 'customer-name';
-                    nameDiv.textContent = cust.name;
-
-                    const cityDiv = document.createElement('div');
-                    cityDiv.className = 'customer-city';
-                    if (cust.city) {
-                        cityDiv.textContent = `(${cust.city})`;
-                    }
-
-                    const fractionDiv = document.createElement('div');
-                    fractionDiv.className = 'fraction';
-                    fractionDiv.textContent = `${i}/${kapCount}`;
-
-                    const kapTextDiv = document.createElement('div');
-                    kapTextDiv.className = 'kap-text';
-                    kapTextDiv.textContent = 'KAP';
-
-                    pageDiv.appendChild(nameDiv);
-                    pageDiv.appendChild(cityDiv);
-                    pageDiv.appendChild(fractionDiv);
-                    pageDiv.appendChild(kapTextDiv);
-                    printArea.appendChild(pageDiv);
-                }
-            });
-
-            const dynStyle = document.getElementById('dynamic-print-page-style');
-            dynStyle.textContent = `@media print { @page { size: 80mm 100mm; margin: 0 !important; } }`;
-
-            document.body.classList.add('printing-app4');
-            window.print();
-            document.body.classList.remove('printing-app4');
-            dynStyle.textContent = '';
+            buildApp4LabelPages(targetCustomers);
         });
     </script>
     <div class="fixed bottom-2 right-4 text-xs text-slate-400 font-medium z-50 no-print">Created by Rıdvan Ayaz</div>
