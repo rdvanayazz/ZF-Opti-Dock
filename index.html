@@ -134,8 +134,14 @@
             body.printing-pdf > *:not(#pdf-print-area) { display: none !important; }
             body.printing-pdf, body.printing-pdf html { margin: 0 !important; padding: 0 !important; background: #fff !important; min-height: 0 !important; }
             body.printing-pdf #pdf-print-area { display: block !important; }
-            body.printing-pdf #pdf-print-area img { display: block; margin: 0; padding: 0; page-break-after: always; break-after: page; page-break-inside: avoid; }
-            body.printing-pdf #pdf-print-area img:last-child { page-break-after: auto; break-after: auto; }
+            /* Her PDF sayfası tam olarak 1 kağıda sığar (kağıt boyu / kenar boşluğu ne olursa olsun bölünmez) */
+            body.printing-pdf #pdf-print-area .pdf-print-page {
+                width: 100%; height: 99vh; margin: 0; padding: 0; overflow: hidden;
+                display: flex; align-items: center; justify-content: center;
+                page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid;
+            }
+            body.printing-pdf #pdf-print-area .pdf-print-page:last-child { page-break-after: auto; break-after: auto; }
+            body.printing-pdf #pdf-print-area img { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
         }
 
         /* === MODÜL 4 PDF ÖNİZLEME (pdf.js canvas) === */
@@ -2068,8 +2074,7 @@
                     showApp4Busy(`Yazdırma hazırlanıyor: ${p} / ${pdf.numPages} sayfa`);
                     const page = await pdf.getPage(p);
                     const base = page.getViewport({ scale: 1 });
-                    const wMm = base.width * 25.4 / 72, hMm = base.height * 25.4 / 72;
-                    if (p === 1) pageCss = `size: ${wMm.toFixed(1)}mm ${hMm.toFixed(1)}mm; margin: 0;`;
+                    if (p === 1) pageCss = base.width > base.height ? 'size: A4 landscape; margin: 0;' : 'size: A4 portrait; margin: 0;';
                     const vp = page.getViewport({ scale: RENDER_SCALE });
                     const canvas = document.createElement('canvas');
                     canvas.width = Math.floor(vp.width); canvas.height = Math.floor(vp.height);
@@ -2080,11 +2085,12 @@
                     canvas.width = 0; canvas.height = 0; page.cleanup();
                     if (!blob) throw new Error('Sayfa ' + p + ' görüntüye çevrilemedi');
                     const url = URL.createObjectURL(blob); urls.push(url);
+                    const holder = document.createElement('div');
+                    holder.className = 'pdf-print-page';
                     const img = document.createElement('img');
                     img.src = url;
-                    img.style.width = wMm.toFixed(2) + 'mm';
-                    img.style.height = (hMm - 0.3).toFixed(2) + 'mm'; // taşıp boş sayfa üretmesin
-                    frag.appendChild(img); imgs.push(img);
+                    holder.appendChild(img);
+                    frag.appendChild(holder); imgs.push(img);
                 }
                 area.appendChild(frag);
                 await Promise.all(imgs.map(im => im.decode ? im.decode().catch(() => {}) : Promise.resolve()));
@@ -2173,10 +2179,9 @@
 
         // Önizlemede görünen PDF'i yeniden birleştirmeden doğrudan yazdırır
         function printApp4PreviewPdf() {
-            if (!app4LastPdfPreviewBytes) { outputMatchedApp4Pdfs('print'); return; }
+            // Ekrandaki seçim, nüsha ve damga ayarıyla her zaman yeniden oluşturulur (eski önizleme basılmaz)
             if (app4PdfPrinting) return;
-            if (!consumeUse()) return;
-            printApp4PdfBytes(app4LastPdfPreviewBytes, getApp4PdfFileName());
+            outputMatchedApp4Pdfs('print');
         }
 
         function openApp4PdfPreviewInNewTab() {
