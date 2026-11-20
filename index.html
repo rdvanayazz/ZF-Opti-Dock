@@ -2404,7 +2404,8 @@ table.faq td:first-child { font-weight: 700; width: 42%; }
                     for (let part of irsParts) {
                         let pTrim = part.trim(); if(!pTrim) continue;
                         let irsStr = pTrim.replace(/[^a-zA-Z0-9]/g, ''); 
-                        if(irsStr) {
+                        // "WMS" gibi yalnızca harften oluşan önek tek başına eşleştirilmez (tüm WMS kayıtları aynı plakayı alıyordu)
+                        if(irsStr && /\d/.test(irsStr)) {
                             let irsNoZero = irsStr.replace(/^0+/, '');
                             plakaList.push({ originalIrs: irsaliye, irsStr: irsStr, irsNoZero: irsNoZero, plk: plaka, tasimaIrs: tasimaIrs });
                         }
@@ -2421,6 +2422,7 @@ table.faq td:first-child { font-weight: 700; width: 42%; }
                     for (let part of deliveryParts) {
                         let pTrim = part.trim(); if(!pTrim) continue;
                         let delivStr = pTrim.replace(/[^a-zA-Z0-9]/g, '');
+                        if (!/\d/.test(delivStr)) continue;
                         let delivNoZero = delivStr.replace(/^0+/, '');
                         let last4Deliv = delivStr.length >= 4 ? delivStr.slice(-4) : delivStr; 
                         if(!delivStr) continue;
@@ -2450,10 +2452,12 @@ table.faq td:first-child { font-weight: 700; width: 42%; }
                     delivery: deliveryOriginal,
                     plaka: finalPlaka,
                     tasimaIrs: finalTasimaIrs,
-                    orig: { bayi: bayiAdi, sehir: sehirAdi, delivery: deliveryOriginal },
-                    status: isMatched ? 'Eşleşti (Güncellendi)' : (existingPlaka || existingTasimaIrs ? 'Eski Bilgi Korundu' : 'Bulunamadı')
+                    orig: { bayi: bayiAdi, sehir: sehirAdi, delivery: deliveryOriginal, plaka: existingPlaka },
+                    baseStatus: isMatched ? 'Eşleşti (Güncellendi)' : (existingPlaka || existingTasimaIrs ? 'Eski Bilgi Korundu' : 'Bulunamadı'),
+                    status: ''
                 });
             });
+            matchedData3.forEach(refreshApp3Status);
             document.getElementById('app3-statTotal').innerText = matchedData3.length; document.getElementById('app3-statMatched').innerText = matchedCount;
             document.getElementById('app3-actionArea').classList.remove('hidden'); document.getElementById('app3-previewArea').classList.remove('hidden');
             filterApp3Table();
@@ -2461,10 +2465,32 @@ table.faq td:first-child { font-weight: 700; width: 42%; }
 
         const escapeHtmlApp3 = escapeHtml;
 
+        // Sevk güncel dosyasındaki eski plaka ile yeni plaka farklıysa durum "Değişti" olur
+        function normalizeApp3Plate(p) { return String(p || '').toUpperCase().replace(/\s+/g, ''); }
+        function isApp3PlateChanged(item) {
+            const oldP = (item.orig && item.orig.plaka) || '';
+            return Boolean(oldP && item.plaka && normalizeApp3Plate(oldP) !== normalizeApp3Plate(item.plaka));
+        }
+        function refreshApp3Status(item) {
+            item.status = isApp3PlateChanged(item)
+                ? `Değişti - Eski Plaka: ${item.orig.plaka} - Yeni Plaka: ${item.plaka}`
+                : item.baseStatus;
+        }
+        function renderApp3StatusCell(item) {
+            if (isApp3PlateChanged(item)) {
+                return `<td class="p-2 text-xs bg-orange-50">
+                    <div class="font-extrabold text-orange-700">Değişti</div>
+                    <div class="text-slate-600 mt-0.5">Eski plaka: <span class="font-bold text-slate-500 line-through">${escapeHtml(item.orig.plaka)}</span></div>
+                    <div class="text-slate-600">Yeni plaka: <span class="font-bold text-violet-800">${escapeHtml(item.plaka)}</span></div>
+                </td>`;
+            }
+            return `<td class="p-3 text-xs font-semibold ${item.status.includes('Eşleşti') ? 'text-emerald-600' : (item.status.includes('Bulunamadı') ? 'text-red-500' : 'text-slate-500')}">${escapeHtml(item.status)}</td>`;
+        }
         function updateApp3Field(id, field, value) { 
             const item = matchedData3.find(x => x.id === id); 
             if (item) { 
                 item[field] = value.trim(); 
+                if (field === 'plaka') { refreshApp3Status(item); filterApp3Table(); }
             } 
         }
         function sortApp3ByField(field) { if (app3SortConfig.field === field) { app3SortConfig.isAsc = !app3SortConfig.isAsc; } else { app3SortConfig.field = field; app3SortConfig.isAsc = true; } filterApp3Table(); }
@@ -2504,7 +2530,7 @@ table.faq td:first-child { font-weight: 700; width: 42%; }
                     <td class="p-0 border-r border-slate-200 bg-white group hover:bg-blue-50/30 transition font-mono text-sm"><input type="text" value="${escapeHtmlApp3(item.delivery || '')}" onchange="updateApp3Field('${item.id}', 'delivery', this.value)" class="w-full h-[48px] px-3 bg-transparent outline-none text-slate-800"></td>
                     <td class="p-1 border-r border-slate-200 bg-violet-50/30 group hover:bg-white transition"><input type="text" value="${escapeHtmlApp3(item.plaka)}" placeholder="Plaka girin" onchange="updateApp3Field('${item.id}', 'plaka', this.value)" class="w-full h-full px-3 py-2 bg-transparent border border-transparent hover:border-slate-300 focus:bg-white focus:border-violet-500 rounded outline-none transition-colors font-bold ${item.plaka ? 'text-violet-800' : 'text-red-400'}"></td>
                     <td class="p-1 border-r border-slate-200 bg-amber-50/30 group hover:bg-white transition"><input type="text" value="${escapeHtmlApp3(item.tasimaIrs || '')}" placeholder="İrsaliye No (N)" onchange="updateApp3Field('${item.id}', 'tasimaIrs', this.value)" class="w-full h-full px-3 py-2 bg-transparent border border-transparent hover:border-slate-300 focus:bg-white focus:border-amber-500 rounded outline-none transition-colors font-mono text-xs font-bold ${item.tasimaIrs ? 'text-amber-800' : 'text-slate-400'}"></td>
-                    <td class="p-3 text-xs font-semibold ${item.status.includes('Eşleşti') ? 'text-emerald-600' : (item.status.includes('Bulunamadı') ? 'text-red-500' : 'text-slate-500')}">${escapeHtml(item.status)}</td>
+                    ${renderApp3StatusCell(item)}
                 </tr>
             `).join(''); lucide.createIcons();
         }
